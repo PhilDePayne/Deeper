@@ -70,6 +70,7 @@ execute_process(COMMAND git submodule update --init ${IMGUI_DIR}
 add_library("imgui" STATIC "${IMGUI_DIR}/imgui.cpp"
 					"${IMGUI_DIR}/imgui_demo.cpp"
 					"${IMGUI_DIR}/imgui_draw.cpp"
+					"${IMGUI_DIR}/imgui_tables.cpp"
 					"${IMGUI_DIR}/imgui_widgets.cpp")
 target_include_directories("imgui" PRIVATE "${IMGUI_DIR}")
 
