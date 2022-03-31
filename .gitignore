@@ -26,6 +26,10 @@
 *.a
 *.lib
 
+# Exclude FMOD library
+!fmod.dll
+!fmod_vc.lib
+
 # Executables
 *.exe
 *.out
