@@ -2,9 +2,10 @@
 
 #include "typedefs.h"
 
-enum class ComponentType {
+enum class ComponentType { //TODO: oddzielny naglowek
 
-	CUBEMESH
+	CUBEMESH,
+	PLAINMESH
 
 };
 
