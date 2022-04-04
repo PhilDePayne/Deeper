@@ -2,8 +2,6 @@
 
 CubeMesh::CubeMesh() {
 
-	
-
 };
 
 CubeMesh::~CubeMesh() {};

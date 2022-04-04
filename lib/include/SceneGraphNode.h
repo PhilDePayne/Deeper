@@ -1,27 +1,38 @@
 #pragma once
 
-#include "typedefs.h"
 #include <vector>
+
+#include "Transform.h"
+#include "GameObject.h"
+#include "typedefs.h"
 
 class SceneGraphNode {
 
-    SceneGraphNode() : m_dirty(true) {};
+public:
+
+    SceneGraphNode() : dirty(true) {};
+
+    ~SceneGraphNode();
+
+    void addGameObject(gameObjectPtr g);
 
     void addChild(const nodePtr& sgn);
 
-    void update(bool dirty);
+    void update(gameObjectPtr parent, bool dirty);
 
     void render(bool isRoot = false);
 
     virtual void updateTransform();
     
+    gameObjectPtr getGameObject();
 
     //getTransform()
 
 protected:
 
     gameObjectPtr gameObject;
-    std::vector<nodePtr> m_children;
-    bool m_dirty;
+    Transform transform;
+    std::vector<nodePtr> children;
+    bool dirty;
 
 };

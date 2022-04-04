@@ -1,8 +1,14 @@
 #pragma once
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 #include "Component.h"
+#include "Shader.h"
+
 #include <vector>
-//#include <glad/glad.h>
+#include <stdio.h>
+
 
 class CubeMesh : public Component {
 
@@ -16,6 +22,8 @@ public:
     unsigned int getVAO();
 
     unsigned int getVBO();
+
+    void render();
 
     bool isType(ComponentType t) override;
 
@@ -69,5 +77,4 @@ private:
 
     unsigned int VAO;
     unsigned int VBO;
-
 };

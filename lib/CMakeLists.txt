@@ -10,7 +10,7 @@ set(SOURCE_FILES
  "include/Shader.h" 
  "include/Camera.h" 
  "include/Texture.h" 
- "src/Texture.cpp" "include/PlainMesh.h" "src/PlainMesh.cpp" "include/SceneGraphNode.h" "src/SceneGraphNode.cpp")
+ "src/Texture.cpp" "include/PlainMesh.h" "src/PlainMesh.cpp" "include/SceneGraphNode.h" "src/SceneGraphNode.cpp" "include/Transform.h" "src/Transform.cpp")
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})

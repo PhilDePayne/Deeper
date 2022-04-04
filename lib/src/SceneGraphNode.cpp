@@ -1,33 +1,46 @@
 #include "SceneGraphNode.h"
 
+SceneGraphNode::~SceneGraphNode() {};
+
+void SceneGraphNode::addGameObject(gameObjectPtr g) {
+
+    gameObject = g;
+
+}
+
 void SceneGraphNode::addChild(const nodePtr& sgn)
 {
 
-	m_children.emplace_back(sgn);
+	children.emplace_back(sgn);
 
 }
 
-void SceneGraphNode::update(bool dirty) {
+void SceneGraphNode::update(gameObjectPtr parent, bool dirty) {
 
-        dirty |= m_dirty;
+        dirty |= this->dirty;
 
-        if (dirty) {
+        if (dirty && (parent != nullptr)) {
 
-            //globalna zmiana transforma
+            gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix = 
+                gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
 
-            m_dirty = false;
+            gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix =
+                parent->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix *
+                gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
+
+            this->dirty = false;
 
         }
 
-        for (const auto& child : m_children) {
+        for (const auto& child : children) {
 
-            child->update(dirty);
+            child->update(gameObject, dirty);
 
         }
 
 }
 
-void SceneGraphNode::render(bool isRoot = false) {
+void SceneGraphNode::render(bool isRoot) {
 
     if (!isRoot) {
 
@@ -35,7 +48,7 @@ void SceneGraphNode::render(bool isRoot = false) {
 
     }
 
-    for (const auto& child : m_children) {
+    for (const auto& child : children) {
 
         child->render();
 
@@ -45,12 +58,20 @@ void SceneGraphNode::render(bool isRoot = false) {
 
 void SceneGraphNode::updateTransform() {
 
-    //lokalna zmiana transforma
-    m_dirty = true;
+    gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix =
+        gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
 
-    for (const auto& child : m_children) {
+    dirty = true;
+
+    for (const auto& child : children) {
 
         child->updateTransform();
 
     }
+}
+
+gameObjectPtr SceneGraphNode::getGameObject() {
+
+    return gameObject;
+
 }

@@ -3,11 +3,15 @@
 #include "fmod_errors.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #include "GameObject.h"
 #include "CubeMesh.h"
+#include "Transform.h"
 #include "Camera.h"
 #include "Shader.h"
+#include "SceneGraphNode.h"
 #include "typedefs.h"
 
 #include <stdio.h>
@@ -48,6 +52,10 @@ bool firstMouse = true;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+//DEBUG
+int testScale = 1;
+int testScale2 = 1;
 
 int main(int, char**)
 {
@@ -131,31 +139,44 @@ int main(int, char**)
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    nodePtr root(new SceneGraphNode());
+    nodePtr cube1(new SceneGraphNode());
+    nodePtr cube2(new SceneGraphNode());
+
     gameObjectPtr cube(new GameObject());
     cube->test();
+    gameObjectPtr box(new GameObject());
+
+    cube1->addGameObject(cube);
+    cube2->addGameObject(box);
+    cube1->addChild(cube2);
 
     cube->addComponent<CubeMesh>();
+    cube->addComponent<Transform>();
 
-    //TODO: jakos prosciej
-    ((CubeMesh *) cube->getComponent(ComponentType::CUBEMESH).get())->test();
+    box->addComponent<CubeMesh>();
+    box->addComponent<Transform>();
+
+    cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(1.0f, 1.0f, 1.0f);
 
     //TODO: tymczasowe, trzeba to rozdzielic w odpowiednich klasach
-
     Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
 
     basicShader.use();
     
-    unsigned int VAO, VBO = ((CubeMesh*)cube->getComponent(ComponentType::CUBEMESH).get())->getVBO(); //TODO: od razu w glGenBuffers
-    unsigned int VAO2, VBO2;
+    unsigned int VAO, VBO = cube->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVBO(); //TODO: od razu w glGenBuffers
+    unsigned int VAO2, VBO2 = box->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVBO();
 
-    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &VBO); //TODO: albo i nie, inicjalizacja bedzie w klasie mesha
     glGenVertexArrays(1, &VAO);
 
     glGenBuffers(1, &VBO2);
     glGenVertexArrays(1, &VAO2);
 
-    std::vector<float> vertices = ((CubeMesh*)cube->getComponent(ComponentType::CUBEMESH).get())->getVertices();
+    std::vector<float> vertices = cube->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVertices();
+    std::vector<float> vertices2 = box->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVertices();
 
+    //DEBUG
     float pVertices[] = {
     -0.5f, -0.5f, 0.0f,
      0.5f, -0.5f, 0.0f,
@@ -170,7 +191,7 @@ int main(int, char**)
 
     glBindVertexArray(VAO2);
     glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(pVertices), pVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices2.size(), &vertices2.front(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
@@ -190,13 +211,13 @@ int main(int, char**)
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = testScale;
+        cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = testScale2;
+        cube1->updateTransform();
+        cube1->update(nullptr, false);
+
         processInput(window);
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        //if (show_demo_window)
-            //ImGui::ShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         {
             static float f = 0.0f;
             static int counter = 0;
@@ -241,19 +262,19 @@ int main(int, char**)
         glm::mat4 view = camera.GetViewMatrix();
         basicShader.setMat4("view", view);
 
-        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
         basicShader.setMat4("model", model);
 
         glBindVertexArray(VAO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        model = glm::translate(model, glm::vec3(0.2f, 0.42f, 4.8f));
+        model = cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
         basicShader.setMat4("model", model);
 
         glBindVertexArray(VAO2);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(pVertices), pVertices, GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices2.size(), &vertices2.front(), GL_STATIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
@@ -289,6 +310,16 @@ void processInput(GLFWwindow* window)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
+
+    //DEBUG
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        testScale++;
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        testScale--;
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        testScale2++;
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        testScale2--;
 }
 
 // glfw: whenever the mouse moves, this callback is called

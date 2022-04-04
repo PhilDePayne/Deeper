@@ -5,7 +5,8 @@
 enum class ComponentType { //TODO: oddzielny naglowek
 
 	CUBEMESH,
-	PLAINMESH
+	PLAINMESH,
+	TRANSFORM
 
 };
 

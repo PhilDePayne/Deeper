@@ -17,7 +17,16 @@ public:
 
 	};
 
-	componentPtr getComponent(ComponentType t);
+	template <typename T> //TODO: bez ComponentType
+	T* getComponent(ComponentType t) {
+
+		for (auto component : components) {
+
+			if (component->isType(t)) return (T*)component.get();
+
+		}
+
+	};
 
 	void test();
 
