@@ -113,11 +113,6 @@ if((NOT FREETYPE_LIBRARY) OR (NOT FREETYPE_INCLUDE_DIR))
     execute_process(COMMAND git submodule update --init ${FREETYPE_DIR}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-	#set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
-	#set(GLFW_BUILD_TESTS    OFF CACHE INTERNAL "Build the GLFW test programs")
-	#set(GLFW_BUILD_DOCS     OFF CACHE INTERNAL "Build the GLFW documentation")
-	#set(GLFW_INSTALL        OFF CACHE INTERNAL "Generate installation target")
-
     add_subdirectory("${FREETYPE_DIR}")
 
 	set(FREETYPE_LIBRARY "freetype" "${FREETYPE_LIBRARIES}")
