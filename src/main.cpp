@@ -40,9 +40,13 @@ static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
+void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &scale);
+void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float totalTime, float &scale);
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
@@ -232,7 +236,7 @@ int main(int, char**)
             texture,
             glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-            face->glyph->advance.x
+            static_cast<unsigned int>(face->glyph->advance.x)
         };
         Characters.insert(std::pair<char, Character>(c, character));
     }
@@ -260,8 +264,8 @@ int main(int, char**)
     // Setup style
     ImGui::StyleColorsDark();
 
-    bool show_demo_window = true;
-    bool show_another_window = false;
+    bool show_demo_window = false;
+    bool show_camera_window = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     nodePtr root(new SceneGraphNode());
@@ -283,6 +287,8 @@ int main(int, char**)
     box->addComponent<Transform>();
 
     cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(1.0f, 1.0f, 1.0f);
+    //do zakomentowania jesli chcemy uzyc tej drugiej kamery
+    //cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
 
     //TODO: tymczasowe, trzeba to rozdzielic w odpowiednich klasach
     Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
@@ -336,6 +342,16 @@ int main(int, char**)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    glm::mat4 proj = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, -100.0f, 100.0f);
+
+    float totalTime = 0.0f; //used for continuous rotation
+    bool debugCamera = true, falling = false; //ImGui variables but useless without visible cursor
+    float cameraY = 0.0f;
+    float scale = 1.0f;
+
+
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
@@ -349,43 +365,36 @@ int main(int, char**)
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+        totalTime += deltaTime;
 
         cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = testScale;
         cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = testScale2;
         cube1->updateTransform();
         cube1->update(nullptr, false);
 
-        processInput(window);
 
         {
             static float f = 0.0f;
             static int counter = 0;
 
             ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            ImGui::NewLine();
+            ImGui::Checkbox("Camera debug", &show_camera_window);
+
             ImGui::End();
         }
 
         // 3. Show another simple window.
-        if (show_another_window)
+        if (show_camera_window)
         {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Begin("Another Window", &show_camera_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
             ImGui::Text("Hello from another window!");
             if (ImGui::Button("Close Me"))
-                show_another_window = false;
+                show_camera_window = false;
             ImGui::End();
         }
         
@@ -394,11 +403,14 @@ int main(int, char**)
         glfwMakeContextCurrent(window);
         glfwGetFramebufferSize(window, &display_w, &display_h);
 
+        useDebugCamera(proj, view, window, scale);
+        //useOrthoCamera(proj, view, window, cameraY, totalTime, scale);
+
         //TODO: renderManager/meshComponent
         basicShader.use();
-        basicShader.setMat4("projection", glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f));
 
-        glm::mat4 view = camera.GetViewMatrix();
+        basicShader.setFloat("scale", scale);
+        basicShader.setMat4("projection", proj);
         basicShader.setMat4("view", view);
 
         glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
@@ -423,8 +435,6 @@ int main(int, char**)
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        
-
         glfwMakeContextCurrent(window);
         glfwSwapBuffers(window);
     }
@@ -438,6 +448,27 @@ int main(int, char**)
     glfwTerminate();
 
     return 0;
+}
+
+void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &scale) {
+    scale = 1.0f;
+    processInput(window);
+    proj = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    view = camera.GetViewMatrix();
+}
+
+void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float totalTime, float &scale) {
+
+    scale = 100.0f;
+    cameraY -= 0.2f;
+    //camera.ContinousMovement(totalTime, 6.0f, cameraY);
+    proj = camera.GetProjMatrix();
+    view = camera.GetOrthoViewMatrix();
+
+    glfwSetKeyCallback(window, key_callback);
+
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
 }
 
 void processInput(GLFWwindow* window)
@@ -493,4 +524,18 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
+//zeby bylo pojedyncze wywolanie
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+        std::cout << "Right arrow pressed\n";
+        camera.ProcessMovement(6.0f, 1.0f);
+    }
+
+    else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+        std::cout << "Left arrow pressed\n";
+        camera.ProcessMovement(6.0f, -1.0f);
+    }
 }

@@ -15,6 +15,13 @@ enum Camera_Movement {
     RIGHT
 };
 
+enum Camera_Facing_Direction {
+    FRONT_DIR,
+    BACK_DIR,
+    LEFT_DIR,
+    RIGHT_DIR
+};
+
 // Default camera values
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
@@ -41,6 +48,8 @@ public:
     float MouseSensitivity;
     float Zoom;
 
+    Camera_Facing_Direction dir;
+
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
@@ -48,6 +57,9 @@ public:
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
+        proj = glm::mat4(1.0f);
+        view = glm::mat4(1.0f);
+        dir = FRONT_DIR;
         updateCameraVectors();
     }
     // constructor with scalar values
@@ -57,6 +69,9 @@ public:
         WorldUp = glm::vec3(upX, upY, upZ);
         Yaw = yaw;
         Pitch = pitch;
+        proj = glm::mat4(1.0f);
+        view = glm::mat4(1.0f);
+        dir = FRONT_DIR;
         updateCameraVectors();
     }
 
@@ -64,6 +79,45 @@ public:
     glm::mat4 GetViewMatrix()
     {
         return glm::lookAt(Position, Position + Front, Up);
+    }
+
+    glm::mat4 GetOrthoViewMatrix() {
+        return view;
+    }
+
+    glm::mat4 GetProjMatrix() {
+        return proj;
+    }
+
+    void SetProjMatrix(float width, float height, float nearPlane, float farPlane) {
+        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, nearPlane, farPlane);
+    }
+
+    glm::mat4 GetMultipliedMatrices() {
+        return proj * view;
+    }
+
+    void ContinousMovement(float totalTime, float radius, float fallSpeed) {
+        float camX = sin(totalTime) * radius;
+        float camZ = cos(totalTime) * radius;
+        view = glm::lookAt(glm::vec3(camX, fallSpeed, camZ), glm::vec3(0.0f, fallSpeed, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    }
+
+    //TODO: plynniejszy obrot
+    void ProcessMovement(float radius, float direction) {
+        angle += 90.0f * direction;
+
+        if(angle == 360.0f)
+            angle = 0.0f;
+        else if(angle == -90.0f)
+            angle = 270.0f;
+
+        std::cout << angle << "\n";
+
+        float camX = sin(glm::radians(angle)) * radius;
+        float camZ = cos(glm::radians(angle)) * radius;
+        view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
     }
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
@@ -113,6 +167,11 @@ public:
     }
 
 private:
+
+    glm::mat4 proj;
+    glm::mat4 view;
+    float angle = 0.0f;
+
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()
     {
