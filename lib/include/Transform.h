@@ -20,7 +20,7 @@ public:
 	float z_rotation_angle = 0.0f;
 	float y_rotation_angle = 0.0f;
 	float x_rotation_angle = 0.0f;
-	float scale = 1.0f;
+	glm::vec3 scale = glm::vec3(1.0f);
 
 	bool isType(ComponentType t) override;
 

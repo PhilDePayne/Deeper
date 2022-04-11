@@ -12,7 +12,7 @@ glm::mat4 Transform::getCombinedMatrix() {
              glm::rotate(glm::mat4(1.0f), glm::radians(y_rotation_angle), glm::vec3(0, -1, 0)) *
              glm::rotate(glm::mat4(1.0f), glm::radians(z_rotation_angle), glm::vec3(0, 0, -1))
             ) *
-             glm::scale(glm::mat4(1.0f), glm::vec3(scale));
+             glm::scale(glm::mat4(1.0f), scale);
 
 }
 
