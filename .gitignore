@@ -38,3 +38,6 @@
 # VS generated files
 *.vs
 /out
+
+.idea/
+cmake-build-debug/
