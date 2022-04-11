@@ -10,7 +10,8 @@ enum class ComponentType { //TODO: oddzielny naglowek
 	TRANSFORM,
 	COLLIDER,
 	SPHERECOLLIDER,
-	BOXCOLLIDER
+	BOXCOLLIDER,
+	LIGHTSOURCE
 
 };
 
