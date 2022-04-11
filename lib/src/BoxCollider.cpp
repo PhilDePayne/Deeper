@@ -10,6 +10,24 @@ glm::vec3 BoxCollider::getCenter() {
 
 }
 
+float BoxCollider::getSizeX() {
+
+	return size.x;
+
+}
+
+float BoxCollider::getSizeY() {
+
+	return size.y;
+
+}
+
+float BoxCollider::getSizeZ() {
+
+	return size.x;
+
+}
+
 float BoxCollider::getMaxX() {
 
 	return center.x + (size.x / 2);

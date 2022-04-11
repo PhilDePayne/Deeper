@@ -12,6 +12,9 @@ public:
 	~BoxCollider();
 
 	glm::vec3 getCenter();
+	float getSizeX();
+	float getSizeY();
+	float getSizeZ();
 	float getMinX();
 	float getMaxX();
 	float getMinY();

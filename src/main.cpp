@@ -65,9 +65,11 @@ float lastFrame = 0.0f;
 //DEBUG
 float testScale = 1;
 float testScale2 = 1;
-float xPos = 1;
-float yPos = 1;
+float xPos = 2;
+float yPos = 2;
+float zPos = 0;
 bool collision = false;
+bool move = false;
 
 int main(int, char**)
 {
@@ -158,53 +160,37 @@ int main(int, char**)
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
 
-    cube1->addGameObject(cube);
-    sphere1->addGameObject(sphere);
-    cube1->addChild(sphere1);
+    {
+        cube1->addGameObject(cube);
+        sphere1->addGameObject(sphere);
+        cube1->addChild(sphere1);
 
-    cube->addComponent<CubeMesh>();
-    cube->addComponent<Transform>();
-    cube->addComponent<BoxCollider>();
-    cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
-    cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
+        cube->addComponent<CubeMesh>();
+        cube->addComponent<Transform>();
+        cube->addComponent<BoxCollider>();
+        cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
+        cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
 
-    sphere->addComponent<SphereMesh>();
-    sphere->addComponent<Transform>();
-    sphere->addComponent<SphereCollider>();
-    sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
-    sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
+        sphere->addComponent<SphereMesh>();
+        sphere->addComponent<Transform>();
+        sphere->addComponent<SphereCollider>();
+        sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
+        sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
-    //TODO: funckja w klasie SceneGraphNode (wymog transforma)
-    sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(1.0f, 1.0f, 1.0f);
-    //do zakomentowania jesli chcemy uzyc tej drugiej kamery
-    //cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
+        //TODO: funckja w klasie SceneGraphNode (wymog transforma)
+        //do zakomentowania jesli chcemy uzyc tej drugiej kamery
+        //cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
+    }
 
     //TODO: tymczasowe, trzeba to rozdzielic w odpowiednich klasach
     Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
     Shader textShader("./res/shaders/text.vert", "./res/shaders/text.frag");
 
     basicShader.use();
- 
-    unsigned int VAO2, VBO2 = sphere->getComponent<SphereMesh>(ComponentType::SPHEREMESH)->getVBO();
-
-    glGenBuffers(1, &VBO2);
-    glGenVertexArrays(1, &VAO2);
 
     std::vector<float> vertices = cube->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVertices();
     std::vector<float> vertices2 = sphere->getComponent<SphereMesh>(ComponentType::SPHEREMESH)->getVertices();
-
-    //DEBUG
-    float pVertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
-    };
-
-    glBindVertexArray(VAO2);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices2.size(), &vertices2.front(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    std::vector<float> indices = sphere->getComponent<SphereMesh>(ComponentType::SPHEREMESH)->getIndices();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -219,6 +205,77 @@ int main(int, char**)
     float cameraY = 0.0f;
     float scale = 1.0f;
 
+    GLint layers = 100;
+    GLint circumferenceTiles = 100;
+    std::vector<GLfloat> va;
+    std::vector<GLfloat> ia;
+    const double PI = 3.141592653589793238463;
+    va.reserve((layers + 1) * (circumferenceTiles + 1) * 3);  // 3 floats: x, y, z 
+    const float pi = 3.1414927f;
+
+    va.reserve((layers + 1)* (circumferenceTiles + 1) * 3);  // 3 floats: x, y, z 
+    for (int i = 0; i <= layers; ++i)
+    {
+        float layer_rel = (float)i / (float)layers;
+        float layer_ang = (1.0f - 2.0f * layer_rel) * pi / 2.0f;
+        float layer_sin = std::sin(layer_ang);
+        float layer_cos = std::cos(layer_ang);
+        for (int ic = 0; ic <= circumferenceTiles; ic++)
+        {
+            float circum_rel = (float)ic / (float)circumferenceTiles;
+            float cricum_ang = circum_rel * 2.0f * pi - pi;
+            float circum_sin = std::sin(cricum_ang);
+            float circum_cos = std::cos(cricum_ang);
+
+            va.push_back(layer_cos * circum_cos); // x
+            va.push_back(layer_cos * circum_sin); // y
+            va.push_back(layer_sin);              // z
+        }
+    }
+
+    // create the face indices 
+    ia.reserve(layers * circumferenceTiles * 6);
+    for (int il = 0; il < layers; ++il)
+    {
+        for (int ic = 0; ic < circumferenceTiles; ic++)
+        {
+            int i0 = il * (circumferenceTiles + 1) + ic;
+            int i1 = i0 + 1;
+            int i3 = i0 + circumferenceTiles + 1;
+            int i2 = i3 + 1;
+
+            int faces[]{ i0, i1, i2, i0, i2, i3 };
+            ia.insert(ia.end(), faces + (il == 0 ? 3 : 0), faces + (il == layers - 1 ? 3 : 6));
+        }
+    }
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, va.size() * sizeof(GLfloat), va.data(),
+        GL_STATIC_DRAW);
+
+    GLuint ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, ia.size() * sizeof(GLuint), ia.data(), GL_STATIC_DRAW);
+
+    GLuint v_attr_inx = 0;
+    glVertexAttribPointer(v_attr_inx, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(v_attr_inx);
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
+    sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
+    cube1->updateTransform();
+    cube1->update(nullptr, false);
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -235,13 +292,14 @@ int main(int, char**)
         lastFrame = currentFrame;
         totalTime += deltaTime;
 
-        cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(testScale);
-        sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(testScale2);
-        sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, 1.0f);
-        sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(xPos, yPos, 1.0f));
-        cube1->updateTransform();
-        cube1->update(nullptr, false);
-
+        //DEBUG
+        if (move) {
+            sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, 0.0f);
+            sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
+            cube1->updateTransform();
+            cube1->update(nullptr, false);
+            move = false;
+        }
 
         collision = false;
 
@@ -256,12 +314,45 @@ int main(int, char**)
             // this is the same as isPointInsideSphere
             float distance = glm::sqrt((x - sphereCollider->getCenter().x) * (x - sphereCollider->getCenter().x) +
                                        (y - sphereCollider->getCenter().y) * (y - sphereCollider->getCenter().y) +
-                                       (z - sphereCollider->getCenter().y) * (z - sphereCollider->getCenter().y));
+                                       (z - sphereCollider->getCenter().z) * (z - sphereCollider->getCenter().z));
 
+            
             collision = distance < sphereCollider->getRadius();
-        }
+            if (collision) {
+                float xDist = (x - sphereCollider->getCenter().x);
+                float yDist = (y - sphereCollider->getCenter().y);
+                float zDist = (z - sphereCollider->getCenter().z);
 
-        if (collision) printf("COLLISION");
+                float dist;
+
+                if ((glm::abs(xDist) > glm::abs(zDist)) && (glm::abs(xDist) > glm::abs(yDist))) {
+
+                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeX()/2) - glm::abs(cubeCollider->getCenter().x - sphereCollider->getCenter().x);
+                    if ((x - sphereCollider->getCenter().x) < 0) dist = -dist;
+                    xPos -= dist;
+                    move = true;
+
+                }
+
+                else if (glm::abs(yDist) > glm::abs(zDist)) {
+
+                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeY() / 2) - glm::abs(cubeCollider->getCenter().y - sphereCollider->getCenter().y);
+                    if ((y - sphereCollider->getCenter().y) < 0) dist = -dist;
+                    yPos -= dist;
+                    move = true;
+
+                }
+
+                else {
+
+                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeZ() / 2) - glm::abs(cubeCollider->getCenter().z - sphereCollider->getCenter().z);
+                    if ((z - sphereCollider->getCenter().z) < 0) dist = -dist;
+                    zPos -= dist;
+                    move = true;
+
+                }
+            }
+        }
 
         {
             static float f = 0.0f;
@@ -313,9 +404,15 @@ int main(int, char**)
         model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
         basicShader.setMat4("model", model);
 
-        glBindVertexArray(VAO2);
+        glBindVertexArray(sphere1->getGameObject()->getComponent<SphereMesh>(ComponentType::SPHEREMESH)->getVAO()); //TODO: blad jesli brak komponentu
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices2.size(), &vertices2.front(), GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, vertices2.size()/3);
+        glDrawArrays(GL_TRIANGLES, 0, vertices2.size());
+        //glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
+        //glBindVertexArray(vao);
+        //glDrawArrays(GL_TRIANGLES, 0, (GLsizei)ia.size());
+        //glDrawElements(GL_TRIANGLES, (GLsizei)ia.size(), GL_UNSIGNED_INT, 0);
+        //glBindVertexArray(0);
 
         ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
@@ -372,23 +469,40 @@ void processInput(GLFWwindow* window)
         camera.ProcessKeyboard(RIGHT, deltaTime);
 
     //DEBUG
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        testScale+=0.1;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        testScale += 0.1;
+        move = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
         testScale-=0.1;
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    move = true;
+}
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
         testScale2+=0.1;
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    move = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
         testScale2-=0.1;
+    move = true;
+    }
 
-    if (glfwGetKey(window, GLFW_KEY_KP_8) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_KP_8) == GLFW_PRESS) {
         yPos += 0.1;
-    if (glfwGetKey(window, GLFW_KEY_KP_2) == GLFW_PRESS)
+    move = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_KP_2) == GLFW_PRESS) {
         yPos -= 0.1;
-    if (glfwGetKey(window, GLFW_KEY_KP_6) == GLFW_PRESS)
+    move = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_KP_6) == GLFW_PRESS) {
         xPos += 0.1;
-    if (glfwGetKey(window, GLFW_KEY_KP_4) == GLFW_PRESS)
+    move = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_KP_4) == GLFW_PRESS) {
         xPos -= 0.1;
+    move = true;
+    }
+
 }
 
 // glfw: whenever the mouse moves, this callback is called

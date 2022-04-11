@@ -2,35 +2,67 @@
 
 SphereMesh::SphereMesh() {
 
-    float x, y, z, xy;                              // vertex position
-    float nx, ny, nz, lengthInv = 1.0f / radius;    // vertex normal
-    float s, t;                                     // vertex texCoord
+    vertices.resize(sectorCount * stackCount * 3);
 
-    float sectorStep = 2 * PI / sectorCount;
-    float stackStep = PI / stackCount;
-    float sectorAngle, stackAngle;
+    float x, y, z, xz;
 
-    for (int i = 0; i <= stackCount; ++i)
+    float sliceAngle, stackAngle;
+
+    std::vector<GLfloat>::iterator itV = vertices.begin();
+
+    for (int i = 0; i < stackCount; i++)
     {
-        stackAngle = PI / 2 - i * stackStep;        // starting from pi/2 to -pi/2
-        xy = radius * cosf(stackAngle);             // r * cos(u)
-        z = radius * sinf(stackAngle);              // r * sin(u)
+        stackAngle = PI_2 - PI * i / stackCount;
+        xz = radius * cosf(stackAngle);
+        y = radius * sinf(stackAngle);
 
-        // add (sectorCount+1) vertices per stack
-        // the first and last vertices have same position and normal, but different tex coords
-        for (int j = 0; j <= sectorCount; ++j)
+        for (int j = 0; j < sectorCount; j++)
         {
-            sectorAngle = j * sectorStep;           // starting from 0 to 2pi
+            sliceAngle = 2 * PI * j / sectorCount;
 
-            // vertex position (x, y, z)
-            x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
-            y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
-            vertices.push_back(x);
-            vertices.push_back(y);
-            vertices.push_back(z);
+            x = xz * sinf(sliceAngle);
+            z = xz * cosf(sliceAngle);
+            *itV++ = x;
+            *itV++ = y;
+            *itV++ = z;
 
         }
     }
+
+    int first, second;
+    for (int i = 0; i < stackCount; i++)
+    {
+        for (int j = 0; j < sectorCount; j++)
+        {
+            first = i * sectorCount + j;
+            second = first + sectorCount + 1;
+
+            indices.push_back(first);
+            indices.push_back(second);
+            indices.push_back(first + 1);
+
+            indices.push_back(first + 1);
+            indices.push_back(second);
+            indices.push_back(second + 1);
+        }
+    }
+
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    glGenVertexArrays(1, &VAO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(float) * indices.size(), &indices.front(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
 
 };
 
@@ -49,9 +81,21 @@ unsigned int SphereMesh::getVBO() {
 
 }
 
+unsigned int SphereMesh::getEBO() {
+
+    return EBO;
+
+}
+
 std::vector<float> SphereMesh::getVertices() {
 
     return vertices;
+
+}
+
+std::vector<float> SphereMesh::getIndices() {
+
+    return indices;
 
 }
 
