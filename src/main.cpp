@@ -41,7 +41,7 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &scale);
-void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float totalTime, float &scale);
+void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale);
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -63,6 +63,8 @@ float lastFrame = 0.0f;
 int testScale = 1;
 int testScale2 = 1;
 glm::mat4 projection = glm::ortho(0.0f, 720.0f, 0.0f, 1280.0f);
+
+int move = 0;
 
 //TODO: w oddzielnej klasie (TextRenderer)
 unsigned int tVAO, tVBO;
@@ -288,7 +290,7 @@ int main(int, char**)
 
     cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(1.0f, 1.0f, 1.0f);
     //do zakomentowania jesli chcemy uzyc tej drugiej kamery
-    //cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
+    cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
 
     //TODO: tymczasowe, trzeba to rozdzielic w odpowiednich klasach
     Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
@@ -346,8 +348,7 @@ int main(int, char**)
     glm::mat4 view = glm::mat4(1.0f);
     camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, -100.0f, 100.0f);
 
-    float totalTime = 0.0f; //used for continuous rotation
-    bool debugCamera = true, falling = false; //ImGui variables but useless without visible cursor
+    bool debugCamera = true, falling = false; //zmienne do imgui ale nie ma kursora i tak
     float cameraY = 0.0f;
     float scale = 1.0f;
 
@@ -365,13 +366,11 @@ int main(int, char**)
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        totalTime += deltaTime;
 
         cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = testScale;
         cube2->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = testScale2;
         cube1->updateTransform();
         cube1->update(nullptr, false);
-
 
         {
             static float f = 0.0f;
@@ -403,8 +402,9 @@ int main(int, char**)
         glfwMakeContextCurrent(window);
         glfwGetFramebufferSize(window, &display_w, &display_h);
 
-        useDebugCamera(proj, view, window, scale);
-        //useOrthoCamera(proj, view, window, cameraY, totalTime, scale);
+        //TODO: controls in ImGui
+        //useDebugCamera(proj, view, window, scale);
+        useOrthoCamera(proj, view, window, cameraY, scale);
 
         //TODO: renderManager/meshComponent
         basicShader.use();
@@ -457,18 +457,24 @@ void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
     view = camera.GetViewMatrix();
 }
 
-void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float totalTime, float &scale) {
+void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale) {
 
     scale = 100.0f;
     cameraY -= 0.2f;
-    //camera.ContinousMovement(totalTime, 6.0f, cameraY);
+
     proj = camera.GetProjMatrix();
     view = camera.GetOrthoViewMatrix();
 
+    //strzalki
     glfwSetKeyCallback(window, key_callback);
 
+    //esc zamyka okno
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    //obrot kamery
+//    camera.ProcessMovement(6.0f, 1.5f, move, cameraY); //ze spadaniem
+    camera.ProcessMovement(6.0f, 1.5f, move, 0.0f); //bez spadania
 }
 
 void processInput(GLFWwindow* window)
@@ -530,12 +536,10 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-        std::cout << "Right arrow pressed\n";
-        camera.ProcessMovement(6.0f, 1.0f);
+        move = 1;
     }
 
     else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-        std::cout << "Left arrow pressed\n";
-        camera.ProcessMovement(6.0f, -1.0f);
+        move = -1;
     }
 }

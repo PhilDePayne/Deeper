@@ -89,36 +89,49 @@ public:
         return proj;
     }
 
+    //do dopasowania po wgraniu levelu
     void SetProjMatrix(float width, float height, float nearPlane, float farPlane) {
         proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, nearPlane, farPlane);
+//        proj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
+    }
+
+    void AdjustPlanes(float &nearPlane, float &farPlane, float zPos) {
+
     }
 
     glm::mat4 GetMultipliedMatrices() {
         return proj * view;
     }
 
-    void ContinousMovement(float totalTime, float radius, float fallSpeed) {
-        float camX = sin(totalTime) * radius;
-        float camZ = cos(totalTime) * radius;
-        view = glm::lookAt(glm::vec3(camX, fallSpeed, camZ), glm::vec3(0.0f, fallSpeed, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    }
+    void ProcessMovement(float radius, float speed, int &move, float camY) {
 
-    //TODO: plynniejszy obrot
-    void ProcessMovement(float radius, float direction) {
-        angle += 90.0f * direction;
+        if(move != 0) {
+            totalDegrees += speed;
+            angle += speed * move;
 
-        if(angle == 360.0f)
-            angle = 0.0f;
-        else if(angle == -90.0f)
-            angle = 270.0f;
+            if(totalDegrees >= 90.0f) {
+                totalDegrees = 0.0f;
+                move = 0;
+            }
 
-        std::cout << angle << "\n";
+            if(angle >= 360.0f)
+                angle = 0.0f;
+            else if(angle <= -90.0f)
+                angle = 270.0f;
+
+            //std::cout << angle << "\n";
+        }
+
 
         float camX = sin(glm::radians(angle)) * radius;
         float camZ = cos(glm::radians(angle)) * radius;
-        view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::lookAt(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, camY, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     }
+
+
+
+    /*--------------------DEBUG--------------------*/
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
@@ -171,6 +184,7 @@ private:
     glm::mat4 proj;
     glm::mat4 view;
     float angle = 0.0f;
+    float totalDegrees = 0.0f; //pomocnicza
 
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()
