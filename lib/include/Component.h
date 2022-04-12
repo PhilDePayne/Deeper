@@ -6,7 +6,12 @@ enum class ComponentType { //TODO: oddzielny naglowek
 
 	CUBEMESH,
 	PLAINMESH,
-	TRANSFORM
+	SPHEREMESH,
+	TRANSFORM,
+	COLLIDER,
+	SPHERECOLLIDER,
+	BOXCOLLIDER,
+	LIGHTSOURCE
 
 };
 

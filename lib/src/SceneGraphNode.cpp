@@ -1,4 +1,5 @@
 #include "SceneGraphNode.h"
+#include "GameObject.h"
 
 SceneGraphNode::~SceneGraphNode() {};
 

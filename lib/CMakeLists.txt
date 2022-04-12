@@ -10,7 +10,21 @@ set(SOURCE_FILES
  "include/Shader.h" 
  "include/Camera.h" 
  "include/Texture.h" 
- "src/Texture.cpp" "include/PlainMesh.h" "src/PlainMesh.cpp" "include/SceneGraphNode.h" "src/SceneGraphNode.cpp" "include/Transform.h" "src/Transform.cpp")
+ "src/Texture.cpp" 
+ "include/PlainMesh.h" 
+ "src/PlainMesh.cpp" 
+ "include/SceneGraphNode.h" 
+ "src/SceneGraphNode.cpp" 
+ "include/Transform.h" 
+ "src/Transform.cpp" 
+ "include/SphereMesh.h" 
+ "src/SphereMesh.cpp" 
+ "include/Collider.h" 
+ "src/Collider.cpp" 
+ "include/SphereCollider.h" 
+ "src/SphereCollider.cpp" 
+ "include/BoxCollider.h" 
+ "src/BoxCollider.cpp" "include/LightSource.h" "src/LightSource.cpp")
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})
