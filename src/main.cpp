@@ -69,9 +69,9 @@ float xPos = 2;
 float yPos = 2;
 float zPos = 0;
 bool collision = false;
-
+bool move = 0;
 glm::mat4 projection = glm::ortho(0.0f, 720.0f, 0.0f, 1280.0f);
-int move = 0;
+int rotate = 0;
 
 int main(int, char**)
 {
@@ -385,8 +385,8 @@ int main(int, char**)
         glfwGetFramebufferSize(window, &display_w, &display_h);
 
         //TODO: controls in ImGui
-        //useDebugCamera(proj, view, window, scale);
-        useOrthoCamera(proj, view, window, cameraY, scale);
+        useDebugCamera(proj, view, window, scale);
+        //useOrthoCamera(proj, view, window, cameraY, scale);
 
         //TODO: renderManager/meshComponent
         basicShader.use();
@@ -457,8 +457,8 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
         glfwSetWindowShouldClose(window, true);
 
     //obrot kamery
-//    camera.ProcessMovement(6.0f, 1.5f, move, cameraY); //ze spadaniem
-    camera.ProcessMovement(6.0f, 1.5f, move, 0.0f); //bez spadania
+//    camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY); //ze spadaniem
+    camera.ProcessMovement(6.0f, 1.5f, rotate, 0.0f); //bez spadania
 }
 
 void processInput(GLFWwindow* window)
@@ -546,10 +546,10 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-        move = 1;
+        rotate = 1;
     }
 
     else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-        move = -1;
+        rotate = -1;
     }
 }
