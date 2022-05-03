@@ -29,7 +29,9 @@ public:
 	float getLinear();
 	float getQuadratic();
 	float getCutOff();
+	float getOuterCutOff();
 
+	void setLightType(LightType t);
 	void setDirection(glm::vec3 d);
 	void setPosition(glm::vec3 p);
 	void setAmbient(glm::vec3 a);
@@ -39,6 +41,7 @@ public:
 	void setLinear(float l);
 	void setQuadratic(float q);
 	void setCutOff(float c);
+	void setOuterCutOff(float c);
 
 	bool isType(ComponentType t);
 	void test();
@@ -54,11 +57,12 @@ private:
 	glm::vec3 diffuse;
 	glm::vec3 specular;
 
-	//DIRECTIONAL
+	//DIRECTIONAL / SPOT
 	float constant;
 	float linear;
 	float quadratic;
 
 	//SPOT
 	float cutOff;
+	float outerCutOff;
 };

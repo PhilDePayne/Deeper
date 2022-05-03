@@ -16,6 +16,7 @@
 #include "SceneGraphNode.h"
 #include "BoxCollider.h"
 #include "SphereCollider.h"
+#include "LightSource.h"
 #include "typedefs.h"
 
 #include <stdio.h>
@@ -161,6 +162,8 @@ int main(int, char**)
 
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
+    gameObjectPtr dirLight(new GameObject());
+    gameObjectPtr pointLight(new GameObject());
 
     {
         cube1->addGameObject(cube);
@@ -176,17 +179,28 @@ int main(int, char**)
         sphere->addComponent<SphereMesh>();
         sphere->addComponent<Transform>();
         sphere->addComponent<SphereCollider>();
+        sphere->addComponent<LightSource>();
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
+        dirLight->addComponent<LightSource>();
+
+        pointLight->addComponent<LightSource>();
+
         //TODO: funckja w klasie SceneGraphNode (wymog transforma)
         //do zakomentowania jesli chcemy uzyc tej drugiej kamery
+
+        dlight->setSpecular(glm::vec3(0.6f, 0.5f, 0.2f));
+        dlight->setDiffuse(glm::vec3(0.4f, 0.8f, 0.5f));
+        dlight->setAmbient(glm::vec3(0.1f, 0.05f, 0.05f));
+        dlight->setDirection(glm::vec3(-0.2f, 0.0f, 0.0f));
+        dlight->setLightType(LightType::DIRECTIONAL);
+        LightSource* dlight = dirLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
         //sphere->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
     }
 
     //TODO: tymczasowe, trzeba to rozdzielic w odpowiednich klasach
     Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
-    Shader textShader("./res/shaders/text.vert", "./res/shaders/text.frag");
 
     basicShader.use();
 
@@ -391,6 +405,38 @@ int main(int, char**)
         //TODO: renderManager/meshComponent
         basicShader.use();
 
+        {//TODO: w LightComponent
+            LightSource* slight = sphere->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
+            LightSource* plight = pointLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
+            LightSource* dlight = dirLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
+
+            basicShader.setVec3("viewPos", camera.Position);
+
+            basicShader.setVec3("dirLight.direction", dlight->getDirection());
+            basicShader.setVec3("dirLight.ambient", dlight->getAmbient());
+            basicShader.setVec3("dirLight.diffuse", dlight->getDiffuse());
+            basicShader.setVec3("dirLight.specular", dlight->getSpecular());
+
+            basicShader.setVec3("pointLight.position", plight->getPosition());
+            basicShader.setVec3("pointLight.ambient", plight->getAmbient());
+            basicShader.setVec3("pointLight.diffuse", plight->getDiffuse());
+            basicShader.setVec3("pointLight.specular", plight->getSpecular());
+            basicShader.setFloat("pointLight.constant", plight->getConstant());
+            basicShader.setFloat("pointLight.linear", plight->getLinear());
+            basicShader.setFloat("pointLight.quadratic", plight->getQuadratic());
+
+            basicShader.setVec3("spotLight.position", slight->getPosition());
+            basicShader.setVec3("spotLight.direction", slight->getDirection());
+            basicShader.setVec3("spotLight.ambient", slight->getAmbient());
+            basicShader.setVec3("spotLight.diffuse", slight->getDiffuse());
+            basicShader.setVec3("spotLight.specular", slight->getSpecular());
+            basicShader.setFloat("spotLight.constant", slight->getConstant());
+            basicShader.setFloat("spotLight.linear", slight->getLinear());
+            basicShader.setFloat("spotLight.quadratic", slight->getQuadratic());
+            basicShader.setFloat("spotLight.cutOff", slight->getCutOff());
+            basicShader.setFloat("spotLight.outerCutOff", slight->getOuterCutOff());
+        }
+
         basicShader.setFloat("scale", scale);
         basicShader.setMat4("projection", proj);
         basicShader.setMat4("view", view);
@@ -402,18 +448,36 @@ int main(int, char**)
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+        basicShader.setMat4("model", model);
+
+        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, -2.0f, 0.0f));
+        basicShader.setMat4("model", model);
+
+        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 2.0f));
+        basicShader.setMat4("model", model);
+
+        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
         model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
         basicShader.setMat4("model", model);
 
         glBindVertexArray(sphere1->getGameObject()->getComponent<SphereMesh>(ComponentType::SPHEREMESH)->getVAO()); //TODO: blad jesli brak komponentu
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices2.size(), &vertices2.front(), GL_STATIC_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, vertices2.size());
-        //glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-
-        //glBindVertexArray(vao);
-        //glDrawArrays(GL_TRIANGLES, 0, (GLsizei)ia.size());
-        //glDrawElements(GL_TRIANGLES, (GLsizei)ia.size(), GL_UNSIGNED_INT, 0);
-        //glBindVertexArray(0);
 
         ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);

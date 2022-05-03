@@ -1,5 +1,9 @@
 #include "LightSource.h"
 
+LightSource::LightSource() {};
+
+LightSource::~LightSource() {};
+
 LightType LightSource::getLightType() {
 
 	return type;
@@ -39,35 +43,48 @@ glm::vec3 LightSource::getSpecular() {
 
 float LightSource::getConstant() {
 
-	if (type == LightType::POINT)
+	if (type == LightType::SPOT || type == LightType::POINT)
 		return constant;
 
 }
 
 float LightSource::getLinear() {
 
-	if (type == LightType::POINT)
+	if (type == LightType::SPOT || type == LightType::POINT)
 		return linear;
 
 }
 
 float LightSource::getQuadratic() {
 
-	if (type == LightType::POINT)
+	if (type == LightType::SPOT || type == LightType::POINT)
 		return quadratic;
 
 }
 
 float LightSource::getCutOff() {
 
-	if (type == LightType::DIRECTIONAL)
+	if (type == LightType::SPOT)
 		return cutOff;
+
+}
+
+float LightSource::getOuterCutOff() {
+
+	if (type == LightType::SPOT)
+		return outerCutOff;
+
+}
+
+void LightSource::setLightType(LightType l) {
+
+	type = l;
 
 }
 
 void LightSource::setDirection(glm::vec3 d) {
 
-	if (type == LightType::SPOT || type == LightType::DIRECTIONAL)
+	if (type == LightType::SPOT || type == LightType::DIRECTIONAL) //TODO: blad jesli nie
 		direction = d;
 
 }
@@ -94,5 +111,48 @@ void LightSource::setDiffuse(glm::vec3 d) {
 void LightSource::setSpecular(glm::vec3 s) {
 
 	specular = s;
+
+}
+
+void LightSource::setConstant(float c) { //TODO: if'y
+
+	constant = c;
+
+}
+
+void LightSource::setLinear(float l) {
+
+	linear = l;
+
+}
+
+void LightSource::setQuadratic(float q) {
+
+	quadratic = q;
+
+}
+
+void LightSource::setCutOff(float c) {
+
+	cutOff = glm::cos(glm::radians(c));
+	printf("%f\n", cutOff);
+
+}
+
+void LightSource::setOuterCutOff(float c) {
+
+	outerCutOff = glm::cos(glm::radians(c));
+
+}
+
+bool LightSource::isType(ComponentType t) {
+
+	return (t == ComponentType::LIGHTSOURCE);
+
+}
+
+void LightSource::test() {
+
+	printf("TEST_LIGHTSOURCE\n");
 
 }
