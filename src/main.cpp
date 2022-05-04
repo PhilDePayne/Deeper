@@ -4,6 +4,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -66,9 +68,9 @@ float lastFrame = 0.0f;
 //DEBUG
 float testScale = 1;
 float testScale2 = 1;
-float xPos = 2;
-float yPos = 2;
-float zPos = 0;
+float xPos = 0.0;
+float yPos = 1.8;
+float zPos = 0.0;
 bool collision = false;
 bool move = 0;
 glm::mat4 projection = glm::ortho(0.0f, 720.0f, 0.0f, 1280.0f);
@@ -162,40 +164,29 @@ int main(int, char**)
 
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
-    gameObjectPtr dirLight(new GameObject());
-    gameObjectPtr pointLight(new GameObject());
 
     {
         cube1->addGameObject(cube);
         sphere1->addGameObject(sphere);
-        cube1->addChild(sphere1);
+        //cube1->addChild(sphere1);
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->x_rotation_angle = 45.0f;
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
 
         sphere->addComponent<SphereMesh>();
         sphere->addComponent<Transform>();
+        sphere->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(3.0f);
         sphere->addComponent<SphereCollider>();
         sphere->addComponent<LightSource>();
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
-        dirLight->addComponent<LightSource>();
-
-        pointLight->addComponent<LightSource>();
-
         //TODO: funckja w klasie SceneGraphNode (wymog transforma)
         //do zakomentowania jesli chcemy uzyc tej drugiej kamery
-
-        dlight->setSpecular(glm::vec3(0.6f, 0.5f, 0.2f));
-        dlight->setDiffuse(glm::vec3(0.4f, 0.8f, 0.5f));
-        dlight->setAmbient(glm::vec3(0.1f, 0.05f, 0.05f));
-        dlight->setDirection(glm::vec3(-0.2f, 0.0f, 0.0f));
-        dlight->setLightType(LightType::DIRECTIONAL);
-        LightSource* dlight = dirLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
         //sphere->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
     }
 
@@ -289,8 +280,11 @@ int main(int, char**)
 
     sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
     sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
+    sphere1->updateTransform();
+    sphere1->update(nullptr, false);
     cube1->updateTransform();
     cube1->update(nullptr, false);
+    float tmpPos = 0;
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -308,41 +302,61 @@ int main(int, char**)
 
         //DEBUG
         if (move) {
-            sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, 0.0f);
+            sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
             sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
             cube1->updateTransform();
             cube1->update(nullptr, false);
+            sphere1->updateTransform();
+            sphere1->update(nullptr, false);
             move = false;
         }
 
         collision = false;
-
+        tmpPos += 0.1;
         //TODO: w klasie colliderow
         {
             BoxCollider* cubeCollider = cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
+            cubeCollider->x_rotation_angle = 45.0f;
             SphereCollider* sphereCollider = sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER);
-            float x = glm::max(cubeCollider->getMinX(), glm::min(sphereCollider->getCenter().x, cubeCollider->getMaxX()));
-            float y = glm::max(cubeCollider->getMinY(), glm::min(sphereCollider->getCenter().y, cubeCollider->getMaxY()));
-            float z = glm::max(cubeCollider->getMinZ(), glm::min(sphereCollider->getCenter().z, cubeCollider->getMaxZ()));
+
+            glm::mat4 tmpMat = (
+                                glm::translate(glm::mat4(1.0f), glm::vec3(cubeCollider->getCenter())) *
+                               (glm::rotate(glm::mat4(1.0f), glm::radians(-cubeCollider->x_rotation_angle), glm::vec3(-1, 0, 0)) *
+                                glm::rotate(glm::mat4(1.0f), glm::radians(-cubeCollider->y_rotation_angle), glm::vec3(0, -1, 0)) *
+                                glm::rotate(glm::mat4(1.0f), glm::radians(-cubeCollider->z_rotation_angle), glm::vec3(0, 0, -1))) *
+                                glm::translate(glm::mat4(1.0f), glm::vec3(-cubeCollider->getCenter()))
+                              );
+
+            glm::vec4 tmpCenter = glm::vec4(xPos, yPos, zPos, 1.0f);
+
+            tmpCenter = tmpMat * tmpCenter;
+
+            printf("%f %f %f \n", xPos, yPos, zPos);
+
+            printf("%f %f %f %f \n", tmpCenter.x, tmpCenter.y, tmpCenter.z, tmpCenter.w);
+
+            float x = glm::max(cubeCollider->getMinX(), glm::min(tmpCenter.x, cubeCollider->getMaxX()));
+            float y = glm::max(cubeCollider->getMinY(), glm::min(tmpCenter.y, cubeCollider->getMaxY()));
+            float z = glm::max(cubeCollider->getMinZ(), glm::min(tmpCenter.z, cubeCollider->getMaxZ()));
 
             // this is the same as isPointInsideSphere
-            float distance = glm::sqrt((x - sphereCollider->getCenter().x) * (x - sphereCollider->getCenter().x) +
-                                       (y - sphereCollider->getCenter().y) * (y - sphereCollider->getCenter().y) +
-                                       (z - sphereCollider->getCenter().z) * (z - sphereCollider->getCenter().z));
-
+            float distance = glm::sqrt((x - tmpCenter.x) * (x - tmpCenter.x) +
+                                       (y - tmpCenter.y) * (y - tmpCenter.y) +
+                                       (z - tmpCenter.z) * (z - tmpCenter.z));
 
             collision = distance < sphereCollider->getRadius();
             if (collision) {
-                float xDist = (x - sphereCollider->getCenter().x);
-                float yDist = (y - sphereCollider->getCenter().y);
-                float zDist = (z - sphereCollider->getCenter().z);
+                printf("COLLISION\n");
+                float xDist = (x - tmpCenter.x);
+                float yDist = (y - tmpCenter.y);
+                float zDist = (z - tmpCenter.z);
 
                 float dist;
 
                 if ((glm::abs(xDist) > glm::abs(zDist)) && (glm::abs(xDist) > glm::abs(yDist))) {
 
-                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeX()/2) - glm::abs(cubeCollider->getCenter().x - sphereCollider->getCenter().x);
-                    if ((x - sphereCollider->getCenter().x) < 0) dist = -dist;
+                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeX()/2) - glm::abs(cubeCollider->getCenter().x - tmpCenter.x);
+                    if ((x - tmpCenter.x) < 0) dist = -dist;
                     xPos -= dist;
                     move = true;
 
@@ -350,8 +364,8 @@ int main(int, char**)
 
                 else if (glm::abs(yDist) > glm::abs(zDist)) {
 
-                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeY() / 2) - glm::abs(cubeCollider->getCenter().y - sphereCollider->getCenter().y);
-                    if ((y - sphereCollider->getCenter().y) < 0) dist = -dist;
+                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeY() / 2) - glm::abs(cubeCollider->getCenter().y - tmpCenter.y);
+                    if ((y - tmpCenter.y) < 0) dist = -dist;
                     yPos -= dist;
                     move = true;
 
@@ -359,8 +373,8 @@ int main(int, char**)
 
                 else {
 
-                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeZ() / 2) - glm::abs(cubeCollider->getCenter().z - sphereCollider->getCenter().z);
-                    if ((z - sphereCollider->getCenter().z) < 0) dist = -dist;
+                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeZ() / 2) - glm::abs(cubeCollider->getCenter().z - tmpCenter.z);
+                    if ((z - tmpCenter.z) < 0) dist = -dist;
                     zPos -= dist;
                     move = true;
 
@@ -405,25 +419,10 @@ int main(int, char**)
         //TODO: renderManager/meshComponent
         basicShader.use();
 
-        {//TODO: w LightComponent
+        {   //TODO: w LightComponent
             LightSource* slight = sphere->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
-            LightSource* plight = pointLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
-            LightSource* dlight = dirLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
 
             basicShader.setVec3("viewPos", camera.Position);
-
-            basicShader.setVec3("dirLight.direction", dlight->getDirection());
-            basicShader.setVec3("dirLight.ambient", dlight->getAmbient());
-            basicShader.setVec3("dirLight.diffuse", dlight->getDiffuse());
-            basicShader.setVec3("dirLight.specular", dlight->getSpecular());
-
-            basicShader.setVec3("pointLight.position", plight->getPosition());
-            basicShader.setVec3("pointLight.ambient", plight->getAmbient());
-            basicShader.setVec3("pointLight.diffuse", plight->getDiffuse());
-            basicShader.setVec3("pointLight.specular", plight->getSpecular());
-            basicShader.setFloat("pointLight.constant", plight->getConstant());
-            basicShader.setFloat("pointLight.linear", plight->getLinear());
-            basicShader.setFloat("pointLight.quadratic", plight->getQuadratic());
 
             basicShader.setVec3("spotLight.position", slight->getPosition());
             basicShader.setVec3("spotLight.direction", slight->getDirection());
@@ -446,30 +445,6 @@ int main(int, char**)
 
         glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        basicShader.setMat4("model", model);
-
-        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, -2.0f, 0.0f));
-        basicShader.setMat4("model", model);
-
-        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 2.0f));
-        basicShader.setMat4("model", model);
-
-        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;

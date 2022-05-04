@@ -28,6 +28,10 @@ public:
 	bool isType(ComponentType t) override;
 	void test() override;
 
+	float z_rotation_angle = 0.0f;
+	float y_rotation_angle = 0.0f;
+	float x_rotation_angle = 0.0f;
+
 private:
 	
 	glm::vec3 center;
