@@ -311,8 +311,6 @@ int main(int, char**)
             move = false;
         }
 
-        collision = false;
-        tmpPos += 0.1;
         //TODO: w klasie colliderow
         {
             
@@ -320,69 +318,17 @@ int main(int, char**)
             cubeCollider->z_rotation_angle = 45.0f;
             SphereCollider* sphereCollider = sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER);
 
-            glm::mat4 tmpMat = (
-                                glm::translate(glm::mat4(1.0f), glm::vec3(cubeCollider->getCenter())) *
-                               (glm::rotate(glm::mat4(1.0f), glm::radians(-cubeCollider->x_rotation_angle), glm::vec3(-1, 0, 0)) *
-                                glm::rotate(glm::mat4(1.0f), glm::radians(-cubeCollider->y_rotation_angle), glm::vec3(0, -1, 0)) *
-                                glm::rotate(glm::mat4(1.0f), glm::radians(-cubeCollider->z_rotation_angle), glm::vec3(0, 0, -1))) *
-                                glm::translate(glm::mat4(1.0f), glm::vec3(-cubeCollider->getCenter()))
-                              );
+            glm::vec3 separate = sphereCollider->isCollision(cubeCollider, true);
 
-            glm::vec4 tmpCenter = glm::vec4(xPos, yPos, zPos, 1.0f);
+            printf("%f %f %f\n", separate.x, separate.y, separate.z);
 
-            tmpCenter = tmpMat * tmpCenter;
+            xPos += separate.x;
+            yPos += separate.y;
+            zPos += separate.z;
 
-            printf("%f %f %f \n", xPos, yPos, zPos);
-
-            printf("%f %f %f %f \n", tmpCenter.x, tmpCenter.y, tmpCenter.z, tmpCenter.w);
-
-            float x = glm::max(cubeCollider->getMinX(), glm::min(tmpCenter.x, cubeCollider->getMaxX()));
-            float y = glm::max(cubeCollider->getMinY(), glm::min(tmpCenter.y, cubeCollider->getMaxY()));
-            float z = glm::max(cubeCollider->getMinZ(), glm::min(tmpCenter.z, cubeCollider->getMaxZ()));
-
-            // this is the same as isPointInsideSphere
-            float distance = glm::sqrt((x - tmpCenter.x) * (x - tmpCenter.x) +
-                                       (y - tmpCenter.y) * (y - tmpCenter.y) +
-                                       (z - tmpCenter.z) * (z - tmpCenter.z));
-
-            collision = distance < sphereCollider->getRadius();
+            move = true;
             
-
-            if (sphereCollider->isCollision(cubeCollider)) {
-                printf("COLLISION\n");
-                float xDist = (x - tmpCenter.x);
-                float yDist = (y - tmpCenter.y);
-                float zDist = (z - tmpCenter.z);
-
-                float dist;
-
-                if ((glm::abs(xDist) > glm::abs(zDist)) && (glm::abs(xDist) > glm::abs(yDist))) {
-
-                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeX()/2) - glm::abs(cubeCollider->getCenter().x - tmpCenter.x);
-                    if ((x - tmpCenter.x) < 0) dist = -dist;
-                    xPos -= dist;
-                    move = true;
-
-                }
-
-                else if (glm::abs(yDist) > glm::abs(zDist)) {
-
-                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeY() / 2) - glm::abs(cubeCollider->getCenter().y - tmpCenter.y);
-                    if ((y - tmpCenter.y) < 0) dist = -dist;
-                    yPos -= dist;
-                    move = true;
-
-                }
-
-                else {
-
-                    dist = (sphereCollider->getRadius() + cubeCollider->getSizeZ() / 2) - glm::abs(cubeCollider->getCenter().z - tmpCenter.z);
-                    if ((z - tmpCenter.z) < 0) dist = -dist;
-                    zPos -= dist;
-                    move = true;
-
-                }
-            }
+               
         }
         
         int display_w, display_h;

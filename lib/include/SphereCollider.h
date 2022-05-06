@@ -20,7 +20,9 @@ public:
 	void setCenter(glm::vec3 c);
 	void setRadius(float r);
 
-	bool isCollision(BoxCollider* other);
+	glm::vec3 isCollision(BoxCollider* other, bool resolve);
+
+	glm::vec3 separate(BoxCollider* other, glm::vec3 tmpCenter, glm::vec3 maxDist);
 
 	bool isType(ComponentType t) override;
 	void test() override;

@@ -33,7 +33,9 @@ void SphereCollider::setRadius(float r) {
 
 }
 
-bool SphereCollider::isCollision(BoxCollider* other) {
+glm::vec3 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
+
+    glm::vec3 ret(0, 0, 0);
 
     glm::mat4 tmpMat = (
         glm::translate(glm::mat4(1.0f), glm::vec3(other->getCenter())) *
@@ -56,7 +58,43 @@ bool SphereCollider::isCollision(BoxCollider* other) {
         (y - tmpCenter.y) * (y - tmpCenter.y) +
         (z - tmpCenter.z) * (z - tmpCenter.z));
 
-    return distance < getRadius();
+    if (distance < getRadius() && resolve) {
+
+        float xDist = (x - tmpCenter.x);
+        float yDist = (y - tmpCenter.y);
+        float zDist = (z - tmpCenter.z);
+
+        float dist;
+
+        if ((glm::abs(xDist) > glm::abs(zDist)) && (glm::abs(xDist) > glm::abs(yDist))) {
+
+            dist = (getRadius() + other->getSizeX() / 2) - glm::abs(other->getCenter().x - tmpCenter.x);
+            if ((xDist) < 0) dist = -dist;
+            ret.x = -dist;
+
+        }
+
+        else if (glm::abs(yDist) > glm::abs(zDist)) {
+
+            dist = (getRadius() + other->getSizeY() / 2) - glm::abs(other->getCenter().y - tmpCenter.y);
+            if ((yDist) < 0) dist = -dist;
+            ret.y = -dist;
+
+        }
+
+        else {
+
+            dist = (getRadius() + other->getSizeZ() / 2) - glm::abs(other->getCenter().z - tmpCenter.z);
+            if ((zDist) < 0) dist = -dist;
+            ret.z = -dist;
+
+        }
+
+        return ret;
+
+    }
+
+    return ret;
 
 }
 
