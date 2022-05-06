@@ -4,6 +4,8 @@
 
 #include <glm/glm.hpp>
 
+class BoxCollider;
+
 class SphereCollider : public Component {
 
 public:
@@ -17,6 +19,8 @@ public:
 
 	void setCenter(glm::vec3 c);
 	void setRadius(float r);
+
+	bool isCollision(BoxCollider* other);
 
 	bool isType(ComponentType t) override;
 	void test() override;

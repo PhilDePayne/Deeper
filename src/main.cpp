@@ -158,6 +158,8 @@ int main(int, char**)
     bool show_camera_window = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
+
     nodePtr root(new SceneGraphNode());
     nodePtr cube1(new SceneGraphNode());
     nodePtr sphere1(new SceneGraphNode());
@@ -165,14 +167,15 @@ int main(int, char**)
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
 
+
+    //OBJECT PARAMETERS
     {
         cube1->addGameObject(cube);
         sphere1->addGameObject(sphere);
-        //cube1->addChild(sphere1);
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->x_rotation_angle = 45.0f;
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 45.0f;
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
@@ -188,10 +191,7 @@ int main(int, char**)
         //TODO: funckja w klasie SceneGraphNode (wymog transforma)
         //do zakomentowania jesli chcemy uzyc tej drugiej kamery
         //sphere->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
-    }
-
-    //TODO: tymczasowe, trzeba to rozdzielic w odpowiednich klasach
-    Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
+    }  
 
     basicShader.use();
 
@@ -315,8 +315,9 @@ int main(int, char**)
         tmpPos += 0.1;
         //TODO: w klasie colliderow
         {
+            
             BoxCollider* cubeCollider = cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
-            cubeCollider->x_rotation_angle = 45.0f;
+            cubeCollider->z_rotation_angle = 45.0f;
             SphereCollider* sphereCollider = sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER);
 
             glm::mat4 tmpMat = (
@@ -345,7 +346,9 @@ int main(int, char**)
                                        (z - tmpCenter.z) * (z - tmpCenter.z));
 
             collision = distance < sphereCollider->getRadius();
-            if (collision) {
+            
+
+            if (sphereCollider->isCollision(cubeCollider)) {
                 printf("COLLISION\n");
                 float xDist = (x - tmpCenter.x);
                 float yDist = (y - tmpCenter.y);
@@ -381,31 +384,6 @@ int main(int, char**)
                 }
             }
         }
-
-        {
-            static float f = 0.0f;
-            static int counter = 0;
-
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-            ImGui::NewLine();
-            ImGui::Checkbox("Camera debug", &show_camera_window);
-
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_camera_window)
-        {
-            ImGui::Begin("Another Window", &show_camera_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_camera_window = false;
-            ImGui::End();
-        }
         
         int display_w, display_h;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -440,11 +418,12 @@ int main(int, char**)
         basicShader.setMat4("projection", proj);
         basicShader.setMat4("view", view);
 
+        //cube1->render(basicShader);
         glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
         basicShader.setMat4("model", model);
 
         glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
