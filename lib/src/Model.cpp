@@ -6,14 +6,18 @@
 
 Model::Model(char *path)
 {
+
     loadModel(path);
 }
 
 void Model::Draw(Shader shader)
 {
-//    meshes[0].Draw(shader);
     for(unsigned int i = 0; i < meshes.size(); i++)
     {
+        if (meshes[i].getTexturesSetId() != loadedSet)
+        {
+            passMapsToShader(meshes[i].getTexturesSetId());
+        }
         meshes[i].Draw(shader);
     }
 }
@@ -37,9 +41,9 @@ void Model::loadModel(std::string path)
     processNode(scene->mRootNode, scene, &startMatrix);
 }
 
+// draws matrix in console for debugging
 void drawMatrix(aiMatrix4x4 matrix)
 {
-//    aiMatrix4x4 matrix = node->mTransformation;
     for (int i = 0; i < 4; i++)
     {
         for (int j = 0; j < 4; j++)
@@ -54,43 +58,55 @@ void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transfo
 {
 //    std::cout << "Node name: " << node->mName.C_Str() << std::endl;
 //    std::cout << "Node meshes: " << node->mNumMeshes << std::endl;
-//    drawMatrix(node);
-    // process each mesh located at the current node
 
+    // multiply given matrix with transform matrix of the current node
     aiMatrix4x4 currentTransform = *transformMatrix * node->mTransformation;
-//    drawMatrix(currentTransform);
-//    std::cout << std:: endl;
 
+    // process each mesh located at the current node
     for(unsigned int i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-
         meshes.push_back(processMesh(mesh, scene, currentTransform));
     }
 
-    int counter = 0;
+    // process all children nodes
     for(unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        counter++;
-//        std::cout << "Node counter: " << counter << std::endl;
         processNode(node->mChildren[i], scene, &currentTransform);
     }
 }
 
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformMatrix)
 {
-//    drawMatrix(transformMatrix);
-//    std::cout << std:: endl;
-    // data to fill
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture> textures;
 //    std::cout << "Mesh Name: " << mesh->mName.C_Str() << std::endl;
-    // walk through each of the mesh's vertices
+
+    // Check if the texture with given prefix is already loaded. If it is - don't load again, if it's not - load.
+    std::string texturePrefix = mesh->mName.C_Str();
+    texturePrefix = texturePrefix.substr(0, texturePrefix.find_first_of('_'));
+    bool textureNotLoaded = true;
+    GLuint textureSetId;
+    for (const MapsSet& set : mapsSets_loaded)
+    {
+        if (set.PrefixName == texturePrefix)
+        {
+            textureSetId = set.Id;
+            textureNotLoaded = false;
+            break;
+        }
+    }
+    if (textureNotLoaded)
+    {
+        textureSetId = loadMapsSet(texturePrefix);
+    }
+
+
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
         Vertex vertex;
-        glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
+        glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly
+        // convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
         // positions
         vector.x = mesh->mVertices[i].x;
         vector.y = mesh->mVertices[i].y;
@@ -129,7 +145,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 
         vertices.push_back(vertex);
     }
-    // now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
+
+    // now walk through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
     for(unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
@@ -137,31 +154,10 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
         for(unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
-    // process materials
-    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-    // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
-    // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER.
-    // Same applies to other texture as the following list summarizes:
-    // diffuse: texture_diffuseN
-    // specular: texture_specularN
-    // normal: texture_normalN
-
-    // 1. diffuse maps
-    std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-//    std::cout << "Diffuse maps: " << diffuseMaps.size() << std::endl;
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-    // 2. specular maps
-    std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    // 3. normal maps
-    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-    // 4. height maps
-    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     glm::mat4 convertedMatrix;
 
+    // Matrices from assimp and glm have different indexing, so they have to be converted
     for(int i = 0; i < 4; i++)
     {
         for(int j = 0; j < 4; j++)
@@ -171,54 +167,33 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
     }
 
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, textures, convertedMatrix);
+    return Mesh(vertices, indices, convertedMatrix, textureSetId);
 }
 
-std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
+GLuint Model::loadMapsSet(const std::string &prefix)
 {
-    std::vector<Texture> textures;
-//    std::cout << "Textures count: " << mat->GetTextureCount(type) << std::endl;
-    for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-    {
-        aiString str;
-        mat->GetTexture(type, i, &str);
-        // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-        bool skip = false;
-        for(unsigned int j = 0; j < textures_loaded.size(); j++)
-        {
-            if(std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
-            {
-                textures.push_back(textures_loaded[j]);
-                skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
-                break;
-            }
-        }
-        if(!skip)
-        {   // if texture hasn't been loaded already, load it
-            Texture texture;
-            std::string path = str.C_Str();
-            path = path.substr(path.find_last_of('/') + 1, path.size());
-//            texture.id = TextureFromFile(str.C_Str(), this->directory);
-            texture.id = TextureFromFile(path.c_str(), this->directory);
-            texture.type = typeName;
-            texture.path = str.C_Str();
-            textures.push_back(texture);
-            textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
-        }
-    }
-    return textures;
+    MapsSet mapsSet;
+    GLuint Id = mapsSets_loaded.size() + 1;
+    mapsSet.Id = Id;
+    mapsSet.PrefixName = prefix;
+    mapsSet.Albedo = textureFromFile(prefix, "Albedo");
+    mapsSet.Normal = textureFromFile(prefix, "Normal");
+    mapsSet.Metallic = textureFromFile(prefix, "Metallic");
+    mapsSet.Roughness = textureFromFile(prefix, "Roughness");
+    mapsSet.AO = textureFromFile(prefix, "AO");
+    mapsSet.Emissive = textureFromFile(prefix, "Emissive");
+    mapsSets_loaded.push_back(mapsSet);
+    return Id;
 }
 
-unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma)
+unsigned int Model::textureFromFile(const std::string &prefix, const std::string &type)
 {
-    std::string filename = std::string(path);
-    filename = directory + '/' + filename;
-    std::cout << "Filename" << filename << std::endl;
+    std::string filePath = directory + "/" + prefix + "_" + type + ".png";
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
-    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+    unsigned char *data = stbi_load(filePath.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
         GLenum format;
@@ -242,9 +217,32 @@ unsigned int TextureFromFile(const char *path, const std::string &directory, boo
     }
     else
     {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
+        std::cout << "Texture failed to load at path: " << filePath << std::endl;
         stbi_image_free(data);
     }
 
     return textureID;
+}
+
+void Model::passMapsToShader(GLuint mapsId)
+{
+    for (const MapsSet &set : mapsSets_loaded)
+    {
+        if (set.Id == mapsId)
+        {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, set.Albedo);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, set.Normal);
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, set.Metallic);
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, set.Roughness);
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, set.AO);
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_2D, set.Emissive);
+            break;
+        }
+    }
 }

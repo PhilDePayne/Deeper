@@ -12,9 +12,27 @@
 #include <assimp/matrix4x4.h>
 #include <stb_image.h>
 
-//using json = nlohmann::json;
+struct MapsSet
+{
+    GLuint Id;
+    std::string PrefixName;
+    GLuint Albedo;
+    GLuint Normal;
+    GLuint Metallic;
+    GLuint Roughness;
+    GLuint AO;
+    GLuint Emissive;
+};
 
-unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false);
+//enum MapType
+//{
+//    ALBEDO,
+//    NORMAL,
+//    METALLIC,
+//    ROUGHNESS,
+//    AO,
+//    EMISSIVE
+//};
 
 class Model
 {
@@ -25,13 +43,17 @@ public:
     void Draw(Shader shader);
 
 private:
-    std::vector<Texture> textures_loaded;
+    GLuint loadedSet = 0; // current mapsSet in shader. Count from 1
+    std::vector<MapsSet> mapsSets_loaded; // already loaded mapsSets from files
+//    std::vector<Texture> textures_loaded;
     std::vector<Mesh> meshes;
     std::string directory;
 
     void loadModel(std::string path);
     void processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix);
     Mesh processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformMatrix);
-    std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
+    GLuint loadMapsSet(const std::string &prefix); // returns Id of the maps set
+    void passMapsToShader(GLuint mapsId);
+    unsigned int textureFromFile(const std::string &prefix, const std::string &type);
 
 };

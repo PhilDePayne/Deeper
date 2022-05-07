@@ -15,7 +15,9 @@
 //#include "EBO.h"
 //#include "Camera.h"
 //#include "Texture.h"
+
 #define MAX_BONE_INFLUENCE 4
+
 struct Vertex
 {
     // position
@@ -47,18 +49,18 @@ public:
 
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
-    std::vector<Texture> textures;
 
     glm::mat4 modelMatrix = glm::mat4(1.0f);
 
-    Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, std::vector<Texture> &textures,
-         glm::mat4 modelMatrix);
+    Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat4 modelMatrix, GLuint texturesSetId);
 
     void Draw(Shader &shader);
 
+    GLuint getTexturesSetId() const;
+
 private:
 
-    GLuint VAO, VBO, EBO;
+    GLuint VAO, VBO, EBO, textureSetId;
 
     void setupMesh();
 

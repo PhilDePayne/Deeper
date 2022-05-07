@@ -6,65 +6,23 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, std::vector<Texture> &textures,
-           glm::mat4 modelMatrix)
+Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat4 modelMatrix, GLuint texturesSetID)
 {
     Mesh::vertices = vertices;
     Mesh::indices = indices;
-    Mesh::textures = textures;
     Mesh::modelMatrix = modelMatrix;
-//    for (int i = 0; i < 4; i++)
-//    {
-//        for (int j = 0; j < 4; j++)
-//        {
-//            std::cout << modelMatrix[i][j] << ", ";
-//        }
-//        std::cout << std::endl;
-//    }
-//    std::cout << std:: endl;
+    Mesh::textureSetId = texturesSetID;
     setupMesh();
 }
 
 void Mesh::Draw(Shader &shader)
 {
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-
-    for(unsigned int i = 0; i < textures.size(); i++)
-    {
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        std::string number;
-        std::string name = textures[i].type;
-        if(name == "texture_diffuse")
-        {
-            number = std::to_string(diffuseNr++);
-        }
-        else if(name == "texture_specular")
-        {
-            number = std::to_string(specularNr++);
-        }
-
-        shader.setFloat(name + number, i);
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
-    }
-    glActiveTexture(GL_TEXTURE0);
-
-    //To będzie trzeba odkomentować
+    // pass model matrix to the Shader
     shader.setMat4("model", modelMatrix);
-//    for (int i = 0; i < 4; i++)
-//    {
-//        for (int j = 0; j < 4; j++)
-//        {
-//            std::cout << modelMatrix[i][j] << ", ";
-//        }
-//        std::cout << std::endl;
-//    }
-//    std::cout << std::endl;
+
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-
 }
 
 void Mesh::setupMesh()
@@ -92,4 +50,9 @@ void Mesh::setupMesh()
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
     glBindVertexArray(0);
+}
+
+GLuint Mesh::getTexturesSetId() const
+{
+    return textureSetId;
 }
