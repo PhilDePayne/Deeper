@@ -3,6 +3,7 @@
 //
 
 #include "Model.h"
+#include <stb_image.h>
 
 Model::Model(char *path)
 {

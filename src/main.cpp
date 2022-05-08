@@ -6,8 +6,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <ft2build.h>
-#include FT_FREETYPE_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
 
 #include "GameObject.h"
 #include "CubeMesh.h"
@@ -19,6 +19,7 @@
 #include "BoxCollider.h"
 #include "SphereCollider.h"
 #include "LightSource.h"
+#include "Model.h"
 #include "typedefs.h"
 
 #include <stdio.h>
@@ -286,6 +287,45 @@ int main(int, char**)
     cube1->update(nullptr, false);
     float tmpPos = 0;
 
+
+    // LIGHTS
+    glm::vec3 lightPositions[] = {
+            glm::vec3(-20.0f, 5.0f, 10.0f),
+            glm::vec3(-15.0f, 5.0f, 10.0f),
+            glm::vec3(-10.0f, 5.0f, 10.0f),
+            glm::vec3(-5.0f, 5.0f, 10.0f),
+            glm::vec3(0.0f, 5.0f, 10.0f),
+            glm::vec3(5.0f, 5.0f, 10.0f),
+            glm::vec3(10.0f, 5.0f, 10.0f),
+            glm::vec3(15.0f, 5.0f, 10.0f),
+            glm::vec3(20.0f, 5.0f, 10.0f),
+    };
+
+    glm::vec3 lightColors[] = {
+            glm::vec3(180.0f, 180.0f, 180.0f),
+            glm::vec3(180.0f, 180.0f, 180.0f),
+            glm::vec3(180.0f, 180.0f, 180.0f),
+            glm::vec3(180.0f, 180.0f, 180.0f),
+            glm::vec3(180.0f, 180.0f, 180.0f),
+            glm::vec3(180.0f, 180.0f, 180.0f),
+            glm::vec3(180.0f, 180.0f, 180.0f),
+            glm::vec3(180.0f, 180.0f, 180.0f),
+            glm::vec3(180.0f, 180.0f, 180.0f),
+    };
+
+    Shader PBRShader("./res/shaders/PBR.vert", "./res/shaders/PBR.frag");
+    PBRShader.use();
+    PBRShader.setInt("albedoMap", 0);
+    PBRShader.setInt("normalMap", 1);
+    PBRShader.setInt("metallicMap", 2);
+    PBRShader.setInt("roughnessMap", 3);
+    PBRShader.setInt("aoMap", 4);
+    PBRShader.setInt("emissiveMap", 5);
+
+//    std::string rocksModelPath = "./res/models/Rocks/rocks.fbx";
+//    Model rocks("./res/models/lampka/lamp_mdl.fbx");
+    Model rocks("./res/models/Rocks/rocks.fbx");
+
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
@@ -341,47 +381,62 @@ int main(int, char**)
         //useOrthoCamera(proj, view, window, cameraY, scale);
 
         //TODO: renderManager/meshComponent
-        basicShader.use();
-
-        {   //TODO: w LightComponent
-            LightSource* slight = sphere->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
-
-            basicShader.setVec3("viewPos", camera.Position);
-
-            basicShader.setVec3("spotLight.position", slight->getPosition());
-            basicShader.setVec3("spotLight.direction", slight->getDirection());
-            basicShader.setVec3("spotLight.ambient", slight->getAmbient());
-            basicShader.setVec3("spotLight.diffuse", slight->getDiffuse());
-            basicShader.setVec3("spotLight.specular", slight->getSpecular());
-            basicShader.setFloat("spotLight.constant", slight->getConstant());
-            basicShader.setFloat("spotLight.linear", slight->getLinear());
-            basicShader.setFloat("spotLight.quadratic", slight->getQuadratic());
-            basicShader.setFloat("spotLight.cutOff", slight->getCutOff());
-            basicShader.setFloat("spotLight.outerCutOff", slight->getOuterCutOff());
-        }
-
-        basicShader.setFloat("scale", scale);
-        basicShader.setMat4("projection", proj);
-        basicShader.setMat4("view", view);
-
-        //cube1->render(basicShader);
-        glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-        basicShader.setMat4("model", model);
-
-        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
-        basicShader.setMat4("model", model);
-
-        glBindVertexArray(sphere1->getGameObject()->getComponent<SphereMesh>(ComponentType::SPHEREMESH)->getVAO()); //TODO: blad jesli brak komponentu
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices2.size(), &vertices2.front(), GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, vertices2.size());
-
+//        basicShader.use();
+//
+//        {   //TODO: w LightComponent
+//            LightSource* slight = sphere->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
+//
+//            basicShader.setVec3("viewPos", camera.Position);
+//
+//            basicShader.setVec3("spotLight.position", slight->getPosition());
+//            basicShader.setVec3("spotLight.direction", slight->getDirection());
+//            basicShader.setVec3("spotLight.ambient", slight->getAmbient());
+//            basicShader.setVec3("spotLight.diffuse", slight->getDiffuse());
+//            basicShader.setVec3("spotLight.specular", slight->getSpecular());
+//            basicShader.setFloat("spotLight.constant", slight->getConstant());
+//            basicShader.setFloat("spotLight.linear", slight->getLinear());
+//            basicShader.setFloat("spotLight.quadratic", slight->getQuadratic());
+//            basicShader.setFloat("spotLight.cutOff", slight->getCutOff());
+//            basicShader.setFloat("spotLight.outerCutOff", slight->getOuterCutOff());
+//        }
+//
+//        basicShader.setFloat("scale", scale);
+//        basicShader.setMat4("projection", proj);
+//        basicShader.setMat4("view", view);
+//
+//        //cube1->render(basicShader);
+//        glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+//        basicShader.setMat4("model", model);
+//
+//        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+//        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
+//
+//        model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
+//        basicShader.setMat4("model", model);
+//
+//        glBindVertexArray(sphere1->getGameObject()->getComponent<SphereMesh>(ComponentType::SPHEREMESH)->getVAO()); //TODO: blad jesli brak komponentu
+//        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices2.size(), &vertices2.front(), GL_STATIC_DRAW);
+//        glDrawArrays(GL_TRIANGLES, 0, vertices2.size());
+//
         ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        PBRShader.use();
+        PBRShader.setMat4("projection", proj);
+        PBRShader.setMat4("view", view);
+        PBRShader.setVec3("camPos", camera.Position);
+
+        for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
+        {
+            glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+            newPos = lightPositions[i];
+            PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+            PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+        }
+
+        rocks.Draw(PBRShader);
 
         glfwMakeContextCurrent(window);
         glfwSwapBuffers(window);

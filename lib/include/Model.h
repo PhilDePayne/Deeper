@@ -10,7 +10,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/matrix4x4.h>
-#include <stb_image.h>
+//#include <stb_image.h>
 
 struct MapsSet
 {

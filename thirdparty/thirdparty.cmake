@@ -103,18 +103,18 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/src")
 file(COPY "${FMOD_DIR}/lib/fmod.dll" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
 
 # freetype
-find_library(FREETYPE_LIBRARY "freetype" "/usr/lib" "/usr/local/lib")
-find_path(FREETYPE_INCLUDE_DIR "freetype/ft2build.h" "/usr/include" "/usr/local/include")
-
-if((NOT FREETYPE_LIBRARY) OR (NOT FREETYPE_INCLUDE_DIR))
-	set(FREETYPE_DIR "${THIRDPARTY_DIR}/freetype")
-
-	message("Unable to find freetype, cloning...")
-    execute_process(COMMAND git submodule update --init ${FREETYPE_DIR}
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
-    add_subdirectory("${FREETYPE_DIR}")
-
-	set(FREETYPE_LIBRARY "freetype" "${FREETYPE_LIBRARIES}")
-	set(FREETYPE_INCLUDE_DIR "${FREETYPE_DIR}/include")
-endif()
+#find_library(FREETYPE_LIBRARY "freetype" "/usr/lib" "/usr/local/lib")
+#find_path(FREETYPE_INCLUDE_DIR "freetype/ft2build.h" "/usr/include" "/usr/local/include")
+#
+#if((NOT FREETYPE_LIBRARY) OR (NOT FREETYPE_INCLUDE_DIR))
+#	set(FREETYPE_DIR "${THIRDPARTY_DIR}/freetype")
+#
+#	message("Unable to find freetype, cloning...")
+#    execute_process(COMMAND git submodule update --init ${FREETYPE_DIR}
+#                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+#
+#    add_subdirectory("${FREETYPE_DIR}")
+#
+#	set(FREETYPE_LIBRARY "freetype" "${FREETYPE_LIBRARIES}")
+#	set(FREETYPE_INCLUDE_DIR "${FREETYPE_DIR}/include")
+#endif()

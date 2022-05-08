@@ -4,17 +4,12 @@
 
 #pragma once
 
-#include <string>
+//#include <string>
 #include <vector>
-#include "glm/glm.hpp"
+//#include "glm/glm.hpp"
 //#include "glad/glad.h"
 //#include "shaderClass.h"
 #include "Shader.h"
-
-//#include "VAO.h"
-//#include "EBO.h"
-//#include "Camera.h"
-//#include "Texture.h"
 
 #define MAX_BONE_INFLUENCE 4
 
@@ -34,13 +29,6 @@ struct Vertex
     int m_BoneIDs[MAX_BONE_INFLUENCE];
     //weights from each bone
     float m_Weights[MAX_BONE_INFLUENCE];
-};
-
-struct Texture
-{
-    GLuint id;
-    std::string type;
-    std::string path;
 };
 
 class Mesh
