@@ -4,27 +4,33 @@ set(SOURCE_FILES
 	src/Component.cpp
     include/CubeMesh.h
 	src/CubeMesh.cpp
- "include/GameObject.h" 
- "src/GameObject.cpp" 
- "include/typedefs.h" 
- "include/Shader.h" 
- "include/Camera.h" 
- "include/Texture.h" 
- "src/Texture.cpp" 
- "include/PlainMesh.h" 
- "src/PlainMesh.cpp" 
- "include/SceneGraphNode.h" 
- "src/SceneGraphNode.cpp" 
- "include/Transform.h" 
- "src/Transform.cpp" 
- "include/SphereMesh.h" 
- "src/SphereMesh.cpp" 
- "include/Collider.h" 
- "src/Collider.cpp" 
- "include/SphereCollider.h" 
- "src/SphereCollider.cpp" 
- "include/BoxCollider.h" 
- "src/BoxCollider.cpp" "include/LightSource.h" "src/LightSource.cpp")
+ 	"include/GameObject.h"
+ 	"src/GameObject.cpp"
+ 	"include/typedefs.h"
+ 	"include/Shader.h"
+ 	"include/Camera.h"
+ 	"include/Texture.h"
+ 	"src/Texture.cpp"
+ 	"include/PlainMesh.h"
+ 	"src/PlainMesh.cpp"
+ 	"include/SceneGraphNode.h"
+ 	"src/SceneGraphNode.cpp"
+ 	"include/Transform.h"
+ 	"src/Transform.cpp"
+ 	"include/SphereMesh.h"
+ 	"src/SphereMesh.cpp"
+ 	"include/Collider.h"
+ 	"src/Collider.cpp"
+ 	"include/SphereCollider.h"
+ 	"src/SphereCollider.cpp"
+ 	"include/BoxCollider.h"
+ 	"src/BoxCollider.cpp"
+ 	"include/LightSource.h"
+ 	"src/LightSource.cpp"
+ 	include/Model.h
+	src/Model.cpp
+	include/Mesh.h
+	src/Mesh.cpp)
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})
