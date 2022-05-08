@@ -4,6 +4,7 @@
 
 #include "Transform.h"
 #include "GameObject.h"
+#include "Shader.h"
 #include "typedefs.h"
 
 class SceneGraphNode {
@@ -20,7 +21,7 @@ public:
 
     void update(gameObjectPtr parent, bool dirty);
 
-    void render(bool isRoot = false);
+    void render(Shader shader, bool isRoot = false);
 
     virtual void updateTransform();
     

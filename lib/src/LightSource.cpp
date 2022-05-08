@@ -145,6 +145,34 @@ void LightSource::setOuterCutOff(float c) {
 
 }
 
+void LightSource::setLight(Shader shader) {
+
+	if (type == LightType::SPOT) {
+
+		shader.setVec3("spotLight.position", getPosition());
+		shader.setVec3("spotLight.direction", getDirection());
+		shader.setVec3("spotLight.ambient", getAmbient());
+		shader.setVec3("spotLight.diffuse", getDiffuse());
+		shader.setVec3("spotLight.specular", getSpecular());
+		shader.setFloat("spotLight.constant", getConstant());
+		shader.setFloat("spotLight.linear", getLinear());
+		shader.setFloat("spotLight.quadratic", getQuadratic());
+		shader.setFloat("spotLight.cutOff", getCutOff());
+		shader.setFloat("spotLight.outerCutOff", getOuterCutOff());
+
+	}
+
+	if (type == LightType::DIRECTIONAL) {
+
+		shader.setVec3("dirLight.direction", getDirection());
+		shader.setVec3("dirLight.ambient", getAmbient());
+		shader.setVec3("dirLight.diffuse", getDiffuse());
+		shader.setVec3("dirLight.specular", getSpecular());
+
+	}
+
+}
+
 bool LightSource::isType(ComponentType t) {
 
 	return (t == ComponentType::LIGHTSOURCE);

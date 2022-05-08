@@ -1,5 +1,6 @@
 #include "SceneGraphNode.h"
 #include "GameObject.h"
+#include "CubeMesh.h"
 
 SceneGraphNode::~SceneGraphNode() {};
 
@@ -41,17 +42,28 @@ void SceneGraphNode::update(gameObjectPtr parent, bool dirty) {
 
 }
 
-void SceneGraphNode::render(bool isRoot) {
+void SceneGraphNode::render(Shader shader, bool isRoot) {
 
     if (!isRoot) {
 
-        //funkcja renderera
+        if (gameObject->getComponent<CubeMesh>(ComponentType::CUBEMESH) != nullptr) {
+            //TODO: w GameObject
+            glm::mat4 model = gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+            shader.setMat4("model", model);
+
+            std::vector<float> vertices = gameObject->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVertices();
+
+            glBindVertexArray(gameObject->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+            glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        }
 
     }
 
     for (const auto& child : children) {
 
-        child->render();
+        child->render(shader);
 
     }
 

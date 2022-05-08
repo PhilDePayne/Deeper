@@ -162,23 +162,40 @@ int main(int, char**)
 
     nodePtr root(new SceneGraphNode());
     nodePtr cube1(new SceneGraphNode());
+    nodePtr cube2(new SceneGraphNode());
     nodePtr sphere1(new SceneGraphNode());
 
     gameObjectPtr cube(new GameObject());
+    gameObjectPtr backgroundCube(new GameObject());
     gameObjectPtr sphere(new GameObject());
+    gameObjectPtr spotLight(new GameObject());
+    gameObjectPtr dirLight(new GameObject());
 
 
     //OBJECT PARAMETERS
     {
+        root->addChild(cube1);
+        root->addChild(cube2);
+        root->addChild(sphere1);
+
         cube1->addGameObject(cube);
+        cube2->addGameObject(backgroundCube);
         sphere1->addGameObject(sphere);
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 45.0f;
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 0.0f;
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
+
+        backgroundCube->addComponent<CubeMesh>();
+        backgroundCube->addComponent<Transform>();
+        backgroundCube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 0.0f, -3.0f);
+        backgroundCube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(3.0f, 3.0f, 3.0f);
+        backgroundCube->addComponent<BoxCollider>();
+        backgroundCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f, 0.0f, -3.0f));
+        backgroundCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(3.0f, 3.0f, 3.0f));
 
         sphere->addComponent<SphereMesh>();
         sphere->addComponent<Transform>();
@@ -187,6 +204,28 @@ int main(int, char**)
         sphere->addComponent<LightSource>();
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
+
+        spotLight->addComponent<LightSource>();
+        LightSource* slight = spotLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
+        slight->setLightType(LightType::SPOT);
+        slight->setPosition(glm::vec3(0.0f, 0.0f, 4.0f));
+        slight->setDirection(glm::vec3(0.0f, 0.0f, -1.0f));
+        slight->setCutOff(12.5f);
+        slight->setOuterCutOff(15.0f);
+        slight->setConstant(1.0f);
+        slight->setLinear(0.35f);
+        slight->setQuadratic(0.44f);
+        slight->setAmbient(glm::vec3(0.8f, 0.5f, 0.8f)); //TODO: colors.h
+        slight->setDiffuse(glm::vec3(0.2f, 0.6f, 0.8f));
+        slight->setSpecular(glm::vec3(1.0f, 1.0f, 1.0f));
+
+        dirLight->addComponent<LightSource>();
+        LightSource* dlight = dirLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
+        dlight->setLightType(LightType::DIRECTIONAL);
+        dlight->setDirection(glm::vec3(0.0f, 0.0f, -1.0f));
+        dlight->setAmbient(glm::vec3(0.1f, 0.05f, 0.05f));
+        dlight->setDiffuse(glm::vec3(0.4f, 0.8f, 0.5f));
+        dlight->setSpecular(glm::vec3(0.3f, 0.2f, 0.1f));
 
         //TODO: funckja w klasie SceneGraphNode (wymog transforma)
         //do zakomentowania jesli chcemy uzyc tej drugiej kamery
@@ -284,7 +323,29 @@ int main(int, char**)
     sphere1->update(nullptr, false);
     cube1->updateTransform();
     cube1->update(nullptr, false);
-    float tmpPos = 0;
+
+    //shadowMap
+
+    unsigned int depthMapFBO;
+    glGenFramebuffers(1, &depthMapFBO);
+
+    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+
+    unsigned int depthMap;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+        SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -311,23 +372,20 @@ int main(int, char**)
             move = false;
         }
 
-        //TODO: w klasie colliderow
+        //COLLISION
         {
             
             BoxCollider* cubeCollider = cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
-            cubeCollider->z_rotation_angle = 45.0f;
+            cubeCollider->z_rotation_angle = 0.0f;
             SphereCollider* sphereCollider = sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER);
 
             glm::vec3 separate = sphereCollider->isCollision(cubeCollider, true);
-
-            printf("%f %f %f\n", separate.x, separate.y, separate.z);
 
             xPos += separate.x;
             yPos += separate.y;
             zPos += separate.z;
 
             move = true;
-            
                
         }
         
@@ -340,39 +398,27 @@ int main(int, char**)
         useDebugCamera(proj, view, window, scale);
         //useOrthoCamera(proj, view, window, cameraY, scale);
 
-        //TODO: renderManager/meshComponent
+        //TODO: renderManager
         basicShader.use();
 
-        {   //TODO: w LightComponent
-            LightSource* slight = sphere->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
+        {
+            LightSource* slight = spotLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
+            LightSource* dlight = dirLight->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
 
             basicShader.setVec3("viewPos", camera.Position);
 
-            basicShader.setVec3("spotLight.position", slight->getPosition());
-            basicShader.setVec3("spotLight.direction", slight->getDirection());
-            basicShader.setVec3("spotLight.ambient", slight->getAmbient());
-            basicShader.setVec3("spotLight.diffuse", slight->getDiffuse());
-            basicShader.setVec3("spotLight.specular", slight->getSpecular());
-            basicShader.setFloat("spotLight.constant", slight->getConstant());
-            basicShader.setFloat("spotLight.linear", slight->getLinear());
-            basicShader.setFloat("spotLight.quadratic", slight->getQuadratic());
-            basicShader.setFloat("spotLight.cutOff", slight->getCutOff());
-            basicShader.setFloat("spotLight.outerCutOff", slight->getOuterCutOff());
+            slight->setLight(basicShader);
+            dlight->setLight(basicShader);
         }
 
         basicShader.setFloat("scale", scale);
         basicShader.setMat4("projection", proj);
         basicShader.setMat4("view", view);
 
-        //cube1->render(basicShader);
-        glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-        basicShader.setMat4("model", model);
+        cube1->render(basicShader);
+        cube2->render(basicShader);
 
-        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
+        glm::mat4 model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
         basicShader.setMat4("model", model);
 
         glBindVertexArray(sphere1->getGameObject()->getComponent<SphereMesh>(ComponentType::SPHEREMESH)->getVAO()); //TODO: blad jesli brak komponentu

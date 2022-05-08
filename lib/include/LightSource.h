@@ -2,6 +2,8 @@
 
 #include "Component.h"
 
+#include "Shader.h"
+
 #include <glm/glm.hpp>
 
 enum class LightType {
@@ -42,6 +44,8 @@ public:
 	void setQuadratic(float q);
 	void setCutOff(float c);
 	void setOuterCutOff(float c);
+
+	void setLight(Shader shader);
 
 	bool isType(ComponentType t);
 	void test();

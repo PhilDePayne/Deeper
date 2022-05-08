@@ -23,12 +23,6 @@ public:
 
     unsigned int getVBO();
 
-    Shader getShader();
-
-    void setShader(Shader newShader);
-
-    void render();
-
     bool isType(ComponentType t) override;
 
     void test() override;

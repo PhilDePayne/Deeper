@@ -65,11 +65,12 @@ void main()
     // phase 1: directional lighting
     vec3 result = CalcDirLight(dirLight, norm, viewDir);
     // phase 2: point lights
-    result += CalcPointLight(pointLight, norm, FragPos, viewDir);    
+    //result += CalcPointLight(pointLight, norm, FragPos, viewDir);    
     // phase 3: spot light
     result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
     
     FragColor = vec4(result, 1.0);
+    //FragColor = vertexColor;
 }
 
 // calculates the color when using a directional light.
