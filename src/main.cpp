@@ -43,6 +43,80 @@
 
 #include <GLFW/glfw3.h> // Include glfw3.h after our OpenGL definitions
 
+struct Plan
+{
+    // unit vector
+    glm::vec3 normal = { 0.f, 1.f, 0.f };
+
+    // distance from origin to the nearest point in the plan
+    float     distance = 0.f;
+
+    Plan() = default;
+
+    Plan(const glm::vec3 & p1, const glm::vec3 & norm)
+        : normal(glm::normalize(norm)),
+        distance(glm::dot(normal, p1))
+    {}
+
+    float getSignedDistanceToPlan(const glm::vec3 & point) const
+    {
+        return glm::dot(normal, point) - distance;
+    }
+
+};
+
+struct Frustum
+{
+    Plan topFace;
+    Plan bottomFace;
+
+    Plan rightFace;
+    Plan leftFace;
+
+    Plan farFace;
+    Plan nearFace;
+};
+
+Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
+    float zNear, float zFar)
+{
+    Frustum     frustum;
+    const float halfVSide = zFar * tanf(fovY * .5f);
+    const float halfHSide = halfVSide * aspect;
+    const glm::vec3 frontMultFar = zFar * cam.Front;
+
+    frustum.nearFace = { cam.Position + zNear * cam.Front, cam.Front };
+    frustum.farFace = { cam.Position + frontMultFar, -cam.Front };
+    frustum.rightFace = { cam.Position,
+                            glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
+    frustum.leftFace = { cam.Position,
+                            glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
+    frustum.topFace = { cam.Position,
+                            glm::cross(cam.Right, frontMultFar - cam.Up * halfVSide) };
+    frustum.bottomFace = { cam.Position,
+                            glm::cross(frontMultFar + cam.Up * halfVSide, cam.Right) };
+
+    return frustum;
+}
+
+bool isOnOrForwardPlan(BoxCollider b, Plan p) {
+
+    // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
+    float r = b.getSizeX()/2 * glm::abs(p.normal.x) + b.getSizeY()/2 * glm::abs(p.normal.y) + b.getSizeZ()/2 * glm::abs(p.normal.z);
+
+    printf("%f\n", r);
+
+    // Compute distance of box center from plane
+    float s = glm::dot(p.normal, b.getCenter()) - p.distance;
+
+    printf("%f\n", s);
+    printf("%f\n", p.getSignedDistanceToPlan(b.getCenter()));
+
+    // Intersection occurs when distance s falls within [-r,+r] interval
+    return -r <= p.getSignedDistanceToPlan(b.getCenter());
+
+}
+
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -322,9 +396,18 @@ int main(int, char**)
     PBRShader.setInt("aoMap", 4);
     PBRShader.setInt("emissiveMap", 5);
 
-//    std::string rocksModelPath = "./res/models/Rocks/rocks.fbx";
-//    Model rocks("./res/models/lampka/lamp_mdl.fbx");
     Model rocks("./res/models/Rocks/rocks.fbx");
+
+    Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0, 0.1f, 100.0f);
+    printf("%f %f %f %f\n", camFrustum.nearFace.distance, camFrustum.nearFace.normal.x, camFrustum.nearFace.normal.y, camFrustum.nearFace.normal.z);
+
+    BoxCollider testAABB;
+    testAABB.setCenter(glm::vec3(0.0f, 0.0f, 9.0f));
+    testAABB.setSize(glm::vec3(1.0f));
+
+    if (isOnOrForwardPlan(testAABB, camFrustum.nearFace)) {
+        printf("ON\n");
+    }
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -360,7 +443,6 @@ int main(int, char**)
 
             glm::vec3 separate = sphereCollider->isCollision(cubeCollider, true);
 
-            printf("%f %f %f\n", separate.x, separate.y, separate.z);
 
             xPos += separate.x;
             yPos += separate.y;
@@ -377,8 +459,8 @@ int main(int, char**)
         glfwGetFramebufferSize(window, &display_w, &display_h);
 
         //TODO: controls in ImGui
-        useDebugCamera(proj, view, window, scale);
-        //useOrthoCamera(proj, view, window, cameraY, scale);
+        //useDebugCamera(proj, view, window, scale);
+        useOrthoCamera(proj, view, window, cameraY, scale);
 
         //TODO: renderManager/meshComponent
 //        basicShader.use();
