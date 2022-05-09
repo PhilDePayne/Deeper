@@ -7,7 +7,6 @@
 
 Model::Model(char *path)
 {
-
     loadModel(path);
 }
 

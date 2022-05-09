@@ -43,6 +43,10 @@
 
 #include <GLFW/glfw3.h> // Include glfw3.h after our OpenGL definitions
 
+
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
+
 struct Plan
 {
     // unit vector
@@ -84,6 +88,7 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     const float halfVSide = zFar * tanf(fovY * .5f);
     const float halfHSide = halfVSide * aspect;
     const glm::vec3 frontMultFar = zFar * cam.Front;
+    printf("%f\n", cam.Position.y);
 
     frustum.nearFace = { cam.Position + zNear * cam.Front, cam.Front };
     frustum.farFace = { cam.Position + frontMultFar, -cam.Front };
@@ -91,15 +96,17 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                             glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
     frustum.leftFace = { cam.Position,
                             glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
-    frustum.topFace = { cam.Position,
-                            glm::cross(cam.Right, frontMultFar - cam.Up * halfVSide) };
-    frustum.bottomFace = { cam.Position,
-                            glm::cross(frontMultFar + cam.Up * halfVSide, cam.Right) };
+    frustum.topFace = { cam.Position + glm::vec3(0.0f, 1, 0.0f),
+                            glm::vec3(0, 1, 0)};
+    frustum.bottomFace = { cam.Position + glm::vec3(0.0f, -1, 0.0f),
+                            glm::vec3(0, -1, 0)};
 
     return frustum;
 }
 
 bool isOnOrForwardPlan(BoxCollider b, Plan p) {
+
+    printf("%f\n", p.distance);
 
     // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
     float r = b.getSizeX()/2 * glm::abs(p.normal.x) + b.getSizeY()/2 * glm::abs(p.normal.y) + b.getSizeZ()/2 * glm::abs(p.normal.z);
@@ -128,9 +135,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -263,7 +267,6 @@ int main(int, char**)
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
-        //TODO: funckja w klasie SceneGraphNode (wymog transforma)
         //do zakomentowania jesli chcemy uzyc tej drugiej kamery
         //sphere->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
     }  
@@ -398,14 +401,16 @@ int main(int, char**)
 
     Model rocks("./res/models/Rocks/rocks.fbx");
 
-    Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0, 0.1f, 100.0f);
-    printf("%f %f %f %f\n", camFrustum.nearFace.distance, camFrustum.nearFace.normal.x, camFrustum.nearFace.normal.y, camFrustum.nearFace.normal.z);
+    //camera.Position.y = -50;
+    Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
+    //printf("%f %f %f %f\n", camFrustum.topFace.distance, camFrustum.topFace.normal.x, camFrustum.topFace.normal.y, camFrustum.topFace.normal.z);
+    //printf("%f\n", camera.Position.y);
 
     BoxCollider testAABB;
-    testAABB.setCenter(glm::vec3(0.0f, 0.0f, 9.0f));
+    testAABB.setCenter(glm::vec3(1.0f, 0.0f, -9.0f));
     testAABB.setSize(glm::vec3(1.0f));
 
-    if (isOnOrForwardPlan(testAABB, camFrustum.nearFace)) {
+    if (isOnOrForwardPlan(testAABB, camFrustum.topFace)) {
         printf("ON\n");
     }
 
@@ -418,6 +423,10 @@ int main(int, char**)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
+        if (isOnOrForwardPlan(testAABB, camFrustum.topFace)) {
+            printf("ON\n");
+        }
 
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
@@ -509,6 +518,7 @@ int main(int, char**)
         PBRShader.setMat4("projection", proj);
         PBRShader.setMat4("view", view);
         PBRShader.setVec3("camPos", camera.Position);
+        PBRShader.setFloat("scale", scale);
 
         for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
         {
@@ -546,6 +556,7 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
 
     scale = 100.0f;
     cameraY -= 0.2f;
+    float yOffset = -0.2f;
 
     proj = camera.GetProjMatrix();
     view = camera.GetOrthoViewMatrix();
@@ -558,8 +569,8 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
         glfwSetWindowShouldClose(window, true);
 
     //obrot kamery
-//    camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY); //ze spadaniem
-    camera.ProcessMovement(6.0f, 1.5f, rotate, 0.0f); //bez spadania
+    //camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY, yOffset); //ze spadaniem
+    camera.ProcessMovement(6.0f, 1.5f, rotate, 0.0f, yOffset); //bez spadania
 }
 
 void processInput(GLFWwindow* window)

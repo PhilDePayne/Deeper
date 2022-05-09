@@ -18,7 +18,10 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
 void Mesh::Draw(Shader &shader)
 {
     // pass model matrix to the Shader
-    shader.setMat4("model", modelMatrix);
+    glm::mat4 tmpModelMatrix = modelMatrix;
+    tmpModelMatrix = glm::translate(tmpModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
+    tmpModelMatrix = glm::scale(tmpModelMatrix, glm::vec3(100.0f, 100.0f, 100.0f));
+    shader.setMat4("model", tmpModelMatrix);
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
