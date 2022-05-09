@@ -1,6 +1,10 @@
 #include "SceneGraphNode.h"
 #include "GameObject.h"
 #include "CubeMesh.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/string_cast.hpp"
+
+#include <iostream>
 
 SceneGraphNode::~SceneGraphNode() {};
 
@@ -48,7 +52,7 @@ void SceneGraphNode::render(Shader shader, bool isRoot) {
 
         if (gameObject->getComponent<CubeMesh>(ComponentType::CUBEMESH) != nullptr) {
             //TODO: w GameObject
-            glm::mat4 model = gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+            glm::mat4 model = gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
             shader.setMat4("model", model);
 
             std::vector<float> vertices = gameObject->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVertices();

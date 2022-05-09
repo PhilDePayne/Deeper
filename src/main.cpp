@@ -165,6 +165,7 @@ int main(int, char**)
     nodePtr cube2(new SceneGraphNode());
     nodePtr sphere1(new SceneGraphNode());
 
+    gameObjectPtr rootGO(new GameObject());
     gameObjectPtr cube(new GameObject());
     gameObjectPtr backgroundCube(new GameObject());
     gameObjectPtr sphere(new GameObject());
@@ -178,13 +179,20 @@ int main(int, char**)
         root->addChild(cube2);
         root->addChild(sphere1);
 
+        //cube1->addChild(cube2);
+        //cube1->addChild(sphere1);
+
         cube1->addGameObject(cube);
         cube2->addGameObject(backgroundCube);
         sphere1->addGameObject(sphere);
+        root->addGameObject(rootGO);
+
+        rootGO->addComponent<Transform>();
+        rootGO->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 45.0f;
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 0.0f;
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 45.0f;
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
@@ -321,8 +329,10 @@ int main(int, char**)
     sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
     sphere1->updateTransform();
     sphere1->update(nullptr, false);
-    cube1->updateTransform();
-    cube1->update(nullptr, false);
+    //cube1->updateTransform();
+    //cube1->update(nullptr, false);
+    root->updateTransform();
+    root->update(nullptr, false);
 
     //shadowMap
 
@@ -363,10 +373,13 @@ int main(int, char**)
 
         //DEBUG
         if (move) {
+            root->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(testScale, testScale, testScale);
             sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
             sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
-            cube1->updateTransform();
-            cube1->update(nullptr, false);
+            root->updateTransform();
+            root->update(nullptr, false);
+            //cube2->updateTransform();
+            //cube2->update(cube1->getGameObject(), false);
             sphere1->updateTransform();
             sphere1->update(nullptr, false);
             move = false;
