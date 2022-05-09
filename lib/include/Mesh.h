@@ -11,6 +11,8 @@
 //#include "shaderClass.h"
 #include "Shader.h"
 
+#include "Transform.h"
+
 #define MAX_BONE_INFLUENCE 4
 
 struct Vertex
@@ -42,7 +44,7 @@ public:
 
     Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat4 modelMatrix, GLuint texturesSetId);
 
-    void Draw(Shader &shader);
+    void Draw(Shader &shader, Transform modelTransform);
 
     GLuint getTexturesSetId() const;
 

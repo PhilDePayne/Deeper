@@ -401,6 +401,8 @@ int main(int, char**)
 
     Model rocks("./res/models/Rocks/rocks.fbx");
 
+    rocks.transform.scale = glm::vec3(100.0f);
+
     //camera.Position.y = -50;
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
     //printf("%f %f %f %f\n", camFrustum.topFace.distance, camFrustum.topFace.normal.x, camFrustum.topFace.normal.y, camFrustum.topFace.normal.z);

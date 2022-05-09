@@ -8,6 +8,7 @@
 Model::Model(char *path)
 {
     loadModel(path);
+
 }
 
 void Model::Draw(Shader shader)
@@ -18,7 +19,7 @@ void Model::Draw(Shader shader)
         {
             passMapsToShader(meshes[i].getTexturesSetId());
         }
-        meshes[i].Draw(shader);
+        meshes[i].Draw(shader, transform);
     }
 }
 

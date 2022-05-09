@@ -10,6 +10,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/matrix4x4.h>
+
+#include "Transform.h"
 //#include <stb_image.h>
 
 struct MapsSet
@@ -41,6 +43,8 @@ public:
     Model(char *path);
 
     void Draw(Shader shader);
+
+    Transform transform;
 
 private:
     GLuint loadedSet = 0; // current mapsSet in shader. Count from 1
