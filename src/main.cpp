@@ -88,7 +88,7 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     const float halfVSide = zFar * tanf(fovY * .5f);
     const float halfHSide = halfVSide * aspect;
     const glm::vec3 frontMultFar = zFar * cam.Front;
-    printf("%f\n", cam.Position.y);
+    printf("Cam position Y: %f\n", cam.Position.y);
 
     frustum.nearFace = { cam.Position + zNear * cam.Front, cam.Front };
     frustum.farFace = { cam.Position + frontMultFar, -cam.Front };
@@ -104,23 +104,28 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     return frustum;
 }
 
-bool isOnOrForwardPlan(BoxCollider b, Plan p) {
+bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
-    printf("%f\n", p.distance);
+    BoxCollider tmp;
+
+    tmp.setCenter(proj* view * glm::vec4(b.getCenter(), 1.0f));
+    tmp.setSize(proj * view * glm::vec4(glm::vec3(b.getSizeX(), b.getSizeY(), b.getSizeZ()), 1.0));
+
+    printf("tmp center: %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z);
+    printf("tmp extents: %f %f %f\n", tmp.getSizeX() / 2, tmp.getSizeY() / 2, tmp.getSizeZ() / 2);
 
     // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
-    float r = b.getSizeX()/2 * glm::abs(p.normal.x) + b.getSizeY()/2 * glm::abs(p.normal.y) + b.getSizeZ()/2 * glm::abs(p.normal.z);
+    float r = tmp.getSizeX()/2 * glm::abs(p.normal.x) + tmp.getSizeY()/2 * glm::abs(p.normal.y) + tmp.getSizeZ()/2 * glm::abs(p.normal.z);
 
-    printf("%f\n", r);
+    printf("r: %f\n", r);
 
     // Compute distance of box center from plane
-    float s = glm::dot(p.normal, b.getCenter()) - p.distance;
+    float s = glm::dot(p.normal, tmp.getCenter()) - p.distance;
 
-    printf("%f\n", s);
-    printf("%f\n", p.getSignedDistanceToPlan(b.getCenter()));
+    printf("Box to Plane: %f\n", p.getSignedDistanceToPlan(tmp.getCenter()));
 
     // Intersection occurs when distance s falls within [-r,+r] interval
-    return -r <= p.getSignedDistanceToPlan(b.getCenter());
+    return -r <= p.getSignedDistanceToPlan(tmp.getCenter());
 
 }
 
@@ -254,7 +259,8 @@ int main(int, char**)
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 45.0f;
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(36.0f * 30, 6.0f * 30, 6.0f * 30);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 8.4f * 30, 0.0f * 30);
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
@@ -267,8 +273,6 @@ int main(int, char**)
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
-        //do zakomentowania jesli chcemy uzyc tej drugiej kamery
-        //sphere->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position += 100.0f;
     }  
 
     basicShader.use();
@@ -401,18 +405,11 @@ int main(int, char**)
 
     Model rocks("./res/models/Rocks/rocks.fbx");
 
-    rocks.transform.scale = glm::vec3(100.0f);
+    rocks.transform.scale = glm::vec3(30.0f);
 
-    //camera.Position.y = -50;
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
-    //printf("%f %f %f %f\n", camFrustum.topFace.distance, camFrustum.topFace.normal.x, camFrustum.topFace.normal.y, camFrustum.topFace.normal.z);
-    //printf("%f\n", camera.Position.y);
 
-    BoxCollider testAABB;
-    testAABB.setCenter(glm::vec3(1.0f, 0.0f, -9.0f));
-    testAABB.setSize(glm::vec3(1.0f));
-
-    if (isOnOrForwardPlan(testAABB, camFrustum.topFace)) {
+    if (isOnOrForwardPlan(rocks.boundingVolume, camFrustum.topFace, proj, view)) {
         printf("ON\n");
     }
 
@@ -426,7 +423,7 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
-        if (isOnOrForwardPlan(testAABB, camFrustum.topFace)) {
+        if (isOnOrForwardPlan(rocks.boundingVolume, camFrustum.topFace, proj, view)) {
             printf("ON\n");
         }
 
@@ -472,9 +469,11 @@ int main(int, char**)
         //TODO: controls in ImGui
         //useDebugCamera(proj, view, window, scale);
         useOrthoCamera(proj, view, window, cameraY, scale);
-
         //TODO: renderManager/meshComponent
-//        basicShader.use();
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        basicShader.use();
 //
 //        {   //TODO: w LightComponent
 //            LightSource* slight = sphere->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
@@ -493,17 +492,17 @@ int main(int, char**)
 //            basicShader.setFloat("spotLight.outerCutOff", slight->getOuterCutOff());
 //        }
 //
-//        basicShader.setFloat("scale", scale);
-//        basicShader.setMat4("projection", proj);
-//        basicShader.setMat4("view", view);
-//
-//        //cube1->render(basicShader);
-//        glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-//        basicShader.setMat4("model", model);
-//
-//        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-//        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
+       basicShader.setFloat("scale", scale);
+       basicShader.setMat4("projection", proj);
+       basicShader.setMat4("view", view);
+
+       //cube1->render(basicShader);
+       glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+       basicShader.setMat4("model", model);
+
+       glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+       glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+       glDrawArrays(GL_TRIANGLES, 0, 36);
 //
 //        model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
 //        basicShader.setMat4("model", model);
@@ -515,6 +514,9 @@ int main(int, char**)
         ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 
         PBRShader.use();
         PBRShader.setMat4("projection", proj);
@@ -572,7 +574,7 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
 
     //obrot kamery
     //camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY, yOffset); //ze spadaniem
-    camera.ProcessMovement(6.0f, 1.5f, rotate, 0.0f, yOffset); //bez spadania
+    camera.ProcessMovement(6.0f, 1.5f, rotate, 0.0f, 0.0f); //bez spadania
 }
 
 void processInput(GLFWwindow* window)
@@ -646,7 +648,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     lastX = xpos;
     lastY = ypos;
 
-    camera.ProcessMouseMovement(xoffset, yoffset);
+    //camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called

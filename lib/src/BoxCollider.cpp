@@ -24,7 +24,7 @@ float BoxCollider::getSizeY() {
 
 float BoxCollider::getSizeZ() {
 
-	return size.x;
+	return size.z;
 
 }
 

@@ -19,8 +19,6 @@ void Mesh::Draw(Shader &shader, Transform modelTransform)
 {
     // pass model matrix to the Shader
     glm::mat4 tmpModelMatrix = modelMatrix;
-    //tmpModelMatrix = glm::translate(tmpModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f));
-    //tmpModelMatrix = glm::scale(tmpModelMatrix, glm::vec3(100.0f, 100.0f, 100.0f));
     tmpModelMatrix = modelTransform.getCombinedMatrix() * tmpModelMatrix;
     shader.setMat4("model", tmpModelMatrix);
 

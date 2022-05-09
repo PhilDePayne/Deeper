@@ -12,6 +12,7 @@
 #include <assimp/matrix4x4.h>
 
 #include "Transform.h"
+#include "BoxCollider.h"
 //#include <stb_image.h>
 
 struct MapsSet
@@ -45,6 +46,8 @@ public:
     void Draw(Shader shader);
 
     Transform transform;
+
+    BoxCollider boundingVolume;
 
 private:
     GLuint loadedSet = 0; // current mapsSet in shader. Count from 1
