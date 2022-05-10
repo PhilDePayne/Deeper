@@ -8,7 +8,7 @@
 Model::Model(char *path)
 {
     loadModel(path);
-    boundingVolume.setCenter(glm::vec3(0.0f, 8.4f * 30, 0.0f * 30.0f));
+    boundingVolume.setCenter(glm::vec3(0.0f, 1.4f * 30, 0.0f * 30.0f));
     boundingVolume.setSize(glm::vec3(36.0f * 30, 6.0f * 30, 6.0f * 30));
 
 }

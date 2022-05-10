@@ -96,9 +96,9 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                             glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
     frustum.leftFace = { cam.Position,
                             glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
-    frustum.topFace = { cam.Position + glm::vec3(0.0f, 1, 0.0f),
+    frustum.topFace = { glm::vec3(0.0f, 1, 0.0f),
                             glm::vec3(0, 1, 0)};
-    frustum.bottomFace = { cam.Position + glm::vec3(0.0f, -1, 0.0f),
+    frustum.bottomFace = { glm::vec3(0.0f, 1, 0.0f),
                             glm::vec3(0, -1, 0)};
 
     return frustum;
@@ -108,11 +108,19 @@ bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
     BoxCollider tmp;
 
+    float divisor;
+
     tmp.setCenter(proj* view * glm::vec4(b.getCenter(), 1.0f));
-    tmp.setSize(proj * view * glm::vec4(glm::vec3(b.getSizeX(), b.getSizeY(), b.getSizeZ()), 1.0));
+    glm::vec3 tmpMaxPoints = proj * view * glm::vec4(b.getMaxX(), b.getMaxY(), b.getMaxZ(), 1.0f);
+    tmp.setSize(glm::vec3((tmpMaxPoints.x - tmp.getCenter().x) * 2, (tmpMaxPoints.y - tmp.getCenter().y) * 2, (tmpMaxPoints.z - tmp.getCenter().z) * 2));
+
+    divisor = tmp.getCenter().y / b.getCenter().y;
 
     printf("tmp center: %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z);
-    printf("tmp extents: %f %f %f\n", tmp.getSizeX() / 2, tmp.getSizeY() / 2, tmp.getSizeZ() / 2);
+    printf("tmp maxPoints: %f %f %f\n", tmpMaxPoints.x, tmpMaxPoints.y, tmpMaxPoints.z);
+    printf("tmp extents: %f %f %f\n", tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ() / 2);
+    printf("b extents: %f %f %f\n", b.getSizeX() / 2, b.getSizeY() / 2, b.getSizeZ() / 2);
+    printf("divisor: %f\n", divisor);
 
     // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
     float r = tmp.getSizeX()/2 * glm::abs(p.normal.x) + tmp.getSizeY()/2 * glm::abs(p.normal.y) + tmp.getSizeZ()/2 * glm::abs(p.normal.z);
@@ -260,7 +268,7 @@ int main(int, char**)
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
         cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(36.0f * 30, 6.0f * 30, 6.0f * 30);
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 8.4f * 30, 0.0f * 30);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 1.4f * 30, 0.0f * 30);
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
@@ -293,80 +301,12 @@ int main(int, char**)
     float cameraY = 0.0f;
     float scale = 1.0f;
 
-    GLint layers = 100;
-    GLint circumferenceTiles = 100;
-    std::vector<GLfloat> va;
-    std::vector<GLfloat> ia;
-    const double PI = 3.141592653589793238463;
-    va.reserve((layers + 1) * (circumferenceTiles + 1) * 3);  // 3 floats: x, y, z
-    const float pi = 3.1414927f;
-
-    va.reserve((layers + 1)* (circumferenceTiles + 1) * 3);  // 3 floats: x, y, z
-    for (int i = 0; i <= layers; ++i)
-    {
-        float layer_rel = (float)i / (float)layers;
-        float layer_ang = (1.0f - 2.0f * layer_rel) * pi / 2.0f;
-        float layer_sin = std::sin(layer_ang);
-        float layer_cos = std::cos(layer_ang);
-        for (int ic = 0; ic <= circumferenceTiles; ic++)
-        {
-            float circum_rel = (float)ic / (float)circumferenceTiles;
-            float cricum_ang = circum_rel * 2.0f * pi - pi;
-            float circum_sin = std::sin(cricum_ang);
-            float circum_cos = std::cos(cricum_ang);
-
-            va.push_back(layer_cos * circum_cos); // x
-            va.push_back(layer_cos * circum_sin); // y
-            va.push_back(layer_sin);              // z
-        }
-    }
-
-    // create the face indices
-    ia.reserve(layers * circumferenceTiles * 6);
-    for (int il = 0; il < layers; ++il)
-    {
-        for (int ic = 0; ic < circumferenceTiles; ic++)
-        {
-            int i0 = il * (circumferenceTiles + 1) + ic;
-            int i1 = i0 + 1;
-            int i3 = i0 + circumferenceTiles + 1;
-            int i2 = i3 + 1;
-
-            int faces[]{ i0, i1, i2, i0, i2, i3 };
-            ia.insert(ia.end(), faces + (il == 0 ? 3 : 0), faces + (il == layers - 1 ? 3 : 6));
-        }
-    }
-
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, va.size() * sizeof(GLfloat), va.data(),
-        GL_STATIC_DRAW);
-
-    GLuint ibo;
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, ia.size() * sizeof(GLuint), ia.data(), GL_STATIC_DRAW);
-
-    GLuint v_attr_inx = 0;
-    glVertexAttribPointer(v_attr_inx, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(v_attr_inx);
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
     sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
     sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
     sphere1->updateTransform();
     sphere1->update(nullptr, false);
     cube1->updateTransform();
     cube1->update(nullptr, false);
-    float tmpPos = 0;
 
 
     // LIGHTS
@@ -406,6 +346,7 @@ int main(int, char**)
     Model rocks("./res/models/Rocks/rocks.fbx");
 
     rocks.transform.scale = glm::vec3(30.0f);
+    //rocks.transform.position = glm::vec3(0.0f, 8.4f, 0.0f);
 
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
@@ -422,10 +363,6 @@ int main(int, char**)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
-        if (isOnOrForwardPlan(rocks.boundingVolume, camFrustum.topFace, proj, view)) {
-            printf("ON\n");
-        }
 
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
@@ -503,14 +440,7 @@ int main(int, char**)
        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
        glDrawArrays(GL_TRIANGLES, 0, 36);
-//
-//        model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
-//        basicShader.setMat4("model", model);
-//
-//        glBindVertexArray(sphere1->getGameObject()->getComponent<SphereMesh>(ComponentType::SPHEREMESH)->getVAO()); //TODO: blad jesli brak komponentu
-//        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices2.size(), &vertices2.front(), GL_STATIC_DRAW);
-//        glDrawArrays(GL_TRIANGLES, 0, vertices2.size());
-//
+
         ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -532,7 +462,10 @@ int main(int, char**)
             PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
         }
 
-        rocks.Draw(PBRShader);
+        camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
+        if (!isOnOrForwardPlan(rocks.boundingVolume, camFrustum.topFace, proj, view)) {
+            rocks.Draw(PBRShader);
+        }
 
         glfwMakeContextCurrent(window);
         glfwSwapBuffers(window);
@@ -573,8 +506,8 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
         glfwSetWindowShouldClose(window, true);
 
     //obrot kamery
-    //camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY, yOffset); //ze spadaniem
-    camera.ProcessMovement(6.0f, 1.5f, rotate, 0.0f, 0.0f); //bez spadania
+    camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY, yOffset); //ze spadaniem
+    //camera.ProcessMovement(6.0f, 1.5f, rotate, 0.0f, 0.0f); //bez spadania
 }
 
 void processInput(GLFWwindow* window)
