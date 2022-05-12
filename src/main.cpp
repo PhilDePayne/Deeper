@@ -18,6 +18,7 @@
 #include "SceneGraphNode.h"
 #include "BoxCollider.h"
 #include "SphereCollider.h"
+#include "Player.h"
 #include "LightSource.h"
 #include "Model.h"
 #include "typedefs.h"
@@ -58,8 +59,8 @@ struct Plan
     Plan() = default;
 
     Plan(const glm::vec3 & p1, const glm::vec3 & norm)
-        : normal(glm::normalize(norm)),
-        distance(glm::dot(normal, p1))
+            : normal(glm::normalize(norm)),
+              distance(glm::dot(normal, p1))
     {}
 
     float getSignedDistanceToPlan(const glm::vec3 & point) const
@@ -82,7 +83,7 @@ struct Frustum
 };
 
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
-    float zNear, float zFar)
+                                float zNear, float zFar)
 {
     Frustum     frustum;
     const float halfVSide = zFar * tanf(fovY * .5f);
@@ -93,13 +94,13 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     frustum.nearFace = { cam.Position + zNear * cam.Front, cam.Front };
     frustum.farFace = { cam.Position + frontMultFar, -cam.Front };
     frustum.rightFace = { cam.Position,
-                            glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
+                          glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
     frustum.leftFace = { cam.Position,
-                            glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
+                         glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
     frustum.topFace = { glm::vec3(0.0f, 1, 0.0f),
-                            glm::vec3(0, 1, 0)};
+                        glm::vec3(0, 1, 0)};
     frustum.bottomFace = { glm::vec3(0.0f, 1, 0.0f),
-                            glm::vec3(0, -1, 0)};
+                           glm::vec3(0, -1, 0)};
 
     return frustum;
 }
@@ -121,6 +122,7 @@ bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
     printf("tmp extents: %f %f %f\n", tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ() / 2);
     printf("b extents: %f %f %f\n", b.getSizeX() / 2, b.getSizeY() / 2, b.getSizeZ() / 2);
     printf("divisor: %f\n", divisor);
+
 
     // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
     float r = tmp.getSizeX()/2 * glm::abs(p.normal.x) + tmp.getSizeY()/2 * glm::abs(p.normal.y) + tmp.getSizeZ()/2 * glm::abs(p.normal.z);
@@ -157,6 +159,12 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+//camera var
+int rotate = 0;
+float clipZ = 720.0f;
+float clipWidth = 100.0f;
+float depthPos = 0.0f;
+
 //DEBUG
 float testScale = 1;
 float testScale2 = 1;
@@ -166,7 +174,7 @@ float zPos = 0.0;
 bool collision = false;
 bool move = 0;
 glm::mat4 projection = glm::ortho(0.0f, 720.0f, 0.0f, 1280.0f);
-int rotate = 0;
+
 
 int main(int, char**)
 {
@@ -233,7 +241,7 @@ int main(int, char**)
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
@@ -260,6 +268,7 @@ int main(int, char**)
     gameObjectPtr sphere(new GameObject());
 
 
+
     //OBJECT PARAMETERS
     {
         cube1->addGameObject(cube);
@@ -281,7 +290,7 @@ int main(int, char**)
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
-    }  
+    }
 
     basicShader.use();
 
@@ -295,9 +304,8 @@ int main(int, char**)
 
     glm::mat4 proj = glm::mat4(1.0f);
     glm::mat4 view = glm::mat4(1.0f);
-    camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, -100.0f, 100.0f);
+    camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, -SCR_WIDTH, SCR_WIDTH);
 
-    bool debugCamera = true, falling = false; //zmienne do imgui ale nie ma kursora i tak
     float cameraY = 0.0f;
     float scale = 1.0f;
 
@@ -307,7 +315,6 @@ int main(int, char**)
     sphere1->update(nullptr, false);
     cube1->updateTransform();
     cube1->update(nullptr, false);
-
 
     // LIGHTS
     glm::vec3 lightPositions[] = {
@@ -344,9 +351,17 @@ int main(int, char**)
     PBRShader.setInt("emissiveMap", 5);
 
     Model rocks("./res/models/Rocks/rocks.fbx");
-
     rocks.transform.scale = glm::vec3(30.0f);
-    //rocks.transform.position = glm::vec3(0.0f, 8.4f, 0.0f);
+
+    //level
+//    Model level("./res/models/caveSystem/caveSystem.fbx");
+//
+//    level.transform.scale = glm::vec3(30.0f);
+//    level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
+
+    //Player
+    Player player("./res/models/Box/box.fbx");
+    player.getBody()->transform.scale = glm::vec3(1.5f);
 
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
@@ -363,6 +378,20 @@ int main(int, char**)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        //ImGui
+        {
+            ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                        ImGui::GetIO().Framerate);
+
+            ImGui::Text("Pozycja gracza x: %f  | y: %f | z: %f", player.getBody()->transform.position.x,
+                    player.getBody()->transform.position.y, player.getBody()->transform.position.z);
+
+            ImGui::Text("depthPos: %f   clipWidth: %f", depthPos, clipWidth);
+
+            ImGui::End();
+        }
 
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
@@ -381,7 +410,7 @@ int main(int, char**)
 
         //TODO: w klasie colliderow
         {
-            
+
             BoxCollider* cubeCollider = cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
             cubeCollider->z_rotation_angle = 45.0f;
             SphereCollider* sphereCollider = sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER);
@@ -394,8 +423,8 @@ int main(int, char**)
             zPos += separate.z;
 
             move = true;
-            
-               
+
+
         }
         
         int display_w, display_h;
@@ -403,7 +432,6 @@ int main(int, char**)
         glfwMakeContextCurrent(window);
         glfwGetFramebufferSize(window, &display_w, &display_h);
 
-        //TODO: controls in ImGui
         //useDebugCamera(proj, view, window, scale);
         useOrthoCamera(proj, view, window, cameraY, scale);
         //TODO: renderManager/meshComponent
@@ -429,24 +457,21 @@ int main(int, char**)
 //            basicShader.setFloat("spotLight.outerCutOff", slight->getOuterCutOff());
 //        }
 //
-       basicShader.setFloat("scale", scale);
-       basicShader.setMat4("projection", proj);
-       basicShader.setMat4("view", view);
+        basicShader.setFloat("scale", scale);
+        basicShader.setMat4("projection", proj);
+        basicShader.setMat4("view", view);
 
-       //cube1->render(basicShader);
-       glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-       basicShader.setMat4("model", model);
+        //cube1->render(basicShader);
+        glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+        basicShader.setMat4("model", model);
 
-       glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-       glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-       glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        ImGui::Render();
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 
         PBRShader.use();
         PBRShader.setMat4("projection", proj);
@@ -466,6 +491,24 @@ int main(int, char**)
         if (!isOnOrForwardPlan(rocks.boundingVolume, camFrustum.topFace, proj, view)) {
             rocks.Draw(PBRShader);
         }
+
+        //PLAYER + LEVEL
+//        if(!rotate) {
+//            player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+//            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
+//        } else {
+//            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
+//        }
+//
+//        player.render(PBRShader);
+//        level.Draw(PBRShader);
+//
+//        camera.ProcessMovement(6.0f, 50.0f * deltaTime, rotate, 0.0f, depthPos, player.getBody()->transform.position, player.getDirection());
+//        camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
+
+        ImGui::Render();
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwMakeContextCurrent(window);
         glfwSwapBuffers(window);
@@ -493,7 +536,6 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
 
     scale = 100.0f;
     cameraY -= 0.2f;
-    float yOffset = -0.2f;
 
     proj = camera.GetProjMatrix();
     view = camera.GetOrthoViewMatrix();
@@ -506,8 +548,9 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
         glfwSetWindowShouldClose(window, true);
 
     //obrot kamery
-    camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY, yOffset); //ze spadaniem
-    //camera.ProcessMovement(6.0f, 1.5f, rotate, 0.0f, 0.0f); //bez spadania
+//    camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY); //ze spadaniem
+    camera.ProcessMovementNoPlayer(6.0f, 50.0f * deltaTime, rotate, 0.0f); //bez spadania
+    camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipZ);
 }
 
 void processInput(GLFWwindow* window)
@@ -594,11 +637,11 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 //zeby bylo pojedyncze wywolanie
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
-        rotate = 1;
-    }
-
-    else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
-        rotate = -1;
+    if(rotate == 0) {
+        if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) {
+            rotate = 1;
+        } else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) {
+            rotate = -1;
+        }
     }
 }

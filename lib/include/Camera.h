@@ -159,6 +159,39 @@ public:
 
     }
 
+    void ProcessMovementNoPlayer(float radius, float speed, int &move, float camY) {
+
+        if(move != 0) {
+            totalDegrees += speed;
+            angle += speed * move;
+
+            if(totalDegrees >= 90.0f) {
+                //ustalanie kierunku
+                int dirInt = (int)dir + move;
+                dir = (Camera_Facing_Direction)dirInt;
+                if(dir > LEFT_DIR)
+                    dir = FRONT_DIR;
+                if(dir < FRONT_DIR)
+                    dir = LEFT_DIR;
+
+                totalDegrees = 0.0f;
+                move = 0;
+
+            }
+
+            if(angle >= 360.0f)
+                angle = 0.0f;
+            else if(angle <= -90.0f)
+                angle = 270.0f;
+        }
+
+        float camX = sin(glm::radians(angle)) * radius;
+        float camZ = cos(glm::radians(angle)) * radius;
+
+        view = glm::lookAt(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, camY, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    }
+
     Camera_Facing_Direction getCameraDirection() {
         return dir;
     }
