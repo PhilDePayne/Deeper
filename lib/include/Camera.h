@@ -17,9 +17,10 @@ enum Camera_Movement {
 
 enum Camera_Facing_Direction {
     FRONT_DIR,
+    RIGHT_DIR,
     BACK_DIR,
-    LEFT_DIR,
-    RIGHT_DIR
+    LEFT_DIR
+
 };
 
 // Default camera values
@@ -59,7 +60,6 @@ public:
         Pitch = pitch;
         proj = glm::mat4(1.0f);
         view = glm::mat4(1.0f);
-        dir = FRONT_DIR;
         updateCameraVectors();
     }
     // constructor with scalar values
@@ -71,7 +71,6 @@ public:
         Pitch = pitch;
         proj = glm::mat4(1.0f);
         view = glm::mat4(1.0f);
-        dir = FRONT_DIR;
         updateCameraVectors();
     }
 
@@ -95,33 +94,96 @@ public:
 //        proj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
     }
 
-    void AdjustPlanes(float &nearPlane, float &farPlane, float zPos) {
-
+    void AdjustPlanes(float width, float height, float zPos, float planeWidth) {
+        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, zPos - planeWidth, zPos + planeWidth);
     }
 
     glm::mat4 GetMultipliedMatrices() {
         return proj * view;
     }
 
-    void ProcessMovement(float radius, float speed, int &move, float camY, float yOffset) {
+    void ProcessMovement(float radius, float speed, int &move, float camY, float &zPos, glm::vec3 pos, int direction) {
 
         if(move != 0) {
             totalDegrees += speed;
             angle += speed * move;
 
             if(totalDegrees >= 90.0f) {
+                //ustalanie kierunku
+                int dirInt = (int)dir + move;
+                dir = (Camera_Facing_Direction)dirInt;
+                if(dir > LEFT_DIR)
+                    dir = FRONT_DIR;
+                if(dir < FRONT_DIR)
+                    dir = LEFT_DIR;
+
+                //TODO: ładniej zrobić
+//                if(dir == FRONT_DIR)
+//                    zPos = -pos.z;
+//                else if(dir == RIGHT_DIR)
+//                    zPos = -pos.x;
+//                else if(dir == BACK_DIR)
+//                    zPos = pos.z;
+//                else if(dir == LEFT_DIR)
+//                    zPos = -pos.x;
+
+                if(dir == FRONT_DIR || dir == BACK_DIR) {
+                    zPos = pos.z * direction;
+                }
+                else {
+                    zPos = pos.x * direction;
+                }
+
+
                 totalDegrees = 0.0f;
                 move = 0;
+
             }
 
             if(angle >= 360.0f)
                 angle = 0.0f;
             else if(angle <= -90.0f)
                 angle = 270.0f;
-
-            //std::cout << angle << "\n";
         }
 
+        float camX = sin(glm::radians(angle)) * radius;
+        float camZ = cos(glm::radians(angle)) * radius;
+
+        view = glm::lookAt(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, camY, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        //clipping plane
+//        if(angle == 0.0f || angle == 180.0f)
+//            view = glm::translate(view, glm::vec3(0.0f, 0.0f, zPos));
+//        else if(angle == 90.0f || angle == 270.0f)
+//            view = glm::translate(view, glm::vec3(zPos, 0.0f, 0.0f));
+
+    }
+
+    void ProcessMovementNoPlayer(float radius, float speed, int &move, float camY) {
+
+        if(move != 0) {
+            totalDegrees += speed;
+            angle += speed * move;
+
+            if(totalDegrees >= 90.0f) {
+                //ustalanie kierunku
+                int dirInt = (int)dir + move;
+                dir = (Camera_Facing_Direction)dirInt;
+                if(dir > LEFT_DIR)
+                    dir = FRONT_DIR;
+                if(dir < FRONT_DIR)
+                    dir = LEFT_DIR;
+
+                totalDegrees = 0.0f;
+                move = 0;
+
+            }
+
+            if(angle >= 360.0f)
+                angle = 0.0f;
+            else if(angle <= -90.0f)
+                angle = 270.0f;
+        }
 
         float camX = sin(glm::radians(angle)) * radius;
         float camZ = cos(glm::radians(angle)) * radius;
@@ -130,6 +192,9 @@ public:
 
     }
 
+    Camera_Facing_Direction getCameraDirection() {
+        return dir;
+    }
 
 
     /*--------------------DEBUG--------------------*/
