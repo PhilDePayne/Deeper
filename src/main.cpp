@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <stdio.h>
 //#include <ft2build.h>
 //#include FT_FREETYPE_H
 
@@ -20,6 +21,7 @@
 #include "SphereCollider.h"
 #include "LightSource.h"
 #include "Model.h"
+#include "Frustum.h"
 #include "typedefs.h"
 
 #include <stdio.h>
@@ -47,39 +49,8 @@
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
-struct Plan
-{
-    // unit vector
-    glm::vec3 normal = { 0.f, 1.f, 0.f };
-
-    // distance from origin to the nearest point in the plan
-    float     distance = 0.f;
-
-    Plan() = default;
-
-    Plan(const glm::vec3 & p1, const glm::vec3 & norm)
-        : normal(glm::normalize(norm)),
-        distance(glm::dot(normal, p1))
-    {}
-
-    float getSignedDistanceToPlan(const glm::vec3 & point) const
-    {
-        return glm::dot(normal, point) - distance;
-    }
-
-};
-
-struct Frustum
-{
-    Plan topFace;
-    Plan bottomFace;
-
-    Plan rightFace;
-    Plan leftFace;
-
-    Plan farFace;
-    Plan nearFace;
-};
+const float nearPlane = -100.0f;
+const float farPlane = 100.0f;
 
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     float zNear, float zFar)
@@ -88,7 +59,7 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     const float halfVSide = zFar * tanf(fovY * .5f);
     const float halfHSide = halfVSide * aspect;
     const glm::vec3 frontMultFar = zFar * cam.Front;
-    printf("Cam position Y: %f\n", cam.Position.y);
+    //printf("Cam position Y: %f\n", cam.Position.y);
 
     frustum.nearFace = { cam.Position + zNear * cam.Front, cam.Front };
     frustum.farFace = { cam.Position + frontMultFar, -cam.Front };
@@ -97,44 +68,11 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     frustum.leftFace = { cam.Position,
                             glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
     frustum.topFace = { glm::vec3(0.0f, 1, 0.0f),
-                            glm::vec3(0, 1, 0)};
-    frustum.bottomFace = { glm::vec3(0.0f, 1, 0.0f),
                             glm::vec3(0, -1, 0)};
+    frustum.bottomFace = { glm::vec3(0.0f, -1, 0.0f),
+                            glm::vec3(0, 1, 0)};
 
     return frustum;
-}
-
-bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
-
-    BoxCollider tmp;
-
-    float divisor;
-
-    tmp.setCenter(proj* view * glm::vec4(b.getCenter(), 1.0f));
-    glm::vec3 tmpMaxPoints = proj * view * glm::vec4(b.getMaxX(), b.getMaxY(), b.getMaxZ(), 1.0f);
-    tmp.setSize(glm::vec3((tmpMaxPoints.x - tmp.getCenter().x) * 2, (tmpMaxPoints.y - tmp.getCenter().y) * 2, (tmpMaxPoints.z - tmp.getCenter().z) * 2));
-
-    divisor = tmp.getCenter().y / b.getCenter().y;
-
-    printf("tmp center: %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z);
-    printf("tmp maxPoints: %f %f %f\n", tmpMaxPoints.x, tmpMaxPoints.y, tmpMaxPoints.z);
-    printf("tmp extents: %f %f %f\n", tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ() / 2);
-    printf("b extents: %f %f %f\n", b.getSizeX() / 2, b.getSizeY() / 2, b.getSizeZ() / 2);
-    printf("divisor: %f\n", divisor);
-
-    // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
-    float r = tmp.getSizeX()/2 * glm::abs(p.normal.x) + tmp.getSizeY()/2 * glm::abs(p.normal.y) + tmp.getSizeZ()/2 * glm::abs(p.normal.z);
-
-    printf("r: %f\n", r);
-
-    // Compute distance of box center from plane
-    float s = glm::dot(p.normal, tmp.getCenter()) - p.distance;
-
-    printf("Box to Plane: %f\n", p.getSignedDistanceToPlan(tmp.getCenter()));
-
-    // Intersection occurs when distance s falls within [-r,+r] interval
-    return -r <= p.getSignedDistanceToPlan(tmp.getCenter());
-
 }
 
 static void glfw_error_callback(int error, const char* description)
@@ -214,16 +152,16 @@ int main(int, char**)
     }
 
     FMOD_RESULT result; //TODO: SoundManager
-    FMOD::System* system = NULL;
+    FMOD::System* ssystem = NULL;
 
-    result = FMOD::System_Create(&system);      // Create the main system object.
+    result = FMOD::System_Create(&ssystem);      // Create the main system object.
     if (result != FMOD_OK)
     {
         printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
         return(-1);
     }
 
-    result = system->init(512, FMOD_INIT_NORMAL, 0);    // Initialize FMOD.
+    result = ssystem->init(512, FMOD_INIT_NORMAL, 0);    // Initialize FMOD.
     if (result != FMOD_OK)
     {
         printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
@@ -233,7 +171,7 @@ int main(int, char**)
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
@@ -267,8 +205,8 @@ int main(int, char**)
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(36.0f * 30, 6.0f * 30, 6.0f * 30);
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 1.4f * 30, 0.0f * 30);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(0.749556f * 30.0f, 5.211264f * 30.0f, 0.712872f * 30.0f);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 0.0f, 0.0f * 30);
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
@@ -295,7 +233,7 @@ int main(int, char**)
 
     glm::mat4 proj = glm::mat4(1.0f);
     glm::mat4 view = glm::mat4(1.0f);
-    camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, -100.0f, 100.0f);
+    camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, nearPlane, farPlane);
 
     bool debugCamera = true, falling = false; //zmienne do imgui ale nie ma kursora i tak
     float cameraY = 0.0f;
@@ -343,16 +281,34 @@ int main(int, char**)
     PBRShader.setInt("aoMap", 4);
     PBRShader.setInt("emissiveMap", 5);
 
-    Model rocks("./res/models/Rocks/rocks.fbx");
+    //Model rocks("./res/models/Rocks/rocks.fbx");
+    Model lamp("./res/models/lampka/lamp_mdl.fbx");
+    Model lamp2("./res/models/lampka/lamp_mdl.fbx");
+    Model lamp3("./res/models/lampka/lamp_mdl.fbx");
+    Model lamp4("./res/models/lampka/lamp_mdl.fbx");
+    Model pickaxe("./res/models/Kilof/kilof.fbx");
 
-    rocks.transform.scale = glm::vec3(30.0f);
-    //rocks.transform.position = glm::vec3(0.0f, 8.4f, 0.0f);
+    //rocks.transform.scale = glm::vec3(30.0f);
+    //rocks.transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    lamp.transform.scale = glm::vec3(30.0f);
+    lamp.transform.position = glm::vec3(40.0f, -40.0f, 0.0f);
+
+    lamp2.transform.scale = glm::vec3(30.0f);
+    lamp2.transform.position = glm::vec3(120.0f, -520.0f, 0.0f);
+
+    lamp3.transform.scale = glm::vec3(30.0f);
+    lamp3.transform.position = glm::vec3(-120.0f, 60.0f, 0.0f);
+
+    lamp4.transform.scale = glm::vec3(30.0f);
+    lamp4.transform.position = glm::vec3(645.0f, -80.0f, 0.0f);
+
+    pickaxe.transform.scale = glm::vec3(300.0f);
+    pickaxe.transform.position = glm::vec3(0.0f, -200.0f, 0.0f);
 
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
-    if (isOnOrForwardPlan(rocks.boundingVolume, camFrustum.topFace, proj, view)) {
-        printf("ON\n");
-    }
+    int renderCount = 0;
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -367,17 +323,6 @@ int main(int, char**)
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
-        //DEBUG
-        if (move) {
-            sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
-            sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
-            cube1->updateTransform();
-            cube1->update(nullptr, false);
-            sphere1->updateTransform();
-            sphere1->update(nullptr, false);
-            move = false;
-        }
 
         //TODO: w klasie colliderow
         {
@@ -407,43 +352,21 @@ int main(int, char**)
         //useDebugCamera(proj, view, window, scale);
         useOrthoCamera(proj, view, window, cameraY, scale);
         //TODO: renderManager/meshComponent
+        /* {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            basicShader.use();
+            basicShader.setFloat("scale", scale);
+            basicShader.setMat4("projection", proj);
+            basicShader.setMat4("view", view);
 
-        basicShader.use();
-//
-//        {   //TODO: w LightComponent
-//            LightSource* slight = sphere->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
-//
-//            basicShader.setVec3("viewPos", camera.Position);
-//
-//            basicShader.setVec3("spotLight.position", slight->getPosition());
-//            basicShader.setVec3("spotLight.direction", slight->getDirection());
-//            basicShader.setVec3("spotLight.ambient", slight->getAmbient());
-//            basicShader.setVec3("spotLight.diffuse", slight->getDiffuse());
-//            basicShader.setVec3("spotLight.specular", slight->getSpecular());
-//            basicShader.setFloat("spotLight.constant", slight->getConstant());
-//            basicShader.setFloat("spotLight.linear", slight->getLinear());
-//            basicShader.setFloat("spotLight.quadratic", slight->getQuadratic());
-//            basicShader.setFloat("spotLight.cutOff", slight->getCutOff());
-//            basicShader.setFloat("spotLight.outerCutOff", slight->getOuterCutOff());
-//        }
-//
-       basicShader.setFloat("scale", scale);
-       basicShader.setMat4("projection", proj);
-       basicShader.setMat4("view", view);
+            glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+            basicShader.setMat4("model", model);
 
-       //cube1->render(basicShader);
-       glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-       basicShader.setMat4("model", model);
-
-       glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-       glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-       glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        ImGui::Render();
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+            glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }*/
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -462,13 +385,34 @@ int main(int, char**)
             PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
         }
 
-        camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
-        if (!isOnOrForwardPlan(rocks.boundingVolume, camFrustum.topFace, proj, view)) {
-            rocks.Draw(PBRShader);
+        camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
+
+        lamp.Draw(PBRShader, camFrustum, proj, view, renderCount);
+        lamp2.Draw(PBRShader, camFrustum, proj, view, renderCount);
+        lamp3.Draw(PBRShader, camFrustum, proj, view, renderCount);
+        lamp4.Draw(PBRShader, camFrustum, proj, view, renderCount);
+
+        {
+            ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                ImGui::GetIO().Framerate);
+
+            ImGui::Text("Rendering %d gameObjects", renderCount);
+
+            ImGui::End();
         }
+
+        ImGui::Render();
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        //pickaxe.Draw(PBRShader);
 
         glfwMakeContextCurrent(window);
         glfwSwapBuffers(window);
+
+        renderCount = 0;
+
     }
 
     // Cleanup

@@ -8,20 +8,59 @@
 Model::Model(char *path)
 {
     loadModel(path);
-    boundingVolume.setCenter(glm::vec3(0.0f, 1.4f * 30, 0.0f * 30.0f));
-    boundingVolume.setSize(glm::vec3(36.0f * 30, 6.0f * 30, 6.0f * 30));
+}
+
+
+bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
+
+    BoxCollider tmp;
+
+    float divisor;
+
+    tmp.setCenter(proj * view * glm::vec4(b.getCenter(), 1.0f));
+    glm::vec3 tmpMaxPoints = proj * view * glm::vec4(b.getMaxX(), b.getMaxY(), b.getMaxZ(), 1.0f);
+    tmp.setSize(glm::vec3((tmpMaxPoints.x - tmp.getCenter().x) * 2, (tmpMaxPoints.y - tmp.getCenter().y) * 2, (tmpMaxPoints.z - tmp.getCenter().z) * 2));
+
+    divisor = tmp.getCenter().y / b.getCenter().y;
+
+    // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
+    float r = tmp.getSizeX() / 2 * glm::abs(p.normal.x) + tmp.getSizeY() / 2 * glm::abs(p.normal.y) + tmp.getSizeZ() / 2 * glm::abs(p.normal.z);
+
+    // Compute distance of box center from plane
+    float s = glm::dot(p.normal, tmp.getCenter()) - p.distance;
+
+    // Intersection occurs when distance s falls within [-r,+r] interval
+    return -r <= p.getSignedDistanceToPlan(tmp.getCenter());
 
 }
 
-void Model::Draw(Shader shader)
+void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &view, int &renderCount)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
     {
-        if (meshes[i].getTexturesSetId() != loadedSet)
-        {
-            passMapsToShader(meshes[i].getTexturesSetId());
+        BoxCollider tmpBV;
+
+        tmpBV.setCenter(meshes[i].boundingVolume.getCenter() * transform.scale);
+        tmpBV.setSize(glm::vec3(meshes[i].boundingVolume.getSizeX(), meshes[i].boundingVolume.getSizeY(), meshes[i].boundingVolume.getSizeZ()) 
+            * transform.scale);
+
+        tmpBV.setCenter(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(tmpBV.getCenter(), 1.0f));
+
+        if (isOnOrForwardPlan(tmpBV, frustum.topFace, proj, view) &&
+            isOnOrForwardPlan(tmpBV, frustum.bottomFace, proj, view)) {
+            printf("ON\n");
+
+            renderCount++;
+
+            if (meshes[i].getTexturesSetId() != loadedSet)
+            {
+                passMapsToShader(meshes[i].getTexturesSetId());
+            }
+
+            meshes[i].Draw(shader, transform);
         }
-        meshes[i].Draw(shader, transform);
+
+        else printf("OFF\n");
     }
 }
 
@@ -168,6 +207,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             convertedMatrix[i][j] = transformMatrix[j][i];
         }
     }
+
+    drawMatrix(transformMatrix);
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, convertedMatrix, textureSetId);

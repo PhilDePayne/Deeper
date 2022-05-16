@@ -13,6 +13,7 @@
 
 #include "Transform.h"
 #include "BoxCollider.h"
+#include "Frustum.h"
 //#include <stb_image.h>
 
 struct MapsSet
@@ -43,11 +44,9 @@ public:
 
     Model(char *path);
 
-    void Draw(Shader shader);
+    void Draw(Shader shader, Frustum& frustum, glm::mat4& proj, glm::mat4& view, int& renderCount);
 
     Transform transform;
-
-    BoxCollider boundingVolume;
 
 private:
     GLuint loadedSet = 0; // current mapsSet in shader. Count from 1

@@ -125,7 +125,7 @@ public:
 
         float camX = sin(glm::radians(angle)) * radius;
         float camZ = cos(glm::radians(angle)) * radius;
-        Position += yOffset; //TODO: nie na sztywno
+        Position += yOffset;
         view = glm::lookAt(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, camY, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     }

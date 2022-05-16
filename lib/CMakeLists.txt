@@ -30,7 +30,8 @@ set(SOURCE_FILES
  	include/Model.h
 	src/Model.cpp
 	include/Mesh.h
-	src/Mesh.cpp)
+	src/Mesh.cpp
+    include/Frustum.h)
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})

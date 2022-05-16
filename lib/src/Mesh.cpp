@@ -13,6 +13,26 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
     Mesh::modelMatrix = modelMatrix;
     Mesh::textureSetId = texturesSetID;
     setupMesh();
+    for (auto i : vertices) {
+
+        if(i.Position.x > maxX) maxX = i.Position.x;
+        if (i.Position.x < minX) minX = i.Position.x;
+        if (i.Position.z > maxY) maxY = i.Position.z;
+        if (i.Position.z < minY) minY = i.Position.z;
+        if (i.Position.y > maxZ) maxZ = i.Position.y;
+        if (i.Position.y < minZ) minZ = i.Position.y;
+
+        //printf("%f %f %f\n", i.Position.x, i.Position.y, i.Position.z);
+
+    }
+
+    printf("%f %f %f %f %f %f\n", maxX, minX, maxY, minY, maxZ, minZ);
+
+    boundingVolume.setCenter(glm::vec3((maxX + minX) / 2 , (maxY + minY) / 2 , (maxZ + minZ) / 2 ));
+    boundingVolume.setSize(glm::vec3((maxX - minX) , (maxY - minY) , (maxZ - minZ) ));
+
+    printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z, 
+        boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
 }
 
 void Mesh::Draw(Shader &shader, Transform modelTransform)

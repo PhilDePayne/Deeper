@@ -12,6 +12,7 @@
 #include "Shader.h"
 
 #include "Transform.h"
+#include "BoxCollider.h"
 
 #define MAX_BONE_INFLUENCE 4
 
@@ -47,6 +48,15 @@ public:
     void Draw(Shader &shader, Transform modelTransform);
 
     GLuint getTexturesSetId() const;
+
+    float maxX = 0.0f;
+    float minX = 0.0f;
+    float maxY = 0.0f;
+    float minY = 0.0f;
+    float maxZ = 0.0f;
+    float minZ = 0.0f;
+
+    BoxCollider boundingVolume;
 
 private:
 
