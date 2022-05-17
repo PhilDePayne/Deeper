@@ -2,7 +2,10 @@
 // Created by Wojtek on 06.05.2022.
 //
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include "Model.h"
+#include "glm/gtx/string_cast.hpp"
 #include <stb_image.h>
 
 Model::Model(char *path)
@@ -34,6 +37,20 @@ bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
 }
 
+void Model::Draw(Shader shader)
+{
+    for (unsigned int i = 0; i < meshes.size(); i++)
+    {
+            if (meshes[i].getTexturesSetId() != loadedSet)
+            {
+                passMapsToShader(meshes[i].getTexturesSetId());
+            }
+
+            meshes[i].Draw(shader, transform);
+        
+    }
+}
+
 void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &view, int &renderCount)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
@@ -48,7 +65,6 @@ void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &vi
 
         if (isOnOrForwardPlan(tmpBV, frustum.topFace, proj, view) &&
             isOnOrForwardPlan(tmpBV, frustum.bottomFace, proj, view)) {
-            printf("ON\n");
 
             renderCount++;
 
@@ -60,7 +76,6 @@ void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &vi
             meshes[i].Draw(shader, transform);
         }
 
-        else printf("OFF\n");
     }
 }
 
@@ -186,6 +201,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 
         vertices.push_back(vertex);
+
     }
 
     // now walk through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
@@ -207,8 +223,13 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             convertedMatrix[i][j] = transformMatrix[j][i];
         }
     }
+    //printf("ASSIMP MAT\n");
 
-    drawMatrix(transformMatrix);
+    //drawMatrix(transformMatrix);
+
+    //printf("GLM MAT\n");
+
+    //std::cout << glm::to_string(convertedMatrix) << '\n';
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, convertedMatrix, textureSetId);
@@ -289,4 +310,30 @@ void Model::passMapsToShader(GLuint mapsId)
             break;
         }
     }
+}
+
+std::vector<BoxCollider> Model::getColliders() {
+
+    std::vector<BoxCollider> ret;
+
+    BoxCollider tmp;
+
+    tmp.setCenter(glm::vec3(0.0f));
+    tmp.setSize(glm::vec3(0.0f));
+
+    for(auto i : meshes){
+    
+        tmp.setSize(glm::vec3(i.boundingVolume.getSizeX(), i.boundingVolume.getSizeY(), i.boundingVolume.getSizeZ()) *
+            transform.scale);
+
+        printf("%f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z);
+
+        tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(i.boundingVolume.getCenter(), 1.0f)) * transform.scale);
+
+        ret.push_back(tmp);
+
+    }
+
+    return ret;
+
 }

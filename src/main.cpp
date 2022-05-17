@@ -53,35 +53,6 @@ const unsigned int SCR_HEIGHT = 720;
 const float nearPlane = -100.0f;
 const float farPlane = 100.0f;
 
-    // distance from origin to the nearest point in the plan
-    float     distance = 0.f;
-
-    Plan() = default;
-
-    Plan(const glm::vec3 & p1, const glm::vec3 & norm)
-        : normal(glm::normalize(norm)),
-        distance(glm::dot(normal, p1))
-    {}
-
-    float getSignedDistanceToPlan(const glm::vec3 & point) const
-    {
-        return glm::dot(normal, point) - distance;
-    }
-
-};
-
-struct Frustum
-{
-    Plan topFace;
-    Plan bottomFace;
-
-    Plan rightFace;
-    Plan leftFace;
-
-    Plan farFace;
-    Plan nearFace;
-};
-
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                                 float zNear, float zFar)
 {
@@ -105,38 +76,6 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     return frustum;
 }
 
-bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
-
-    BoxCollider tmp;
-
-    float divisor;
-
-    tmp.setCenter(proj* view * glm::vec4(b.getCenter(), 1.0f));
-    glm::vec3 tmpMaxPoints = proj * view * glm::vec4(b.getMaxX(), b.getMaxY(), b.getMaxZ(), 1.0f);
-    tmp.setSize(glm::vec3((tmpMaxPoints.x - tmp.getCenter().x) * 2, (tmpMaxPoints.y - tmp.getCenter().y) * 2, (tmpMaxPoints.z - tmp.getCenter().z) * 2));
-
-    divisor = tmp.getCenter().y / b.getCenter().y;
-
-    printf("tmp center: %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z);
-    printf("tmp maxPoints: %f %f %f\n", tmpMaxPoints.x, tmpMaxPoints.y, tmpMaxPoints.z);
-    printf("tmp extents: %f %f %f\n", tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ() / 2);
-    printf("b extents: %f %f %f\n", b.getSizeX() / 2, b.getSizeY() / 2, b.getSizeZ() / 2);
-    printf("divisor: %f\n", divisor);
-
-    // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
-    float r = tmp.getSizeX()/2 * glm::abs(p.normal.x) + tmp.getSizeY()/2 * glm::abs(p.normal.y) + tmp.getSizeZ()/2 * glm::abs(p.normal.z);
-
-    printf("r: %f\n", r);
-
-    // Compute distance of box center from plane
-    float s = glm::dot(p.normal, tmp.getCenter()) - p.distance;
-
-    printf("Box to Plane: %f\n", p.getSignedDistanceToPlan(tmp.getCenter()));
-
-    // Intersection occurs when distance s falls within [-r,+r] interval
-    return -r <= p.getSignedDistanceToPlan(tmp.getCenter());
-
-}
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -352,11 +291,15 @@ int main(int, char**)
     Model rocks("./res/models/Rocks/rocks.fbx");
     rocks.transform.scale = glm::vec3(30.0f);
 
+    Model lamp("./res/models/lampka/lamp_mdl.fbx");
+    lamp.transform.scale = glm::vec3(30.0f);
+    lamp.transform.position = glm::vec3(-2.0f, 0.0f, 0.0f);
+
     //level
-//    Model level("./res/models/caveSystem/caveSystem.fbx");
-//
-//    level.transform.scale = glm::vec3(30.0f);
-//    level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
+    //Model level("./res/models/caveSystem/caveSystem.fbx");
+
+    //level.transform.scale = glm::vec3(30.0f);
+    //level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
     //Player
     Player player("./res/models/Box/box.fbx");
@@ -421,46 +364,23 @@ int main(int, char**)
         //useDebugCamera(proj, view, window, scale);
         useOrthoCamera(proj, view, window, cameraY, scale);
         //TODO: renderManager/meshComponent
-        /* {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-            basicShader.use();
-            basicShader.setFloat("scale", scale);
-            basicShader.setMat4("projection", proj);
-            basicShader.setMat4("view", view);
+        //basicShader.use();
+        //basicShader.setFloat("scale", scale);
+        //basicShader.setMat4("projection", proj);
+        //basicShader.setMat4("view", view);
 
-        basicShader.use();
-//
-//        {   //TODO: w LightComponent
-//            LightSource* slight = sphere->getComponent<LightSource>(ComponentType::LIGHTSOURCE);
-//
-//            basicShader.setVec3("viewPos", camera.Position);
-//
-//            basicShader.setVec3("spotLight.position", slight->getPosition());
-//            basicShader.setVec3("spotLight.direction", slight->getDirection());
-//            basicShader.setVec3("spotLight.ambient", slight->getAmbient());
-//            basicShader.setVec3("spotLight.diffuse", slight->getDiffuse());
-//            basicShader.setVec3("spotLight.specular", slight->getSpecular());
-//            basicShader.setFloat("spotLight.constant", slight->getConstant());
-//            basicShader.setFloat("spotLight.linear", slight->getLinear());
-//            basicShader.setFloat("spotLight.quadratic", slight->getQuadratic());
-//            basicShader.setFloat("spotLight.cutOff", slight->getCutOff());
-//            basicShader.setFloat("spotLight.outerCutOff", slight->getOuterCutOff());
-//        }
-//
-        basicShader.setFloat("scale", scale);
-        basicShader.setMat4("projection", proj);
-        basicShader.setMat4("view", view);
+        //glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+        //basicShader.setMat4("model", model);
 
-        //cube1->render(basicShader);
-        glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-        basicShader.setMat4("model", model);
+        //glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+        //glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
 
-
+        //player.checkCollision(lamp.getColliders());
+        player.checkCollision(rocks.getColliders());
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -480,10 +400,10 @@ int main(int, char**)
 
         camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
-        lamp.Draw(PBRShader, camFrustum, proj, view, renderCount);
-        lamp2.Draw(PBRShader, camFrustum, proj, view, renderCount);
-        lamp3.Draw(PBRShader, camFrustum, proj, view, renderCount);
-        lamp4.Draw(PBRShader, camFrustum, proj, view, renderCount);
+        rocks.Draw(PBRShader);
+        lamp.Draw(PBRShader);
+
+        player.render(PBRShader);
 
         {
             ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.

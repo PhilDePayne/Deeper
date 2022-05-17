@@ -44,7 +44,11 @@ public:
 
     Model(char *path);
 
+    void Draw(Shader shader);
+
     void Draw(Shader shader, Frustum& frustum, glm::mat4& proj, glm::mat4& view, int& renderCount);
+
+    std::vector<BoxCollider> getColliders();
 
     Transform transform;
 

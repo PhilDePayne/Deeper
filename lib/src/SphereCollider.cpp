@@ -58,7 +58,12 @@ glm::vec3 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
         (y - tmpCenter.y) * (y - tmpCenter.y) +
         (z - tmpCenter.z) * (z - tmpCenter.z));
 
+    //printf("%f %f %f %f %f %f\n", other->getCenter().x, other->getCenter().y, other->getCenter().z,
+        //other->getSizeX(), other->getSizeY(), other->getSizeZ());
+
     if (distance < getRadius() && resolve) {
+
+        printf("COLLISION\n");
 
         float xDist = (x - tmpCenter.x);
         float yDist = (y - tmpCenter.y);
@@ -93,6 +98,8 @@ glm::vec3 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
         return ret;
 
     }
+
+    //else printf("NOT COLLISION\n");
 
     return ret;
 

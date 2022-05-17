@@ -15,6 +15,7 @@
 #include "Model.h"
 #include "Mesh.h"
 #include "Camera.h"
+#include "SphereCollider.h"
 
 
 class Player {
@@ -23,6 +24,7 @@ public:
 
     Player(char *path) {
         body = new Model(path);
+        collider.setRadius(20.0f);
     }
 
     void render(Shader &shader) {
@@ -91,6 +93,22 @@ public:
             }
         }
 
+        collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
+
+    }
+
+    void checkCollision(std::vector<BoxCollider> other) {
+
+        for (auto i : other) {
+
+            //printf("%f %f %f %f %f %f\n", i.getCenter().x, i.getCenter().y, i.getCenter().z,
+                //i.getSizeX(), i.getSizeY(), i.getSizeZ());
+            body->transform.position = glm::translate(glm::mat4(1.0f), glm::vec3(collider.isCollision(&i, true))) *
+                glm::vec4(body->transform.position,1.0f);
+
+        }
+        
+        //printf("%d\n", other.size());
     }
 
     Model *getBody() const {
@@ -101,6 +119,7 @@ public:
         return direction;
     }
 
+    SphereCollider collider;
 
 private:
     Model* body;

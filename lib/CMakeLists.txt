@@ -30,7 +30,8 @@ set(SOURCE_FILES
  	include/Model.h
 	src/Model.cpp
 	include/Mesh.h
-    include/Frustum.h)
+    src/Mesh.cpp
+    include/Frustum.h
 	include/Player.h)
 
 #TODO: Biblioteka variable

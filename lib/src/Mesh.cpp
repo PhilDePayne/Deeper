@@ -2,9 +2,13 @@
 // Created by Wojtek on 06.05.2022.
 //
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include "Mesh.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_access.hpp>
+#include "glm/gtx/string_cast.hpp"
 
 Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat4 modelMatrix, GLuint texturesSetID)
 {
@@ -22,17 +26,21 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
         if (i.Position.y > maxZ) maxZ = i.Position.y;
         if (i.Position.y < minZ) minZ = i.Position.y;
 
-        //printf("%f %f %f\n", i.Position.x, i.Position.y, i.Position.z);
-
     }
 
-    printf("%f %f %f %f %f %f\n", maxX, minX, maxY, minY, maxZ, minZ);
-
     boundingVolume.setCenter(glm::vec3((maxX + minX) / 2 , (maxY + minY) / 2 , (maxZ + minZ) / 2 ));
+
+    //glm::vec4 localTransform = glm::row(modelMatrix, 0); //why no work?
+
+    glm::vec4 localTransform = glm::vec4(modelMatrix[3][0], modelMatrix[3][1], modelMatrix[3][2], modelMatrix[3][3]);
+
+    glm::vec3 lt = localTransform;
+
+    boundingVolume.setCenter(glm::translate(glm::mat4(1.0f), lt) * glm::vec4(boundingVolume.getCenter(), 1.0f));
     boundingVolume.setSize(glm::vec3((maxX - minX) , (maxY - minY) , (maxZ - minZ) ));
 
-    printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z, 
-        boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
+    //printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z, 
+        //boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
 }
 
 void Mesh::Draw(Shader &shader, Transform modelTransform)
