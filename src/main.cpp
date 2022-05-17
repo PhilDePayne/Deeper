@@ -214,8 +214,8 @@ int main(int, char**)
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(0.749556f * 30.0f, 5.211264f * 30.0f, 0.712872f * 30.0f);
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 0.0f, 0.0f * 30);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(240.213776f, 7.182465f, 36.710411f);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(217.679733f, -10.095337f, -155.970673f);
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
@@ -288,12 +288,19 @@ int main(int, char**)
     PBRShader.setInt("aoMap", 4);
     PBRShader.setInt("emissiveMap", 5);
 
-    Model rocks("./res/models/Rocks/rocks.fbx");
-    rocks.transform.scale = glm::vec3(30.0f);
+    //Model rocks("./res/models/Rocks/rocks.fbx");
+    //rocks.transform.scale = glm::vec3(30.0f);
 
     Model lamp("./res/models/lampka/lamp_mdl.fbx");
     lamp.transform.scale = glm::vec3(30.0f);
-    lamp.transform.position = glm::vec3(-2.0f, 0.0f, 0.0f);
+    lamp.transform.position = glm::vec3(-300.0f, -20.0f, 0.0f);
+
+    Model colliders("./res/models/Colliders/Test.fbx");
+    colliders.transform.scale = glm::vec3(20.0f);
+    colliders.transform.position = glm::vec3(0.0f, -700.0f, 0.0f);
+
+    //Model pickaxe("./res/models/Kilof/kilof.fbx");
+    //pickaxe.transform.scale = glm::vec3(300.0f);
 
     //level
     //Model level("./res/models/caveSystem/caveSystem.fbx");
@@ -307,7 +314,8 @@ int main(int, char**)
 
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
-    int renderCount = 0;
+    //pickaxe.getColliders();
+    colliders.getColliders();
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -336,25 +344,6 @@ int main(int, char**)
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
-        //TODO: w klasie colliderow
-        {
-
-            BoxCollider* cubeCollider = cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
-            cubeCollider->z_rotation_angle = 45.0f;
-            SphereCollider* sphereCollider = sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER);
-
-            glm::vec3 separate = sphereCollider->isCollision(cubeCollider, true);
-
-
-            xPos += separate.x;
-            yPos += separate.y;
-            zPos += separate.z;
-
-            move = true;
-
-
-        }
         
         int display_w, display_h;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -364,6 +353,8 @@ int main(int, char**)
         //useDebugCamera(proj, view, window, scale);
         useOrthoCamera(proj, view, window, cameraY, scale);
         //TODO: renderManager/meshComponent
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         //basicShader.use();
         //basicShader.setFloat("scale", scale);
@@ -380,7 +371,9 @@ int main(int, char**)
         player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
 
         //player.checkCollision(lamp.getColliders());
-        player.checkCollision(rocks.getColliders());
+        //player.checkCollision(rocks.getColliders());
+        player.checkCollision(colliders.getColliders());
+        //player.checkCollision(pickaxe.getColliders());
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -400,8 +393,10 @@ int main(int, char**)
 
         camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
-        rocks.Draw(PBRShader);
-        lamp.Draw(PBRShader);
+        //rocks.Draw(PBRShader);
+        //lamp.Draw(PBRShader);
+        colliders.Draw(PBRShader);
+        //pickaxe.Draw(PBRShader);
 
         player.render(PBRShader);
 
@@ -410,7 +405,7 @@ int main(int, char**)
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
 
-            ImGui::Text("Rendering %d gameObjects", renderCount);
+            //ImGui::Text("Rendering %d gameObjects", renderCount);
 
             ImGui::End();
         }
@@ -435,8 +430,6 @@ int main(int, char**)
 
         glfwMakeContextCurrent(window);
         glfwSwapBuffers(window);
-
-        renderCount = 0;
 
     }
 

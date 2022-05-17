@@ -223,9 +223,9 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             convertedMatrix[i][j] = transformMatrix[j][i];
         }
     }
-    //printf("ASSIMP MAT\n");
+    printf("ASSIMP MAT\n");
 
-    //drawMatrix(transformMatrix);
+    drawMatrix(transformMatrix);
 
     //printf("GLM MAT\n");
 
@@ -326,9 +326,9 @@ std::vector<BoxCollider> Model::getColliders() {
         tmp.setSize(glm::vec3(i.boundingVolume.getSizeX(), i.boundingVolume.getSizeY(), i.boundingVolume.getSizeZ()) *
             transform.scale);
 
-        printf("%f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z);
+        tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(i.boundingVolume.getCenter() * transform.scale, 1.0f)));
 
-        tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(i.boundingVolume.getCenter(), 1.0f)) * transform.scale);
+        printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
 
         ret.push_back(tmp);
 
