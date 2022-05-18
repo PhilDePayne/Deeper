@@ -82,7 +82,7 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &scale);
-void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale);
+void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player);
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -311,6 +311,7 @@ int main(int, char**)
     //Player
     Player player("./res/models/Box/box.fbx");
     player.getBody()->transform.scale = glm::vec3(1.5f);
+    player.getBody()->transform.position = glm::vec3(0.0f, 200.0f, 0.0f);
 
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
@@ -338,6 +339,8 @@ int main(int, char**)
 
             ImGui::Text("depthPos: %f   clipWidth: %f", depthPos, clipWidth);
 
+            ImGui::Text("x velocity: %f | z velocity: %f", player.getVelX(), player.getVelZ());
+
             ImGui::End();
         }
 
@@ -351,7 +354,7 @@ int main(int, char**)
         glfwGetFramebufferSize(window, &display_w, &display_h);
 
         //useDebugCamera(proj, view, window, scale);
-        useOrthoCamera(proj, view, window, cameraY, scale);
+        useOrthoCamera(proj, view, window, cameraY, scale, player);
         //TODO: renderManager/meshComponent
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -368,7 +371,11 @@ int main(int, char**)
         //glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
         //glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+        if(!rotate)
+            player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+        else
+            player.stopMovement();
+        //player.gravityOn(deltaTime);
 
         //player.checkCollision(lamp.getColliders());
         //player.checkCollision(rocks.getColliders());
@@ -399,16 +406,6 @@ int main(int, char**)
         //pickaxe.Draw(PBRShader);
 
         player.render(PBRShader);
-
-        {
-            ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-                ImGui::GetIO().Framerate);
-
-            //ImGui::Text("Rendering %d gameObjects", renderCount);
-
-            ImGui::End();
-        }
 
         //PLAYER + LEVEL
 //        if(!rotate) {
@@ -451,7 +448,7 @@ void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
     view = camera.GetViewMatrix();
 }
 
-void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale) {
+void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player) {
 
     scale = 100.0f;
     cameraY -= 0.2f;
@@ -467,8 +464,8 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
         glfwSetWindowShouldClose(window, true);
 
     //obrot kamery
-//    camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY); //ze spadaniem
-    camera.ProcessMovementNoPlayer(6.0f, 50.0f * deltaTime, rotate, 0.0f); //bez spadania
+    camera.ProcessMovement(6.0f, 50.0f * deltaTime, rotate, 0.0f, depthPos, player.getBody()->transform.position, player.getDirection());
+    //camera.ProcessMovementNoPlayer(6.0f, 50.0f * deltaTime, rotate, 0.0f);
     camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipZ);
 }
 
