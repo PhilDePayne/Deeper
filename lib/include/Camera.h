@@ -102,7 +102,7 @@ public:
         return proj * view;
     }
 
-    void ProcessMovement(float radius, float speed, int &move, float camY, float &zPos, glm::vec3 pos, int direction) {
+    void ProcessMovement(float radius, float speed, int &move, float camY, float &zPos, glm::vec3 &pos, int direction) {
 
         if(move != 0) {
             totalDegrees += speed;
@@ -117,15 +117,6 @@ public:
                 if(dir < FRONT_DIR)
                     dir = LEFT_DIR;
 
-                //TODO: ładniej zrobić
-//                if(dir == FRONT_DIR)
-//                    zPos = -pos.z;
-//                else if(dir == RIGHT_DIR)
-//                    zPos = -pos.x;
-//                else if(dir == BACK_DIR)
-//                    zPos = pos.z;
-//                else if(dir == LEFT_DIR)
-//                    zPos = -pos.x;
 
                 if(dir == FRONT_DIR || dir == BACK_DIR) {
                     zPos = pos.z * direction;
@@ -194,6 +185,14 @@ public:
 
     Camera_Facing_Direction getCameraDirection() {
         return dir;
+    }
+
+    float getAngle() {
+        return angle;
+    }
+
+    float getTotalDegrees() const {
+        return totalDegrees;
     }
 
 

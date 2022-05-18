@@ -334,12 +334,15 @@ int main(int, char**)
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                         ImGui::GetIO().Framerate);
 
-            ImGui::Text("Pozycja gracza x: %f  | y: %f | z: %f", player.getBody()->transform.position.x,
+            ImGui::Text("player's position x: %f  | y: %f | z: %f", player.getBody()->transform.position.x,
                     player.getBody()->transform.position.y, player.getBody()->transform.position.z);
 
             ImGui::Text("depthPos: %f   clipWidth: %f", depthPos, clipWidth);
 
             ImGui::Text("x velocity: %f | z velocity: %f", player.getVelX(), player.getVelZ());
+
+            ImGui::Text("player's angle: %f | camera's angle: %f", player.getAngle(), camera.getAngle());
+            ImGui::Text("camera's directin: %i ", (int)camera.getCameraDirection());
 
             ImGui::End();
         }
@@ -374,7 +377,7 @@ int main(int, char**)
         if(!rotate)
             player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
         else
-            player.stopMovement();
+            player.rotate(50.0f * deltaTime * rotate, camera.getCameraDirection());
         //player.gravityOn(deltaTime);
 
         //player.checkCollision(lamp.getColliders());

@@ -112,6 +112,8 @@ public:
 //            }
 //        }
 
+        correctAngle(dir);
+
         collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
 
     }
@@ -142,9 +144,17 @@ public:
         return direction;
     }
 
-    void stopMovement() {
+    //zatrzymywanie podczas obrotu i ustawianie gracza przodem do kamery
+    void rotate(float angle, Camera_Facing_Direction dir) {
         x = 0.0f;
         z = 0.0f;
+        body->transform.y_rotation_angle -= angle;
+    }
+
+    void correctAngle(Camera_Facing_Direction dir) {
+        if(fmodf(body->transform.y_rotation_angle, 90.0f) != 0) {
+            body->transform.y_rotation_angle = -90.0f * (float)dir;
+        }
     }
 
     SphereCollider collider;
@@ -156,6 +166,10 @@ public:
 
     float getVelZ() {
         return z;
+    }
+
+    float getAngle() {
+        return body->transform.y_rotation_angle;
     }
 
 private:
