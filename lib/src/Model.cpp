@@ -279,6 +279,7 @@ unsigned int Model::textureFromFile(const std::string &prefix, const std::string
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         stbi_image_free(data);
+        std::cout << "Texture loaded at path: " << filePath << std::endl;
     }
     else
     {

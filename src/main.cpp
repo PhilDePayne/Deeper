@@ -288,8 +288,8 @@ int main(int, char**)
     PBRShader.setInt("aoMap", 4);
     PBRShader.setInt("emissiveMap", 5);
 
-    //Model rocks("./res/models/Rocks/rocks.fbx");
-    //rocks.transform.scale = glm::vec3(30.0f);
+//    Model rocks("./res/models/Rocks/rocks.fbx");
+//    rocks.transform.scale = glm::vec3(30.0f);
 
     Model lamp("./res/models/lampka/lamp_mdl.fbx");
     lamp.transform.scale = glm::vec3(30.0f);
@@ -303,15 +303,19 @@ int main(int, char**)
     //pickaxe.transform.scale = glm::vec3(300.0f);
 
     //level
-    //Model level("./res/models/caveSystem/caveSystem.fbx");
+//    Model level("./res/models/caveSystem/caveSystem.fbx");
 
-    //level.transform.scale = glm::vec3(30.0f);
-    //level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
+//    level.transform.scale = glm::vec3(30.0f);
+//    level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
     //Player
     Player player("./res/models/Box/box.fbx");
     player.getBody()->transform.scale = glm::vec3(1.5f);
     player.getBody()->transform.position = glm::vec3(0.0f, 200.0f, 0.0f);
+
+    Model zombieAnimTestModel("./res/models/zombie/zombieAnimTest.fbx");
+    zombieAnimTestModel.transform.scale = glm::vec3(2.5f);
+    zombieAnimTestModel.transform.position = glm::vec3(0.0f, -200.0f, 0.0f);
 
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
@@ -356,7 +360,7 @@ int main(int, char**)
         glfwMakeContextCurrent(window);
         glfwGetFramebufferSize(window, &display_w, &display_h);
 
-        //useDebugCamera(proj, view, window, scale);
+//        useDebugCamera(proj, view, window, scale);
         useOrthoCamera(proj, view, window, cameraY, scale, player);
         //TODO: renderManager/meshComponent
 
@@ -403,12 +407,14 @@ int main(int, char**)
 
         camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
-        //rocks.Draw(PBRShader);
+//        rocks.Draw(PBRShader);
         //lamp.Draw(PBRShader);
         colliders.Draw(PBRShader);
         //pickaxe.Draw(PBRShader);
 
         player.render(PBRShader);
+
+        zombieAnimTestModel.Draw(PBRShader);
 
         //PLAYER + LEVEL
 //        if(!rotate) {
