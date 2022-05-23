@@ -53,6 +53,8 @@ const unsigned int SCR_HEIGHT = 720;
 const float nearPlane = -100.0f;
 const float farPlane = 100.0f;
 
+bool debugBox = false;
+
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                                 float zNear, float zFar)
 {
@@ -62,12 +64,14 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     const glm::vec3 frontMultFar = zFar * cam.Front;
     //printf("Cam position Y: %f\n", cam.Position.y);
 
-    frustum.nearFace = { cam.Position + zNear * cam.Front, cam.Front };
-    frustum.farFace = { cam.Position + frontMultFar, -cam.Front };
-    frustum.rightFace = { cam.Position,
-                          glm::cross(cam.Up,frontMultFar + cam.Right * halfHSide) };
-    frustum.leftFace = { cam.Position,
-                         glm::cross(frontMultFar - cam.Right * halfHSide, cam.Up) };
+    frustum.nearFace = { glm::vec3(0.0f, 0.0f, 1.0f),
+                         glm::vec3(0.0f, 0.0f, -1.0f) };
+    frustum.farFace = { glm::vec3(0.0f, 0.0f, -1.0f),
+                         glm::vec3(0.0f, 0.0f, 1.0f) };
+    frustum.rightFace = { glm::vec3(1.0f, 0.0f, 0.0f),
+                         glm::vec3(-1.0f, 0.0f, 0.0f) };
+    frustum.leftFace = { glm::vec3(-1.0f, 0.0f, 0.0f),
+                         glm::vec3(1.0f, 0.0f, 0.0f)};
     frustum.topFace = { glm::vec3(0.0f, 1, 0.0f),
                             glm::vec3(0, -1, 0)};
     frustum.bottomFace = { glm::vec3(0.0f, -1, 0.0f),
@@ -214,11 +218,13 @@ int main(int, char**)
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(240.213776f, 7.182465f, 36.710411f);
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(217.679733f, -10.095337f, -155.970673f);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(9.650051f * 20, 0.175093f * 20, 2.000000f * 20);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(13.413744f * 20, 17.216393f, 1.657332f * 20);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 30.0f;
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->x_rotation_angle = 0.0f;
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
-        cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
+        cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(94.5f, 4.0f, 17.0f));
 
         sphere->addComponent<SphereMesh>();
         sphere->addComponent<Transform>();
@@ -291,13 +297,13 @@ int main(int, char**)
     //Model rocks("./res/models/Rocks/rocks.fbx");
     //rocks.transform.scale = glm::vec3(30.0f);
 
-    Model lamp("./res/models/lampka/lamp_mdl.fbx");
-    lamp.transform.scale = glm::vec3(30.0f);
-    lamp.transform.position = glm::vec3(-300.0f, -20.0f, 0.0f);
+    //Model lamp("./res/models/lampka/lamp_mdl.fbx");
+    //lamp.transform.scale = glm::vec3(30.0f);
+    //lamp.transform.position = glm::vec3(-200.0f, -20.0f, 0.0f);
 
-    Model colliders("./res/models/Colliders/Test.fbx");
+    Model colliders("./res/models/Colliders/caveTestColliders.fbx");
     colliders.transform.scale = glm::vec3(20.0f);
-    colliders.transform.position = glm::vec3(0.0f, -700.0f, 0.0f);
+    colliders.transform.position = glm::vec3(0.0f, -370.0f, 0.0f);
 
     //Model pickaxe("./res/models/Kilof/kilof.fbx");
     //pickaxe.transform.scale = glm::vec3(300.0f);
@@ -305,7 +311,7 @@ int main(int, char**)
     //level
     //Model level("./res/models/caveSystem/caveSystem.fbx");
 
-    //level.transform.scale = glm::vec3(30.0f);
+    //level.transform.scale = glm::vec3(20.0f);
     //level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
     //Player
@@ -315,7 +321,7 @@ int main(int, char**)
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
     //pickaxe.getColliders();
-    colliders.getColliders();
+    //colliders.getColliders();
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -355,18 +361,20 @@ int main(int, char**)
         //TODO: renderManager/meshComponent
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if(debugBox)
+        {
+            basicShader.use();
+            basicShader.setFloat("scale", scale);
+            basicShader.setMat4("projection", proj);
+            basicShader.setMat4("view", view);
 
-        //basicShader.use();
-        //basicShader.setFloat("scale", scale);
-        //basicShader.setMat4("projection", proj);
-        //basicShader.setMat4("view", view);
+            glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+            basicShader.setMat4("model", model);
 
-        //glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-        //basicShader.setMat4("model", model);
-
-        //glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-        //glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-        //glDrawArrays(GL_TRIANGLES, 0, 36);
+            glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+            glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
 
@@ -374,6 +382,7 @@ int main(int, char**)
         //player.checkCollision(rocks.getColliders());
         player.checkCollision(colliders.getColliders());
         //player.checkCollision(pickaxe.getColliders());
+        //player.checkCollision(level.getColliders());
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -394,9 +403,10 @@ int main(int, char**)
         camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
         //rocks.Draw(PBRShader);
-        //lamp.Draw(PBRShader);
+        //lamp.Draw(PBRShader, camFrustum, proj, view);
         colliders.Draw(PBRShader);
         //pickaxe.Draw(PBRShader);
+        //level.Draw(PBRShader);
 
         player.render(PBRShader);
 
@@ -467,7 +477,7 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
         glfwSetWindowShouldClose(window, true);
 
     //obrot kamery
-//    camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY); //ze spadaniem
+    //camera.ProcessMovement(6.0f, 1.5f, rotate, cameraY); //ze spadaniem
     camera.ProcessMovementNoPlayer(6.0f, 50.0f * deltaTime, rotate, 0.0f); //bez spadania
     camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipZ);
 }

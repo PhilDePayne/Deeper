@@ -24,7 +24,7 @@ public:
 
     Player(char *path) {
         body = new Model(path);
-        collider.setRadius(20.0f);
+        collider.setRadius(15.0f);
     }
 
     void render(Shader &shader) {

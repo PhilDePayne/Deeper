@@ -51,7 +51,7 @@ void Model::Draw(Shader shader)
     }
 }
 
-void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &view, int &renderCount)
+void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &view)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
     {
@@ -63,10 +63,13 @@ void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &vi
 
         tmpBV.setCenter(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(tmpBV.getCenter(), 1.0f));
 
-        if (isOnOrForwardPlan(tmpBV, frustum.topFace, proj, view) &&
-            isOnOrForwardPlan(tmpBV, frustum.bottomFace, proj, view)) {
+        if (isOnOrForwardPlan(tmpBV, frustum.leftFace, proj, view) &&
+            isOnOrForwardPlan(tmpBV, frustum.rightFace, proj, view) &&
+            isOnOrForwardPlan(tmpBV, frustum.topFace, proj, view)&&
+            isOnOrForwardPlan(tmpBV, frustum.bottomFace, proj, view)&&
+            isOnOrForwardPlan(tmpBV, frustum.nearFace, proj, view)&&
+            isOnOrForwardPlan(tmpBV, frustum.farFace, proj, view)) {
 
-            renderCount++;
 
             if (meshes[i].getTexturesSetId() != loadedSet)
             {
@@ -75,6 +78,7 @@ void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &vi
 
             meshes[i].Draw(shader, transform);
         }
+        else printf("NOT RENDERING\n");
 
     }
 }
@@ -223,13 +227,13 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             convertedMatrix[i][j] = transformMatrix[j][i];
         }
     }
-    printf("ASSIMP MAT\n");
+    //printf("ASSIMP MAT\n");
 
-    drawMatrix(transformMatrix);
+    //drawMatrix(transformMatrix);
 
-    //printf("GLM MAT\n");
+    printf("GLM MAT\n");
 
-    //std::cout << glm::to_string(convertedMatrix) << '\n';
+    std::cout << glm::to_string(convertedMatrix) << '\n';
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, convertedMatrix, textureSetId);
@@ -328,7 +332,10 @@ std::vector<BoxCollider> Model::getColliders() {
 
         tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(i.boundingVolume.getCenter() * transform.scale, 1.0f)));
 
-        printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
+        tmp.x_rotation_angle = i.boundingVolume.z_rotation_angle;
+        tmp.z_rotation_angle = i.boundingVolume.z_rotation_angle;
+
+        //printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
 
         ret.push_back(tmp);
 
