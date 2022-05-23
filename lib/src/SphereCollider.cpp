@@ -33,9 +33,9 @@ void SphereCollider::setRadius(float r) {
 
 }
 
-glm::vec3 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
+glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
 
-    glm::vec3 ret(0, 0, 0);
+    glm::vec4 ret(0, 0, 0, 0);
 
     glm::mat4 tmpMat = (
         glm::translate(glm::mat4(1.0f), glm::vec3(other->getCenter())) *
@@ -90,11 +90,19 @@ glm::vec3 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
 
         }
 
+        ret.w = 1;
+
         return ret;
 
     }
 
-    return ret;
+    else if (distance < getRadius() && !resolve) {
+        printf("NOT RESOLVING\n");
+        ret.w = 1;
+        return ret;
+    }
+
+    else return ret;
 
 }
 

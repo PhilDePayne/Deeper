@@ -6,8 +6,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
 #include "GameObject.h"
 #include "CubeMesh.h"
@@ -161,13 +159,21 @@ int main(int, char**)
     Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
 
     nodePtr root(new SceneGraphNode());
+    nodePtr cube1parent(new SceneGraphNode());
     nodePtr cube1(new SceneGraphNode());
     nodePtr cube2(new SceneGraphNode());
+    nodePtr cube3parent(new SceneGraphNode());
+    nodePtr cube3(new SceneGraphNode());
+    nodePtr cube4(new SceneGraphNode());
     nodePtr sphere1(new SceneGraphNode());
 
     gameObjectPtr rootGO(new GameObject());
+    gameObjectPtr cubeParent(new GameObject());
     gameObjectPtr cube(new GameObject());
     gameObjectPtr backgroundCube(new GameObject());
+    gameObjectPtr rightCubeParent(new GameObject());
+    gameObjectPtr rightCube(new GameObject());
+    gameObjectPtr leftCube(new GameObject());
     gameObjectPtr sphere(new GameObject());
     gameObjectPtr spotLight(new GameObject());
     gameObjectPtr dirLight(new GameObject());
@@ -175,27 +181,58 @@ int main(int, char**)
 
     //OBJECT PARAMETERS
     {
-        root->addChild(cube1);
+        root->addChild(cube1parent);
         root->addChild(cube2);
+        root->addChild(cube3parent);
         root->addChild(sphere1);
+        //root->addChild(cube1);
+        //root->addChild(cube3);
+
+        cube1parent->addChild(cube1);
+        cube3parent->addChild(cube3);
+        cube1parent->addChild(cube4);
 
         //cube1->addChild(cube2);
         //cube1->addChild(sphere1);
 
         cube1->addGameObject(cube);
+        cube1parent->addGameObject(cubeParent);
         cube2->addGameObject(backgroundCube);
+        cube3parent->addGameObject(rightCubeParent);
+        cube3->addGameObject(rightCube);
         sphere1->addGameObject(sphere);
         root->addGameObject(rootGO);
+        cube4->addGameObject(leftCube);
 
         rootGO->addComponent<Transform>();
-        rootGO->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 45.0f;
+        rootGO->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 0.0f;
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
         cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 45.0f;
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 0.0f, 0.0f);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(0.22f);
         cube->addComponent<BoxCollider>();
-        cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
-        cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
+        cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(-3.0f, 0.0, 0.0f));
+        cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(0.22f * 3.0f));
+
+        leftCube->addComponent<CubeMesh>();
+        leftCube->addComponent<Transform>();
+        leftCube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 0.0f;
+        leftCube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 0.2f, 0.0f);
+        leftCube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(0.05f);
+        leftCube->addComponent<BoxCollider>();
+        leftCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f - 3.0f, 0.6f, 0.0f - 0.0f));
+        leftCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(0.05f * 3.0f));
+
+        cubeParent->addComponent<CubeMesh>();
+        cubeParent->addComponent<Transform>();
+        cubeParent->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 0.0f;
+        cubeParent->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(-3.0f, 0.0f, 0.0f);
+        cubeParent->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(3.0f);
+        cubeParent->addComponent<BoxCollider>();
+        cubeParent->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(-3.0f, 0.0, 0.0f));
+        cubeParent->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(3.0f));
 
         backgroundCube->addComponent<CubeMesh>();
         backgroundCube->addComponent<Transform>();
@@ -204,6 +241,24 @@ int main(int, char**)
         backgroundCube->addComponent<BoxCollider>();
         backgroundCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f, 0.0f, -3.0f));
         backgroundCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(3.0f, 3.0f, 3.0f));
+
+        rightCube->addComponent<CubeMesh>();
+        rightCube->addComponent<Transform>();
+        rightCube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 0.0f;
+        rightCube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(0.0f, 0.0f, 0.0f);
+        rightCube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(0.33f);
+        rightCube->addComponent<BoxCollider>();
+        rightCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(3.0f, 0.0f, 0.0f));
+        rightCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(1.0f));
+
+        rightCubeParent->addComponent<CubeMesh>();
+        rightCubeParent->addComponent<Transform>();
+        rightCubeParent->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 0.0f;
+        rightCubeParent->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(3.0f, 0.0f, 0.0f);
+        rightCubeParent->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(3.0f);
+        rightCubeParent->addComponent<BoxCollider>();
+        rightCubeParent->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(3.0f, 0.0f, 0.0f));
+        rightCubeParent->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(3.0f));
 
         sphere->addComponent<SphereMesh>();
         sphere->addComponent<Transform>();
@@ -388,11 +443,36 @@ int main(int, char**)
         //COLLISION
         {
             
-            BoxCollider* cubeCollider = cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
+            BoxCollider* cubeCollider = cubeParent->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
             cubeCollider->z_rotation_angle = 0.0f;
             SphereCollider* sphereCollider = sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER);
 
-            glm::vec3 separate = sphereCollider->isCollision(cubeCollider, true);
+            glm::vec4 separate = sphereCollider->isCollision(cubeCollider, false);
+
+            if (separate.w == 1) {
+
+                printf("COLLIDING\n");
+
+                cubeCollider = cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
+                cubeCollider->z_rotation_angle = 45.0f;
+                separate = sphereCollider->isCollision(cubeCollider, true);
+
+                xPos += separate.x;
+                yPos += separate.y;
+                zPos += separate.z;
+
+                cubeCollider = leftCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
+                cubeCollider->z_rotation_angle = 0.0f;
+                separate = sphereCollider->isCollision(cubeCollider, true);
+
+                xPos += separate.x;
+                yPos += separate.y;
+                zPos += separate.z;
+            }
+
+            cubeCollider = rightCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
+
+            separate = sphereCollider->isCollision(cubeCollider, true);
 
             xPos += separate.x;
             yPos += separate.y;
@@ -428,8 +508,11 @@ int main(int, char**)
         basicShader.setMat4("projection", proj);
         basicShader.setMat4("view", view);
 
+        //cube1parent->render(basicShader);
+        cube4->render(basicShader);
         cube1->render(basicShader);
         cube2->render(basicShader);
+        cube3->render(basicShader);
 
         glm::mat4 model = sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix;
         basicShader.setMat4("model", model);

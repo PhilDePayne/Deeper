@@ -75,8 +75,10 @@ void SceneGraphNode::render(Shader shader, bool isRoot) {
 
 void SceneGraphNode::updateTransform() {
 
-    gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix =
-        gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+    if (gameObject->getComponent<Transform>(ComponentType::TRANSFORM) != nullptr) {
+        gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->worldMatrix =
+            gameObject->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+    }
 
     dirty = true;
 
