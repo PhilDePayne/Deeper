@@ -42,7 +42,7 @@ public:
 
         //poruszanie prawo lewo i grawitacja
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-
+//            rotate(90.0f);
             dirLR = -1;
 
             if (dir == FRONT_DIR || dir == BACK_DIR) {
@@ -55,7 +55,7 @@ public:
         }
 
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-
+//            rotate(-90.0f);
             dirLR = 1;
 
             if (dir == FRONT_DIR || dir == BACK_DIR) {
@@ -67,20 +67,24 @@ public:
             }
         }
 
+        //clamp velocities
         if(x != 0.0f) {
             x += velocity * 10.0f * dirLR;
-            if(fabs(x) < 0.1f)
+            if(fabs(x) < 0.5f)
                 x = 0.0f;
+            if(x > 16.0f)
+                x = 16.0f;
         }
 
         if(z != 0.0f) {
             z += velocity * 10.0f * dirLR;
-            if(fabs(z) < 0.1f)
+            if(fabs(z) < 0.5f)
                 z = 0.0f;
+            if(z > 16.0f)
+                z = 16.0f;
         }
 
         body->transform.position += glm::vec3(x, 0.0f, z);
-
 
 //        //DEBUG
 //        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -112,7 +116,8 @@ public:
 //            }
 //        }
 
-        correctAngle(dir);
+        rotateLeftRight((int) dir);
+        //correctAngle((int)dir + dirLR);
 
         collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
 
@@ -145,16 +150,24 @@ public:
     }
 
     //zatrzymywanie podczas obrotu i ustawianie gracza przodem do kamery
-    void rotate(float angle, Camera_Facing_Direction dir) {
+    void rotate(float angle) {
         x = 0.0f;
         z = 0.0f;
         body->transform.y_rotation_angle -= angle;
     }
 
-    void correctAngle(Camera_Facing_Direction dir) {
+    void correctAngle(int dir) {
         if(fmodf(body->transform.y_rotation_angle, 90.0f) != 0) {
             body->transform.y_rotation_angle = -90.0f * (float)dir;
         }
+    }
+
+    //???? źle
+    void rotateLeftRight(int dir) {
+        body->transform.y_rotation_angle = 90.0f * (dir + (float)dirLR) * direction;
+        if(dir == 2)
+            body->transform.y_rotation_angle = -90.0f * (dir + (float)dirLR) * direction;
+
     }
 
     SphereCollider collider;
@@ -175,7 +188,7 @@ public:
 private:
     Model* body;
 
-    float speed = 300.0f;
+    float speed = 200.0f;
     int direction = 1;
     float gravity = -10.0f;
     float x = 0.0f, z = 0.0f;

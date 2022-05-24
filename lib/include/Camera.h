@@ -129,13 +129,13 @@ public:
                 totalDegrees = 0.0f;
                 move = 0;
 
+                correctAngle();
+
             }
 
-            if(angle >= 360.0f)
-                angle = 0.0f;
-            else if(angle <= -90.0f)
-                angle = 270.0f;
         }
+
+
 
         float camX = sin(glm::radians(angle)) * radius;
         float camZ = cos(glm::radians(angle)) * radius;
@@ -148,6 +148,12 @@ public:
 //        else if(angle == 90.0f || angle == 270.0f)
 //            view = glm::translate(view, glm::vec3(zPos, 0.0f, 0.0f));
 
+    }
+
+    void correctAngle() {
+        if(fmodf(angle, 90.0f) != 0) {
+            angle = 90.0f * (float)dir;
+        }
     }
 
     void ProcessMovementNoPlayer(float radius, float speed, int &move, float camY) {
