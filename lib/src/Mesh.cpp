@@ -28,7 +28,7 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
 
     }
 
-    printf("%f %f %f %f %f %f\n", maxX, minX, maxY, minY, maxZ, minZ);
+    //printf("%f %f %f %f %f %f\n", maxX, minX, maxY, minY, maxZ, minZ);
 
     boundingVolume.setCenter(glm::vec3((maxX + minX) / 2 , (maxY + minY) / 2 , (maxZ + minZ) / 2 ));
 
@@ -45,12 +45,12 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
                                      glm::abs((maxY - minY) * (modelMatrix[2][1])),
                                      glm::abs((maxZ - minZ) * modelMatrix[1][2])));
 
-    printf("x: %f z: %f\n", boundingVolume.x_rotation_angle, boundingVolume.z_rotation_angle);
+    //printf("x: %f z: %f\n", boundingVolume.x_rotation_angle, boundingVolume.z_rotation_angle);
 
-    printf("%f\n", glm::cos(glm::radians(boundingVolume.x_rotation_angle)) );
+    //printf("%f\n", glm::cos(glm::radians(boundingVolume.x_rotation_angle)) );
 
-    printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
-        boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
+    //printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
+        //boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
 
 
     

@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <stb_image.h>
 #include <stdio.h>
 //#include <ft2build.h>
 //#include FT_FREETYPE_H
@@ -53,7 +54,7 @@ const unsigned int SCR_HEIGHT = 720;
 const float nearPlane = -100.0f;
 const float farPlane = 100.0f;
 
-bool debugBox = false;
+bool debugBox = 0;
 
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                                 float zNear, float zFar)
@@ -80,6 +81,46 @@ Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
     return frustum;
 }
 
+unsigned int loadCubemap(std::vector<std::string> faces)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
+}
+
+std::vector<std::string> faces {
+        "./res/textures/groundbox.jpg",
+        "./res/textures/groundbox.jpg",
+        "./res/textures/groundbox.jpg",
+        "./res/textures/groundbox.jpg",
+        "./res/textures/groundbox.jpg",
+        "./res/textures/groundbox.jpg"
+};
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -116,6 +157,50 @@ float zPos = 0.0;
 bool collision = false;
 bool move = 0;
 glm::mat4 projection = glm::ortho(0.0f, 720.0f, 0.0f, 1280.0f);
+float skyboxVertices[] = {
+    // positions          
+    -1.0f,  1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+
+    -1.0f, -1.0f,  1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,
+
+     1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+
+    -1.0f, -1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f, -1.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,
+
+    -1.0f,  1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f, -1.0f,
+
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f,  1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f,  1.0f,
+     1.0f, -1.0f,  1.0f
+};
 
 
 int main(int, char**)
@@ -201,6 +286,7 @@ int main(int, char**)
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
+    Shader skyboxShader("./res/shaders/cubemap.vert", "./res/shaders/cubemap.frag");
 
     nodePtr root(new SceneGraphNode());
     nodePtr cube1(new SceneGraphNode());
@@ -208,7 +294,7 @@ int main(int, char**)
 
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
-
+    gameObjectPtr groundBox(new GameObject());
 
 
     //OBJECT PARAMETERS
@@ -234,6 +320,7 @@ int main(int, char**)
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
+        groundBox->addComponent<CubeMesh>();
     }
 
     basicShader.use();
@@ -252,13 +339,6 @@ int main(int, char**)
 
     float cameraY = 0.0f;
     float scale = 1.0f;
-
-    sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
-    sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
-    sphere1->updateTransform();
-    sphere1->update(nullptr, false);
-    cube1->updateTransform();
-    cube1->update(nullptr, false);
 
     // LIGHTS
     glm::vec3 lightPositions[] = {
@@ -321,8 +401,22 @@ int main(int, char**)
 
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
+    unsigned int cubemapTexture = loadCubemap(faces);
+    skyboxShader.use();
+    skyboxShader.setInt("skybox", 0);
+
     //pickaxe.getColliders();
     //colliders.getColliders();
+
+    //DEBUG
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -366,6 +460,21 @@ int main(int, char**)
         useOrthoCamera(proj, view, window, cameraY, scale, player);
         //TODO: renderManager/meshComponent
 
+        skyboxShader.use();
+        skyboxShader.setInt("skybox", 0);
+        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        //skyboxShader.use();
+        view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+        skyboxShader.setMat4("view", view);
+        skyboxShader.setMat4("projection", projection);
+        // skybox cube
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
+
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if(debugBox)
         {
@@ -375,11 +484,15 @@ int main(int, char**)
             basicShader.setMat4("view", view);
 
             glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+            //glm::mat4 model = glm::mat4(1.0f);
+            //model = glm::scale(model, glm::vec3(30.0f));
             basicShader.setMat4("model", model);
 
             glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
             glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
             glDrawArrays(GL_TRIANGLES, 0, 36);
+            //glBindVertexArray(skyboxVAO);
+            //glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
         //glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
@@ -394,7 +507,7 @@ int main(int, char**)
 
         //player.checkCollision(lamp.getColliders());
         //player.checkCollision(rocks.getColliders());
-        player.checkCollision(colliders.getColliders());
+        //player.checkCollision(colliders.getColliders());
         //player.checkCollision(pickaxe.getColliders());
         //player.checkCollision(level.getColliders());
 
@@ -418,7 +531,7 @@ int main(int, char**)
 
         //rocks.Draw(PBRShader);
         //lamp.Draw(PBRShader, camFrustum, proj, view);
-        colliders.Draw(PBRShader);
+        //colliders.Draw(PBRShader);
         //pickaxe.Draw(PBRShader);
         //level.Draw(PBRShader);
 
