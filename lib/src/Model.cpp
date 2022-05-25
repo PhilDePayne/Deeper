@@ -4,21 +4,26 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 
-#define DRAW_NODE_TREE_LOG
-#define MODEL_PATH_LOG
-#define TEXTURE_LOAD_LOG
-#define PROCESS_MESH_LOG
-//#define COLLIDER_COORD_LOG
-
 #include "Model.h"
 #include "glm/gtx/string_cast.hpp"
 #include <stb_image.h>
+#include "LogMacros.h"
+
+// Log macros to disable/enable certain logs in model class
+#ifdef DEEPER_MODEL_CLASS_LOGS
+
+#define DRAW_NODE_TREE_LOG
+//#define TEXTURE_LOAD_LOG
+#define PROCESS_MESH_LOG
+//#define COLLIDER_COORD_LOG
+#define MODEL_GENERAL_INFO_LOG
+
+#endif
 
 Model::Model(char *path)
 {
     loadModel(path);
 }
-
 
 bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
@@ -87,7 +92,7 @@ void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &vi
 
 void Model::loadModel(std::string path)
 {
-#ifdef MODEL_PATH_LOG
+#ifdef MODEL_GENERAL_INFO_LOG
     printf("\nLoading model at path: %s \n", path.c_str());
 #endif
 
@@ -103,13 +108,16 @@ void Model::loadModel(std::string path)
     // retrieve the directory path of the filepath
     directory = path.substr(0, path.find_last_of('/'));
 
-#ifdef DRAW_NODE_TREE_LOG
-    printf("Meshes Count: %u \n", scene->mNumMeshes);
+#ifdef MODEL_GENERAL_INFO_LOG
+    printf("Meshes: %u, Animations: %u \n", scene->mNumMeshes, scene->mNumAnimations);
 #endif
 
     // process ASSIMP's root node recursively
     aiMatrix4x4 startMatrix;
     processNode(scene->mRootNode, scene, &startMatrix, 0);
+#ifdef MODEL_GENERAL_INFO_LOG
+    printf("Total nodes in model: %u\n", totalNodes);
+#endif
 }
 
 // draws matrix in console for debugging
@@ -133,10 +141,14 @@ void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transfo
     for (int i = 0; i < depth; i++) depthPrefix.append("-");
     printf("%sNode_name: %s, meshes: %u\n", depthPrefix.c_str(), node->mName.C_Str(), node->mNumMeshes);
     depth++;
+
 #endif
+#ifdef MODEL_GENERAL_INFO_LOG
+    totalNodes++;
+#endif
+
     // multiply given matrix with transform matrix of the current node
     aiMatrix4x4 currentTransform = *transformMatrix * node->mTransformation;
-
     // process each mesh located at the current node
     for(unsigned int i = 0; i < node->mNumMeshes; i++)
     {
@@ -153,12 +165,22 @@ void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transfo
 
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformMatrix)
 {
+#ifdef PROCESS_MESH_LOG
+    printf("Mesh_name: %s, num_bones: %u, numVertices: %u\n", mesh->mName.C_Str(), mesh->mNumBones, mesh->mNumVertices);
+    for (unsigned int i = 0; i < mesh->mNumBones; ++i)
+    {
+        printf("bone%u_name: %s, numWeights: %u\n", i,
+               mesh->mBones[i]->mName.C_Str(), mesh->mBones[i]->mNumWeights);
+//        printf("--Weight1 Id: %u, weight: %f\n", mesh->mBones[i]->mWeights[0].mVertexId, mesh->mBones[i]->mWeights[0].mWeight);
+//        printf("--Weight2 Id: %u, weight: %f\n", mesh->mBones[i]->mWeights[1].mVertexId, mesh->mBones[i]->mWeights[1].mWeight);
+    }
+#endif
+
+
+    // Check if the texture with given prefix is already loaded. If it is - don't load again, if it's not - load.
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-#ifdef PROCESS_MESH_LOG
-    printf("Mesh_name: %s\n", mesh->mName.C_Str());
-#endif
-    // Check if the texture with given prefix is already loaded. If it is - don't load again, if it's not - load.
+    // Texture loading
     std::string texturePrefix = mesh->mName.C_Str();
     texturePrefix = texturePrefix.substr(0, texturePrefix.find_first_of('_'));
     bool textureNotLoaded = true;
@@ -176,7 +198,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
     {
         textureSetId = loadMapsSet(texturePrefix);
     }
-
 
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -230,6 +251,15 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
         // retrieve all indices of the face and store them in the indices vector
         for(unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
+    }
+
+    for(unsigned int i = 0; i < mesh->mNumBones; i++)
+    {
+        for(unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++)
+        {
+            if(j >= MAX_BONE_INFLUENCE) break;
+            vertices[mesh->mBones[i]->mWeights[j].mVertexId].m_Weights[j] = mesh->mBones[i]->mWeights[j].mWeight;
+        }
     }
 
     glm::mat4 convertedMatrix;
