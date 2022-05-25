@@ -8,6 +8,7 @@
 #define MODEL_PATH_LOG
 #define TEXTURE_LOAD_LOG
 #define PROCESS_MESH_LOG
+//#define COLLIDER_COORD_LOG
 
 #include "Model.h"
 #include "glm/gtx/string_cast.hpp"
@@ -349,8 +350,9 @@ std::vector<BoxCollider> Model::getColliders() {
 
         tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(i.boundingVolume.getCenter() * transform.scale, 1.0f)));
 
-//        printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
-
+#ifdef COLLIDER_COORD_LOG
+        printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
+#endif
         ret.push_back(tmp);
 
     }
