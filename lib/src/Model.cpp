@@ -4,6 +4,11 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 
+#define DRAW_NODE_TREE_LOG
+#define MODEL_PATH_LOG
+#define TEXTURE_LOAD_LOG
+#define PROCESS_MESH_LOG
+
 #include "Model.h"
 #include "glm/gtx/string_cast.hpp"
 #include <stb_image.h>
@@ -81,6 +86,10 @@ void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &vi
 
 void Model::loadModel(std::string path)
 {
+#ifdef MODEL_PATH_LOG
+    printf("\nLoading model at path: %s \n", path.c_str());
+#endif
+
     // read file via ASSIMP
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -92,10 +101,14 @@ void Model::loadModel(std::string path)
     }
     // retrieve the directory path of the filepath
     directory = path.substr(0, path.find_last_of('/'));
-    std::cout << "Meshes Count: " << scene->mNumMeshes << std::endl;
+
+#ifdef DRAW_NODE_TREE_LOG
+    printf("Meshes Count: %u \n", scene->mNumMeshes);
+#endif
+
     // process ASSIMP's root node recursively
     aiMatrix4x4 startMatrix;
-    processNode(scene->mRootNode, scene, &startMatrix);
+    processNode(scene->mRootNode, scene, &startMatrix, 0);
 }
 
 // draws matrix in console for debugging
@@ -111,11 +124,15 @@ void drawMatrix(aiMatrix4x4 matrix)
     }
 }
 
-void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix)
+// variable depth if only for debugging and printing simple node tree in console
+void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix, GLuint depth)
 {
-//    std::cout << "Node name: " << node->mName.C_Str() << std::endl;
-//    std::cout << "Node meshes: " << node->mNumMeshes << std::endl;
-
+#ifdef DRAW_NODE_TREE_LOG
+    std::string depthPrefix;
+    for (int i = 0; i < depth; i++) depthPrefix.append("-");
+    printf("%sNode_name: %s, meshes: %u\n", depthPrefix.c_str(), node->mName.C_Str(), node->mNumMeshes);
+    depth++;
+#endif
     // multiply given matrix with transform matrix of the current node
     aiMatrix4x4 currentTransform = *transformMatrix * node->mTransformation;
 
@@ -129,7 +146,7 @@ void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transfo
     // process all children nodes
     for(unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene, &currentTransform);
+        processNode(node->mChildren[i], scene, &currentTransform, depth);
     }
 }
 
@@ -137,8 +154,9 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-//    std::cout << "Mesh Name: " << mesh->mName.C_Str() << std::endl;
-
+#ifdef PROCESS_MESH_LOG
+    printf("Mesh_name: %s\n", mesh->mName.C_Str());
+#endif
     // Check if the texture with given prefix is already loaded. If it is - don't load again, if it's not - load.
     std::string texturePrefix = mesh->mName.C_Str();
     texturePrefix = texturePrefix.substr(0, texturePrefix.find_first_of('_'));
@@ -223,12 +241,10 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             convertedMatrix[i][j] = transformMatrix[j][i];
         }
     }
-    printf("ASSIMP MAT\n");
 
-    drawMatrix(transformMatrix);
-
+//    printf("ASSIMP MAT\n");
+//    drawMatrix(transformMatrix);
     //printf("GLM MAT\n");
-
     //std::cout << glm::to_string(convertedMatrix) << '\n';
 
     // return a mesh object created from the extracted mesh data
@@ -279,11 +295,15 @@ unsigned int Model::textureFromFile(const std::string &prefix, const std::string
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         stbi_image_free(data);
+#ifdef TEXTURE_LOAD_LOG
         std::cout << "Texture loaded at path: " << filePath << std::endl;
+#endif
     }
     else
     {
+#ifdef TEXTURE_LOAD_LOG
         std::cout << "Texture failed to load at path: " << filePath << std::endl;
+#endif
         stbi_image_free(data);
     }
 
@@ -329,7 +349,7 @@ std::vector<BoxCollider> Model::getColliders() {
 
         tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(i.boundingVolume.getCenter() * transform.scale, 1.0f)));
 
-        printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
+//        printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
 
         ret.push_back(tmp);
 

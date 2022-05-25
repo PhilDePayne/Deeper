@@ -60,7 +60,7 @@ private:
     std::string directory;
 
     void loadModel(std::string path);
-    void processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix);
+    void processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix, GLuint depth);
     Mesh processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformMatrix);
     GLuint loadMapsSet(const std::string &prefix); // returns Id of the maps set
     void passMapsToShader(GLuint mapsId);

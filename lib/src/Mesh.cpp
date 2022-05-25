@@ -28,7 +28,7 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
 
     }
 
-    printf("%f %f %f %f %f %f\n", maxX, minX, maxY, minY, maxZ, minZ);
+//    printf("%f %f %f %f %f %f\n", maxX, minX, maxY, minY, maxZ, minZ);
 
     boundingVolume.setCenter(glm::vec3((maxX + minX) / 2 , (maxY + minY) / 2 , (maxZ + minZ) / 2 ));
 
