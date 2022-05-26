@@ -28,7 +28,7 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
 
     }
 
-    //printf("%f %f %f %f %f %f\n", maxX, minX, maxY, minY, maxZ, minZ);
+    printf("%f %f %f %f %f %f\n", maxX, minX, maxY, minY, maxZ, minZ);
 
     boundingVolume.setCenter(glm::vec3((maxX + minX) / 2 , (maxY + minY) / 2 , (maxZ + minZ) / 2 ));
 
@@ -36,21 +36,21 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
 
     glm::vec3 lt = localTransform;
 
-    boundingVolume.x_rotation_angle = glm::degrees(glm::acos(modelMatrix[1][2]));
-    boundingVolume.z_rotation_angle = glm::degrees(glm::acos(modelMatrix[0][1]));
+    boundingVolume.x_rotation_angle = glm::degrees(glm::asin(modelMatrix[1][1]));
+    boundingVolume.z_rotation_angle = glm::degrees(glm::asin(modelMatrix[2][0]));
 
     boundingVolume.setCenter(glm::translate(glm::mat4(1.0f), lt) * glm::vec4(boundingVolume.getCenter(), 1.0f));
 
-    boundingVolume.setSize(glm::vec3(glm::abs((maxX - minX) * (modelMatrix[0][0])), //TODO: rotacja
-                                     glm::abs((maxY - minY) * (modelMatrix[2][1])),
-                                     glm::abs((maxZ - minZ) * modelMatrix[1][2])));
+    boundingVolume.setSize(glm::vec3(glm::abs((maxX - minX)), //TODO: rotacja
+                                     glm::abs((maxY - minY)),
+                                     glm::abs((maxZ - minZ))));
 
-    //printf("x: %f z: %f\n", boundingVolume.x_rotation_angle, boundingVolume.z_rotation_angle);
+    printf("x: %f z: %f\n", boundingVolume.x_rotation_angle, boundingVolume.z_rotation_angle);
 
-    //printf("%f\n", glm::cos(glm::radians(boundingVolume.x_rotation_angle)) );
+    printf("%f\n", glm::cos(glm::radians(boundingVolume.x_rotation_angle)) );
 
-    //printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
-        //boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
+    printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
+        boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
 
 
     

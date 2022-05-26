@@ -228,7 +228,7 @@ int main(int, char**)
 #endif
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Deeper", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Deeper", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
@@ -390,8 +390,7 @@ int main(int, char**)
 
     //level
     //Model level("./res/models/caveSystem/caveSystem.fbx");
-
-    //level.transform.scale = glm::vec3(20.0f);
+    //.transform.scale = glm::vec3(30.0f);
     //level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
     //Player
@@ -399,13 +398,13 @@ int main(int, char**)
     player.getBody()->transform.scale = glm::vec3(1.5f);
     player.getBody()->transform.position = glm::vec3(0.0f, 200.0f, 0.0f);
 
-    Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
+    Frustum camFrustum = createFrustumFromCamera(camera, 
+        (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
-    unsigned int cubemapTexture = loadCubemap(faces);
-    skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
+    //unsigned int cubemapTexture = loadCubemap(faces);
+    //skyboxShader.use();
+    //skyboxShader.setInt("skybox", 0);
 
-    //pickaxe.getColliders();
     //colliders.getColliders();
 
     //DEBUG
@@ -460,21 +459,6 @@ int main(int, char**)
         useOrthoCamera(proj, view, window, cameraY, scale, player);
         //TODO: renderManager/meshComponent
 
-        skyboxShader.use();
-        skyboxShader.setInt("skybox", 0);
-        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-        //skyboxShader.use();
-        view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
-        skyboxShader.setMat4("view", view);
-        skyboxShader.setMat4("projection", projection);
-        // skybox cube
-        glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-        glDepthFunc(GL_LESS); // set depth function back to default
-
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if(debugBox)
         {
@@ -499,15 +483,24 @@ int main(int, char**)
         //glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
         //glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        if(!rotate)
+        //if(!rotate)
+            //player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+        //else
+            //player.rotate(50.0f * deltaTime * rotate, camera.getCameraDirection());
+
+        if (!rotate) {
             player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-        else
-            player.rotate(50.0f * deltaTime * rotate, camera.getCameraDirection());
-        //player.gravityOn(deltaTime);
+            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
+        }
+        else {
+            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
+        }
+        
 
         //player.checkCollision(lamp.getColliders());
         //player.checkCollision(rocks.getColliders());
-        //player.checkCollision(colliders.getColliders());
+        player.gravityOn(deltaTime);
+        player.checkCollision(colliders.getColliders());
         //player.checkCollision(pickaxe.getColliders());
         //player.checkCollision(level.getColliders());
 
@@ -531,19 +524,14 @@ int main(int, char**)
 
         //rocks.Draw(PBRShader);
         //lamp.Draw(PBRShader, camFrustum, proj, view);
-        //colliders.Draw(PBRShader);
+        colliders.Draw(PBRShader);
         //pickaxe.Draw(PBRShader);
         //level.Draw(PBRShader);
 
         player.render(PBRShader);
 
         //PLAYER + LEVEL
-//        if(!rotate) {
-//            player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-//            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
-//        } else {
-//            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
-//        }
+        
 //
 //        player.render(PBRShader);
 //        level.Draw(PBRShader);
@@ -551,6 +539,21 @@ int main(int, char**)
 //        camera.ProcessMovement(6.0f, 50.0f * deltaTime, rotate, 0.0f, depthPos, player.getBody()->transform.position, player.getDirection());
 //        camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
 
+        //skyboxShader.use();
+        //skyboxShader.setInt("skybox", 0);
+        //glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        //skyboxShader.use();
+        //view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+        //skyboxShader.setMat4("view", view);
+        //skyboxShader.setMat4("projection", proj);
+        // skybox cube
+        //glBindVertexArray(skyboxVAO);
+        //glActiveTexture(GL_TEXTURE0);
+        //glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
+        //glBindVertexArray(0);
+        //glDepthFunc(GL_LESS); // set depth function back to default
+        
         ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

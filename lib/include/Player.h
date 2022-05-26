@@ -125,6 +125,7 @@ public:
 
     void gravityOn(float deltaTime) {
         body->transform.position += glm::vec3(0.0f, gravity * deltaTime, 0.0f);
+        collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
     }
 
     void checkCollision(std::vector<BoxCollider> other) {
