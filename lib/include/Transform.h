@@ -10,6 +10,7 @@ class Transform : public Component {
 public:
 
 	Transform();
+	Transform(gameObjectPtr parent) : Component(parent) {};
 	~Transform();
 
 	glm::mat4 getCombinedMatrix();

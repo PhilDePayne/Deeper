@@ -11,6 +11,7 @@ class SphereMesh : public Component {
 
 public:
 	SphereMesh();
+    SphereMesh(gameObjectPtr parent) : Component(parent) {};
 	~SphereMesh();
 
     std::vector<float> getVertices();

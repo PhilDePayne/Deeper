@@ -19,12 +19,18 @@ enum class ComponentType { //TODO: oddzielny naglowek
 class Component {
 
 public:
+
 	Component();
+
+	Component(gameObjectPtr parent) : parent(parent){
+	};
 
 	virtual ~Component();
 
 	virtual bool isType(ComponentType t);
 
 	virtual void test();
+
+	gameObjectPtr parent;
 
 };

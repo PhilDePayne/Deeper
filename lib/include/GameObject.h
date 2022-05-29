@@ -7,13 +7,17 @@ class GameObject {
 
 public:
 
-	GameObject();
+	GameObject() {
+		//gameObjectPtr tmp_self(this);
+		//self = tmp_self;
+		//tmp_self.~shared_ptr();
+	};
 	~GameObject();
 
 	template <typename T>
-	void addComponent() {
+	void addComponent(gameObjectPtr self) {
 
-		components.push_back(componentPtr(new T));
+		components.push_back(componentPtr(new T(gameObjectPtr(self)))); //TODO: sprawdziæ dobrze, nwm dlaczego to dzia³a, pewnie mo¿na proœciej
 
 	};
 
@@ -33,5 +37,7 @@ public:
 private:
 	
 	std::vector<componentPtr> components;
+
+	//gameObjectPtr self;
 
 };

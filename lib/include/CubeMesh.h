@@ -15,6 +15,7 @@ class CubeMesh : public Component {
 public:
 
 	CubeMesh();
+    CubeMesh(gameObjectPtr parent) : Component(parent) {};
 	~CubeMesh();
 
     std::vector<float> getVertices();

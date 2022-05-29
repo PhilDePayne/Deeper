@@ -301,9 +301,12 @@ int main(int, char**)
     nodePtr cube1(new SceneGraphNode());
     nodePtr sphere1(new SceneGraphNode());
 
+    //nodePtr cave1Node(new SceneGraphNode());
+    //gameObjectPtr cave1(new GameObject());
+
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
-    gameObjectPtr groundBox(new GameObject());
+    //groundBox(new GameObject());
 
 
     //OBJECT PARAMETERS
@@ -311,25 +314,25 @@ int main(int, char**)
         cube1->addGameObject(cube);
         sphere1->addGameObject(sphere);
 
-        cube->addComponent<CubeMesh>();
-        cube->addComponent<Transform>();
+        cube->addComponent<CubeMesh>(cube);
+        cube->addComponent<Transform>(cube);
         cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(2.15677551f * 20, 0.239642f * 20, 3.881963f * 20);
         cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(-6.326975f * 20, 29.702841f * 20 - 370.0f, -3.075878f * 20);
         cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 0.0f;
         cube->getComponent<Transform>(ComponentType::TRANSFORM)->x_rotation_angle = 29.0f;
-        cube->addComponent<BoxCollider>();
+        cube->addComponent<BoxCollider>(cube);
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(94.5f, 4.0f, 17.0f));
 
-        sphere->addComponent<SphereMesh>();
-        sphere->addComponent<Transform>();
+        sphere->addComponent<SphereMesh>(sphere);
+        sphere->addComponent<Transform>(sphere);
         sphere->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(3.0f);
-        sphere->addComponent<SphereCollider>();
-        sphere->addComponent<LightSource>();
+        sphere->addComponent<SphereCollider>(sphere);
+        sphere->addComponent<LightSource>(sphere);
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
-        groundBox->addComponent<CubeMesh>();
+        //groundBox->addComponent<CubeMesh>();
     }
 
     basicShader.use();

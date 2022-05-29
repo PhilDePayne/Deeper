@@ -11,6 +11,7 @@ class SphereCollider : public Component {
 public:
 
 	SphereCollider() {};
+	SphereCollider(gameObjectPtr parent) : Component(parent) {};
 	SphereCollider(glm::vec3 center, float radius);
 	~SphereCollider();
 

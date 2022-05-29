@@ -17,6 +17,7 @@ class LightSource : public Component {
 public:
 
 	LightSource();
+	LightSource(gameObjectPtr parent) : Component(parent) {};
 	~LightSource();
 
 	LightType getLightType();

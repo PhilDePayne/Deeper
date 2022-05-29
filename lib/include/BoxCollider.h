@@ -8,6 +8,7 @@ class BoxCollider : public Component {
 public:
 
 	BoxCollider() {};
+	BoxCollider(gameObjectPtr parent) : Component(parent) {};
 	BoxCollider(glm::vec3 center, glm::vec3 size);
 	~BoxCollider();
 
@@ -34,7 +35,7 @@ public:
 
 private:
 	
-	glm::vec3 center;
-	glm::vec3 size;
+	glm::vec3 center = glm::vec3(0.0f);
+	glm::vec3 size = glm::vec3(1.0f);
 
 };

@@ -1,11 +1,9 @@
 #include "GameObject.h"
 #include "CubeMesh.h"
 
-GameObject::GameObject()
-{
-}
-
 GameObject::~GameObject() {
+
+	printf("Deleting: GameObject\n");
 
 };
 
