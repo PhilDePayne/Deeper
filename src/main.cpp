@@ -7,7 +7,7 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <stb_image.h>
-#include <stdio.h>
+#include <cstdio>
 //#include <ft2build.h>
 //#include FT_FREETYPE_H
 
@@ -25,6 +25,9 @@
 #include "Model.h"
 #include "Frustum.h"
 #include "typedefs.h"
+#include "GameState.h"
+#include "hudRect.h"
+#include "Texture.h"
 
 #include <stdio.h>
 #include <memory>
@@ -50,6 +53,8 @@
 
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
+
+int display_w, display_h;
 
 const float nearPlane = -100.0f;
 const float farPlane = 100.0f;
@@ -142,6 +147,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+
+GameState state(MAIN_MENU);
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -274,10 +282,10 @@ int main(int, char**)
         return(-1);
     }
 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
-
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     // Setup Dear ImGui binding
     IMGUI_CHECKVERSION();
@@ -289,9 +297,6 @@ int main(int, char**)
 
     // Setup style
     ImGui::StyleColorsDark();
-
-    bool show_demo_window = false;
-    bool show_camera_window = true;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
@@ -410,7 +415,7 @@ int main(int, char**)
     player.getBody()->transform.scale = glm::vec3(1.5f);
     player.getBody()->transform.position = glm::vec3(0.0f, 200.0f, 0.0f);
 
-    Frustum camFrustum = createFrustumFromCamera(camera, 
+    Frustum camFrustum = createFrustumFromCamera(camera,
         (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
     unsigned int cubemapTexture = loadCubemap(faces);
@@ -427,7 +432,15 @@ int main(int, char**)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-    // Main loop
+    ///HUD RESOURCES
+    int old_w, old_h;
+    Shader hudShader("./res/shaders/basicTexture.vert", "./res/shaders/basicTexture.frag");
+    hudShader.use();
+    hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
+
+    state.setState(MAIN_MENU);
+
+    /// Main loop
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
@@ -437,37 +450,50 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        //ImGui
-        {
-            ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-                        ImGui::GetIO().Framerate);
+        old_w = display_w;
+        old_h = display_h;
 
-            ImGui::Text("player's position x: %f  | y: %f | z: %f", player.getBody()->transform.position.x,
-                    player.getBody()->transform.position.y, player.getBody()->transform.position.z);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glfwMakeContextCurrent(window);
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glfwSetMouseButtonCallback(window, mouse_button_callback);
+        glViewport(0, 0, display_w, display_h);
 
-            ImGui::Text("depthPos: %f   clipWidth: %f", depthPos, clipWidth);
-
-            ImGui::Text("x velocity: %f | z velocity: %f", player.getVelX(), player.getVelZ());
-
-            ImGui::Text("player's angle: %f | camera's angle: %f", player.getAngle(), camera.getAngle());
-            ImGui::Text("camera's directin: %i ", (int)camera.getCameraDirection());
-
-            ImGui::End();
+        if(display_w != old_w || display_h != old_h) {
+            state.setSetUp(true);
         }
 
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        
-        int display_w, display_h;
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glfwMakeContextCurrent(window);
-        glfwGetFramebufferSize(window, &display_w, &display_h);
 
-        //useDebugCamera(proj, view, window, scale);
-        useOrthoCamera(proj, view, window, cameraY, scale, player);
-        //TODO: renderManager/meshComponent
+        if(state.getCurState() == GAME_RUNNING) {
+
+            state.gameRunning(window);
+
+            //ImGui
+            {
+                ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                            ImGui::GetIO().Framerate);
+
+                ImGui::Text("player's position x: %f  | y: %f | z: %f", player.getBody()->transform.position.x,
+                            player.getBody()->transform.position.y, player.getBody()->transform.position.z);
+
+                ImGui::Text("depthPos: %f   clipWidth: %f", depthPos, clipWidth);
+
+                ImGui::Text("x velocity: %f | z velocity: %f", player.getVelX(), player.getVelZ());
+
+                ImGui::Text("player's angle: %f | camera's angle: %f", player.getAngle(), camera.getAngle());
+                ImGui::Text("camera's direction: %i ", (int)camera.getCameraDirection());
+//                ImGui::Text("level's angle: %f", level.transform.y_rotation_angle);
+
+                ImGui::End();
+            }
+
+            //useDebugCamera(proj, view, window, scale);
+            useOrthoCamera(proj, view, window, cameraY, scale, player);
+            //TODO: renderManager/meshComponent
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if(debugBox)
@@ -496,63 +522,90 @@ int main(int, char**)
         else {
             camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
         }
-        
+
         for (int i = 0; i < 1; i++) {
             player.gravityOn(deltaTime);
             player.checkCollision(colliders.getColliders());
         }
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        PBRShader.use();
-        PBRShader.setMat4("projection", proj);
-        PBRShader.setMat4("view", view);
-        PBRShader.setVec3("camPos", camera.Position);
-        PBRShader.setFloat("scale", scale);
+            PBRShader.use();
+            PBRShader.setMat4("projection", proj);
+            PBRShader.setMat4("view", view);
+            PBRShader.setVec3("camPos", camera.Position);
+            PBRShader.setFloat("scale", scale);
 
-        for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
-        {
-            glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-            newPos = lightPositions[i];
-            PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-            PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+            for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
+            {
+                glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+                newPos = lightPositions[i];
+                PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+                PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+            }
+
+            camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
+
+            //rocks.Draw(PBRShader);
+            //lamp.Draw(PBRShader, camFrustum, proj, view);
+            colliders.Draw(PBRShader);
+            //pickaxe.Draw(PBRShader);
+            //level.Draw(PBRShader);
+
+            player.render(PBRShader);
+
+            //SKYBOX
+            useDebugCamera(proj, view, window, scale);
+            glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+            skyboxShader.use();
+            skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
+            skyboxShader.setMat4("projection", proj);
+            // skybox cube
+            glBindVertexArray(skyboxVAO);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glBindVertexArray(0);
+            glDepthFunc(GL_LESS); // set depth function back to default
+
         }
+        else if(state.getCurState() == MAIN_MENU) {
+            hudShader.use();
+            hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
 
-        camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
+            state.mainMenu(window, hudShader);
 
-        //rocks.Draw(PBRShader);
-        //lamp.Draw(PBRShader, camFrustum, proj, view);
-        colliders.Draw(PBRShader);
-        //pickaxe.Draw(PBRShader);
-        //level.Draw(PBRShader);
+        }
+        else if(state.getCurState() == PAUSE) {
+            //w tle bedzie skybox
 
-        player.render(PBRShader);
+            hudShader.use();
+            hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
 
-        //PLAYER + LEVEL
-        
-//
-//        player.render(PBRShader);
-//        level.Draw(PBRShader);
-//
-//        camera.ProcessMovement(6.0f, 50.0f * deltaTime, rotate, 0.0f, depthPos, player.getBody()->transform.position, player.getDirection());
-//        camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
+            state.pause(window, hudShader);
+        }
+        else if(state.getCurState() == RANKING) {
+            hudShader.use();
+            hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
 
-        //SKYBOX
+            state.leaderboard(window, hudShader);
+        }
+        else if(state.getCurState() == CREDITS) {
+            hudShader.use();
+            hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
+
+            state.credits(window, hudShader);
+        }
+        else if(state.getCurState() == GAME_OVER) {
+            hudShader.use();
+            hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
+
+            state.gameOver(window, hudShader);
+        }
+        else if(state.getCurState() == EXIT) { glfwSetWindowShouldClose(window, true);}
 
 
-        useDebugCamera(proj, view, window, scale);
-        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-        skyboxShader.use();
-        skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
-        skyboxShader.setMat4("projection", proj);
-        // skybox cube
-        glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-        glDepthFunc(GL_LESS); // set depth function back to default
-        
+
         ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -573,6 +626,8 @@ int main(int, char**)
     return 0;
 }
 
+
+///CAMERA TYPE FUNCTIONS
 void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &scale) {
     scale = 1.0f;
     processInput(window);
@@ -588,12 +643,7 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
     proj = camera.GetProjMatrix();
     view = camera.GetOrthoViewMatrix();
 
-    //strzalki
     glfwSetKeyCallback(window, key_callback);
-
-    //esc zamyka okno
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
 
     //obrot kamery
     camera.ProcessMovement(6.0f, 50.0f * deltaTime, rotate, 0.0f, depthPos, player.getBody()->transform.position, player.getDirection());
@@ -601,8 +651,10 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
     camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipZ);
 }
 
+///INPUT HANDLING FUNCTIONS
 void processInput(GLFWwindow* window)
 {
+    //esc = pause lub esc = exit
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -672,6 +724,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     lastX = xpos;
     lastY = ypos;
 
+    state.processMouse(lastX, display_h - lastY);
     //camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
@@ -682,7 +735,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-//zeby bylo pojedyncze wywolanie
+//obracanie kamerą
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if(rotate == 0) {
@@ -692,4 +745,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             rotate = -1;
         }
     }
+}
+
+//obsluga huda
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        state.processMouseButton(true);
+    else
+        state.processMouseButton(false);
 }

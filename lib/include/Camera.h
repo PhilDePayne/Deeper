@@ -88,6 +88,15 @@ public:
         return proj;
     }
 
+//    glm::mat4 GetHudViewMatrix() {
+//        return view;
+//    }
+
+    glm::mat4 GetHudProjMatrix(float width, float height) {
+        return glm::ortho(0.0f, width, 0.0f, height, -10.0f, 10.0f);
+
+    }
+
     //do dopasowania po wgraniu levelu
     void SetProjMatrix(float width, float height, float nearPlane, float farPlane) {
         proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, nearPlane, farPlane);
@@ -127,7 +136,6 @@ public:
                 else {
                     zPos = pos.x * direction;
                 }
-
 
                 totalDegrees = 0.0f;
                 move = 0;
@@ -206,6 +214,7 @@ public:
         return totalDegrees;
     }
 
+
     /*--------------------DEBUG--------------------*/
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
@@ -238,7 +247,7 @@ public:
         // update Front, Right and Up Vectors using the updated Euler angles
         updateCameraVectors();
 
-        
+
     }
 
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
