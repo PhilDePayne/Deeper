@@ -33,13 +33,13 @@ void SphereCollider::setRadius(float r) {
 
 }
 
-glm::vec3 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
+glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
 
-    glm::vec3 ret(0, 0, 0);
+    glm::vec4 ret(0, 0, 0, 0);
 
     glm::mat4 tmpMat = (
         glm::translate(glm::mat4(1.0f), glm::vec3(other->getCenter())) *
-        (glm::rotate(glm::mat4(1.0f), glm::radians(-other->x_rotation_angle), glm::vec3(-1, 0, 0)) *
+        (glm::rotate(glm::mat4(1.0f), glm::radians(other->x_rotation_angle), glm::vec3(-1, 0, 0)) *
             glm::rotate(glm::mat4(1.0f), glm::radians(-other->y_rotation_angle), glm::vec3(0, -1, 0)) *
             glm::rotate(glm::mat4(1.0f), glm::radians(-other->z_rotation_angle), glm::vec3(0, 0, -1))) *
         glm::translate(glm::mat4(1.0f), glm::vec3(-other->getCenter()))
@@ -59,13 +59,13 @@ glm::vec3 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
         (z - tmpCenter.z) * (z - tmpCenter.z));
 
     //printf("%f %f %f %f %f %f %f\n", other->getCenter().x, other->getCenter().y, other->getCenter().z,
-        //other->getSizeX(), other->getSizeY(), other->getSizeZ(), other->z_rotation_angle);
+        //other->getSizeX(), other->getSizeY(), other->getSizeZ(), other->x_rotation_angle);
 
     if (distance < getRadius() && resolve) {
 
         printf("COLLISION\n");
         printf("%f %f %f %f %f %f %f\n", other->getCenter().x, other->getCenter().y, other->getCenter().z,
-        other->getSizeX(), other->getSizeY(), other->getSizeZ(), other->z_rotation_angle);
+        other->getSizeX(), other->getSizeY(), other->getSizeZ(), other->x_rotation_angle);
 
         float xDist = (x - tmpCenter.x);
         float yDist = (y - tmpCenter.y);
@@ -96,6 +96,8 @@ glm::vec3 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
             ret.z = -dist;
 
         }
+
+        ret.w = 1;
 
         return ret;
 

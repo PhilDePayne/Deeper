@@ -231,9 +231,9 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 
     //drawMatrix(transformMatrix);
 
-    printf("GLM MAT\n");
+    //printf("GLM MAT\n");
 
-    std::cout << glm::to_string(convertedMatrix) << '\n';
+    //std::cout << glm::to_string(convertedMatrix) << '\n';
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, convertedMatrix, textureSetId);
@@ -332,7 +332,7 @@ std::vector<BoxCollider> Model::getColliders() {
 
         tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(i.boundingVolume.getCenter() * transform.scale, 1.0f)));
 
-        tmp.x_rotation_angle = i.boundingVolume.z_rotation_angle;
+        tmp.x_rotation_angle = i.boundingVolume.x_rotation_angle;
         tmp.z_rotation_angle = i.boundingVolume.z_rotation_angle;
 
         //printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
@@ -342,5 +342,17 @@ std::vector<BoxCollider> Model::getColliders() {
     }
 
     return ret;
+
+}
+
+bool Model::isType(ComponentType t) {
+
+    return t == ComponentType::MODEL;
+
+}
+
+void Model::test() {
+
+    printf("TEST_MODEL\n");
 
 }

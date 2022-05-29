@@ -107,6 +107,9 @@ public:
         if(move != 0) {
             totalDegrees += speed;
             angle += speed * move;
+            Yaw += speed * move;
+
+            //printf("%f %f\n", speed * move, Yaw);
 
             if(totalDegrees >= 90.0f) {
                 //ustalanie kierunku
@@ -130,12 +133,14 @@ public:
                 move = 0;
 
                 correctAngle();
+                updateCameraVectors();
 
             }
+            updateCameraVectors();
 
         }
 
-
+        updateCameraVectors();
 
         float camX = sin(glm::radians(angle)) * radius;
         float camZ = cos(glm::radians(angle)) * radius;
@@ -201,21 +206,15 @@ public:
         return totalDegrees;
     }
 
-
     /*--------------------DEBUG--------------------*/
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
     {
         float velocity = MovementSpeed * deltaTime;
-        if (direction == FORWARD)
-            Position += Front * velocity;
-        if (direction == BACKWARD)
-            Position -= Front * velocity;
-        if (direction == LEFT)
-            Position -= Right * velocity;
-        if (direction == RIGHT)
-            Position += Right * velocity;
+        //Yaw += 0.1f;
+        //printf("%f %f\n", velocity, Yaw);
+        //updateCameraVectors();
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
@@ -238,6 +237,8 @@ public:
 
         // update Front, Right and Up Vectors using the updated Euler angles
         updateCameraVectors();
+
+        
     }
 
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis

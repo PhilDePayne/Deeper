@@ -132,14 +132,22 @@ public:
 
         for (auto i : other) {
 
-            //printf("%f %f %f %f %f %f\n", i.getCenter().x, i.getCenter().y, i.getCenter().z,
-                //i.getSizeX(), i.getSizeY(), i.getSizeZ());
             body->transform.position = glm::translate(glm::mat4(1.0f), glm::vec3(collider.isCollision(&i, true))) *
                 glm::vec4(body->transform.position,1.0f);
 
         }
-        
-        //printf("%d\n", other.size());
+    }
+
+    void detectCollision(std::vector<BoxCollider> other) {
+
+        for (auto i : other) {
+
+            if (collider.isCollision(&i, false).w == 1) {
+
+            }
+
+        }
+
     }
 
     Model *getBody() const {
@@ -191,7 +199,7 @@ private:
 
     float speed = 200.0f;
     int direction = 1;
-    float gravity = -10.0f;
+    float gravity = -30.0f;
     float x = 0.0f, z = 0.0f;
     int dirLR = 0;
 

@@ -11,6 +11,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/matrix4x4.h>
 
+#include "Component.h"
 #include "Transform.h"
 #include "BoxCollider.h"
 #include "Frustum.h"
@@ -38,7 +39,7 @@ struct MapsSet
 //    EMISSIVE
 //};
 
-class Model
+class Model : public Component
 {
 public:
 
@@ -51,6 +52,10 @@ public:
     std::vector<BoxCollider> getColliders();
 
     Transform transform;
+
+    bool isType(ComponentType t) override;
+
+    void test() override;
 
 private:
     GLuint loadedSet = 0; // current mapsSet in shader. Count from 1

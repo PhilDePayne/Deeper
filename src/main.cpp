@@ -86,22 +86,22 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     unsigned int textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
     int width, height, nrChannels;
+    unsigned char* data = stbi_load(faces[0].c_str(), &width, &height, &nrChannels, 0);
     for (unsigned int i = 0; i < faces.size(); i++)
     {
-        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        //unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
         if (data)
         {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
             );
-            stbi_image_free(data);
+            //stbi_image_free(data);
         }
         else
         {
             std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
-            stbi_image_free(data);
+            //stbi_image_free(data);
         }
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -110,10 +110,19 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
+    stbi_image_free(data);
+
     return textureID;
 }
 
-std::vector<std::string> faces {
+std::vector<std::string> faces
+{
+        //"./res/textures/right.jpg",
+        //"./res/textures/left.jpg",
+        //"./res/textures/top.jpg",
+        //"./res/textures/bottom.jpg",
+        //"./res/textures/front.jpg",
+        //"./res/textures/back.jpg"
         "./res/textures/groundbox.jpg",
         "./res/textures/groundbox.jpg",
         "./res/textures/groundbox.jpg",
@@ -304,10 +313,10 @@ int main(int, char**)
 
         cube->addComponent<CubeMesh>();
         cube->addComponent<Transform>();
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(9.650051f * 20, 0.175093f * 20, 2.000000f * 20);
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(13.413744f * 20, 17.216393f, 1.657332f * 20);
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 30.0f;
-        cube->getComponent<Transform>(ComponentType::TRANSFORM)->x_rotation_angle = 0.0f;
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(2.15677551f * 20, 0.239642f * 20, 3.881963f * 20);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(-6.326975f * 20, 29.702841f * 20 - 370.0f, -3.075878f * 20);
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = 0.0f;
+        cube->getComponent<Transform>(ComponentType::TRANSFORM)->x_rotation_angle = 29.0f;
         cube->addComponent<BoxCollider>();
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(94.5f, 4.0f, 17.0f));
@@ -401,11 +410,9 @@ int main(int, char**)
     Frustum camFrustum = createFrustumFromCamera(camera, 
         (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
-    //unsigned int cubemapTexture = loadCubemap(faces);
-    //skyboxShader.use();
-    //skyboxShader.setInt("skybox", 0);
-
-    //colliders.getColliders();
+    unsigned int cubemapTexture = loadCubemap(faces);
+    skyboxShader.use();
+    skyboxShader.setInt("skybox", 0);
 
     //DEBUG
     unsigned int skyboxVAO, skyboxVBO;
@@ -479,15 +486,6 @@ int main(int, char**)
             //glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        //glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-        //glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-        //glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        //if(!rotate)
-            //player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-        //else
-            //player.rotate(50.0f * deltaTime * rotate, camera.getCameraDirection());
-
         if (!rotate) {
             player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
             camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
@@ -496,13 +494,10 @@ int main(int, char**)
             camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
         }
         
-
-        //player.checkCollision(lamp.getColliders());
-        //player.checkCollision(rocks.getColliders());
-        player.gravityOn(deltaTime);
-        player.checkCollision(colliders.getColliders());
-        //player.checkCollision(pickaxe.getColliders());
-        //player.checkCollision(level.getColliders());
+        for (int i = 0; i < 1; i++) {
+            player.gravityOn(deltaTime);
+            player.checkCollision(colliders.getColliders());
+        }
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -539,20 +534,21 @@ int main(int, char**)
 //        camera.ProcessMovement(6.0f, 50.0f * deltaTime, rotate, 0.0f, depthPos, player.getBody()->transform.position, player.getDirection());
 //        camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
 
-        //skyboxShader.use();
-        //skyboxShader.setInt("skybox", 0);
-        //glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-        //skyboxShader.use();
-        //view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
-        //skyboxShader.setMat4("view", view);
-        //skyboxShader.setMat4("projection", proj);
+        //SKYBOX
+
+
+        useDebugCamera(proj, view, window, scale);
+        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        skyboxShader.use();
+        skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
+        skyboxShader.setMat4("projection", proj);
         // skybox cube
-        //glBindVertexArray(skyboxVAO);
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        //glDrawArrays(GL_TRIANGLES, 0, 36);
-        //glBindVertexArray(0);
-        //glDepthFunc(GL_LESS); // set depth function back to default
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
         
         ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
