@@ -7,11 +7,7 @@ class GameObject {
 
 public:
 
-	GameObject() {
-		//gameObjectPtr tmp_self(this);
-		//self = tmp_self;
-		//tmp_self.~shared_ptr();
-	};
+	GameObject() {};
 	~GameObject();
 
 	template <typename T>
@@ -21,7 +17,14 @@ public:
 
 	};
 
-	template <typename T> //TODO: bez ComponentType
+	void addComponent(componentPtr component, gameObjectPtr self) {
+
+		component->parent = self;
+		components.push_back(component);
+
+	};
+
+	template <typename T> //TODO: bez ComponentType, mo¿e z castem
 	T* getComponent(ComponentType t) {
 
 		for (auto component : components) {
@@ -37,7 +40,5 @@ public:
 private:
 	
 	std::vector<componentPtr> components;
-
-	//gameObjectPtr self;
 
 };

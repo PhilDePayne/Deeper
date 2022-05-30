@@ -28,6 +28,7 @@
 #include "GameState.h"
 #include "hudRect.h"
 #include "Texture.h"
+#include "LampAI.h"
 
 #include <stdio.h>
 #include <memory>
@@ -305,14 +306,13 @@ int main(int, char**)
     nodePtr root(new SceneGraphNode());
     nodePtr cube1(new SceneGraphNode());
     nodePtr sphere1(new SceneGraphNode());
-
-    //nodePtr cave1Node(new SceneGraphNode());
-    //gameObjectPtr cave1(new GameObject());
+    nodePtr caveNode(new SceneGraphNode());
 
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
-    //groundBox(new GameObject());
+    gameObjectPtr cave(new GameObject());
 
+    componentPtr caveModel(new Model("./res/models/Colliders/caveTestColliders.fbx"));
 
     //OBJECT PARAMETERS
     {
@@ -328,6 +328,10 @@ int main(int, char**)
         cube->addComponent<BoxCollider>(cube);
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(glm::vec3(0.0f));
         cube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(94.5f, 4.0f, 17.0f));
+        cube->addComponent<LampAI>(cube);
+        cube->addComponent(caveModel, cube);
+        cube->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(20.0f);
+        cube->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -370.0f, 0.0f);
 
         sphere->addComponent<SphereMesh>(sphere);
         sphere->addComponent<Transform>(sphere);
@@ -359,15 +363,15 @@ int main(int, char**)
 
     // LIGHTS
     glm::vec3 lightPositions[] = {
-            glm::vec3(-20.0f, 5.0f, 10.0f),
-            glm::vec3(-15.0f, 5.0f, 10.0f),
-            glm::vec3(-10.0f, 5.0f, 10.0f),
-            glm::vec3(-5.0f, 5.0f, 10.0f),
-            glm::vec3(0.0f, 5.0f, 10.0f),
-            glm::vec3(5.0f, 5.0f, 10.0f),
-            glm::vec3(10.0f, 5.0f, 10.0f),
-            glm::vec3(15.0f, 5.0f, 10.0f),
-            glm::vec3(20.0f, 5.0f, 10.0f),
+            glm::vec3(-20.0f * 30.0f, 5.0f, -10.0f * 30.0f),
+            glm::vec3(-15.0f * 30.0f, 5.0f, -10.0f * 30.0f),
+            glm::vec3(-10.0f * 30.0f, 5.0f, -10.0f * 30.0f),
+            glm::vec3(-5.0f * 30.0f, 5.0f, -10.0f * 30.0f),
+            glm::vec3(0.0f * 30.0f, 5.0f, -10.0f * 30.0f),
+            glm::vec3(5.0f * 30.0f, 5.0f, -10.0f * 30.0f),
+            glm::vec3(10.0f * 30.0f, 5.0f, -10.0f * 30.0f),
+            glm::vec3(15.0f * 30.0f, 5.0f, -10.0f * 30.0f),
+            glm::vec3(20.0f * 30.0f, 5.0f, -10.0f * 30.0f),
     };
 
     glm::vec3 lightColors[] = {
@@ -396,18 +400,18 @@ int main(int, char**)
 
     //Model lamp("./res/models/lampka/lamp_mdl.fbx");
     //lamp.transform.scale = glm::vec3(30.0f);
-    //lamp.transform.position = glm::vec3(-200.0f, -20.0f, 0.0f);
+    //lamp.transform.position = glm::vec3(0.0f, -20.0f, 0.0f);
 
     Model colliders("./res/models/Colliders/caveTestColliders.fbx");
     colliders.transform.scale = glm::vec3(20.0f);
     colliders.transform.position = glm::vec3(0.0f, -370.0f, 0.0f);
 
-    //Model pickaxe("./res/models/Kilof/kilof.fbx");
-    //pickaxe.transform.scale = glm::vec3(300.0f);
+    Model pickaxe("./res/models/Kilof/kilof.fbx");
+    pickaxe.transform.scale = glm::vec3(400.0f);
 
     //level
-    //Model level("./res/models/caveSystem/caveSystem.fbx");
-    //.transform.scale = glm::vec3(30.0f);
+    //Model level("./res/models/caveSystem/caveTest.fbx");
+    //level.transform.scale = glm::vec3(30.0f);
     //level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
     //Player
@@ -517,15 +521,15 @@ int main(int, char**)
 
         if (!rotate) {
             player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
+            //camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
         }
         else {
-            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
+            //camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
         }
 
         for (int i = 0; i < 1; i++) {
             player.gravityOn(deltaTime);
-            player.checkCollision(colliders.getColliders());
+            //player.checkCollision(colliders.getColliders());
         }
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -548,9 +552,11 @@ int main(int, char**)
 
             //rocks.Draw(PBRShader);
             //lamp.Draw(PBRShader, camFrustum, proj, view);
-            colliders.Draw(PBRShader);
+            //colliders.Draw(PBRShader);
             //pickaxe.Draw(PBRShader);
             //level.Draw(PBRShader);
+
+            cube->getComponent<AI>(ComponentType::AI)->onTriggerEnter(PBRShader);
 
             player.render(PBRShader);
 

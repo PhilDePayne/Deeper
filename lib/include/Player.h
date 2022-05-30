@@ -143,6 +143,8 @@ public:
         for (auto i : other) {
 
             if (collider.isCollision(&i, false).w == 1) {
+                
+                //i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter();
 
             }
 

@@ -12,7 +12,8 @@ enum class ComponentType { //TODO: oddzielny naglowek
 	SPHERECOLLIDER,
 	BOXCOLLIDER,
 	LIGHTSOURCE,
-	MODEL
+	MODEL,
+	AI
 
 };
 

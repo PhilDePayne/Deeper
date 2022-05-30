@@ -39,6 +39,8 @@ bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
 void Model::Draw(Shader shader)
 {
+    printf("DRAWING\n");
+
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
             if (meshes[i].getTexturesSetId() != loadedSet)
@@ -334,6 +336,8 @@ std::vector<BoxCollider> Model::getColliders() {
 
         tmp.x_rotation_angle = i.boundingVolume.x_rotation_angle;
         tmp.z_rotation_angle = i.boundingVolume.z_rotation_angle;
+
+        tmp.parent = this->parent;
 
         //printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
 

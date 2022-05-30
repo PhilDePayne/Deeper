@@ -32,10 +32,13 @@ set(SOURCE_FILES
 	include/Mesh.h
     src/Mesh.cpp
     include/Frustum.h
-	include/Player.h
+	include/Player.h 
+    "include/AI.h" 
+    src/AI.cpp 
+    "include/LampAI.h"
 	include/GameState.h
 	src/GameState.cpp
-	include/hudRect.h)
+	include/hudRect.h "src/LampAI.cpp")
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})
