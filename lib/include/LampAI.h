@@ -11,7 +11,8 @@ public:
 	~LampAI() {};
 
 	void onCollisionEnter() override;
-	void onTriggerEnter(Shader shader) override;
+	void onTriggerEnter(BoxCollider collided) override;
 
+	std::vector<glm::vec3>* lights;
 
 };

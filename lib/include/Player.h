@@ -16,6 +16,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "SphereCollider.h"
+#include "AI.h"
 
 
 class Player {
@@ -116,6 +117,20 @@ public:
 //            }
 //        }
 
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        
+            body->transform.position -= glm::vec3(
+                0.0f, 10.0f, 0.0f);
+
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+
+            body->transform.position += glm::vec3(
+                0.0f, 10.0f, 0.0f);
+
+        }
+
         rotateLeftRight((int) dir);
         //correctAngle((int)dir + dirLR);
 
@@ -144,7 +159,8 @@ public:
 
             if (collider.isCollision(&i, false).w == 1) {
                 
-                //i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter();
+                i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i);
+                //printf("trigger position: %f %f %f", i.getCenter().x, i.getCenter().y, i.getCenter().z);
 
             }
 

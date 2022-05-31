@@ -39,7 +39,7 @@ bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
 void Model::Draw(Shader shader)
 {
-    printf("DRAWING\n");
+    
 
     for (unsigned int i = 0; i < meshes.size(); i++)
     {

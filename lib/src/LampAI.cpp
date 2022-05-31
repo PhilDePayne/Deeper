@@ -6,9 +6,11 @@ void LampAI::onCollisionEnter() {
 
 };
 
-void LampAI::onTriggerEnter(Shader shader) {
+void LampAI::onTriggerEnter(BoxCollider collided) {
 
 	//printf("TRIGGERED COLLISION\n");
-	parent->getComponent<Model>(ComponentType::MODEL)->Draw(shader);
+	lights->erase(lights->begin());
+	glm::vec3 newLightPos = collided.getCenter();
+	lights->push_back(newLightPos);
 
 }

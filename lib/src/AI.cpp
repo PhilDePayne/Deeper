@@ -12,7 +12,7 @@ void AI::test() {
 
 }
 
-void AI::onTriggerEnter(Shader shader) {
+void AI::onTriggerEnter(BoxCollider collided) {
 
 	printf("ERROR: BASE_AI_onTriggerEnter\n");
 

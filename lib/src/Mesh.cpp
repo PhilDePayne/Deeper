@@ -43,8 +43,8 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
                                      glm::abs((maxY - minY)),
                                      glm::abs((maxZ - minZ))));
 
-    //printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
-        //boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
+    printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
+        boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
 
 }
 

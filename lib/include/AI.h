@@ -18,6 +18,6 @@ public:
 	void test() override;
 
 	virtual void onCollisionEnter();
-	virtual void onTriggerEnter(Shader shader);
+	virtual void onTriggerEnter(BoxCollider collided);
 
 };

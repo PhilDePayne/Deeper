@@ -15,6 +15,7 @@ uniform sampler2D emissiveMap;
 // lights
 uniform vec3 lightPositions[9];
 uniform vec3 lightColors[9];
+uniform float lightStrength;
 
 uniform vec3 camPos;
 
@@ -105,7 +106,7 @@ void main()
         vec3 L = normalize(lightPositions[i] - WorldPos);
         vec3 H = normalize(V + L);
         float distance = length(lightPositions[i] - WorldPos);
-        float attenuation = 1.0 / (distance * distance);
+        float attenuation = lightStrength * 1.0 / (distance * distance);
         vec3 radiance = lightColors[i] * attenuation;
 
         // Cook-Torrance BRDF
