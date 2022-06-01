@@ -20,6 +20,31 @@
 
 #endif
 
+// draws matrix in console for debugging
+void drawAiMatrix(aiMatrix4x4 matrix)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            std::cout << matrix[i][j] << ", ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void drawGLMMatrix(glm::mat4 matrix)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            std::cout << matrix[j][i] << ", ";
+        }
+        std::cout << std::endl;
+    }
+}
+
 Model::Model(char *path)
 {
     loadModel(path);
@@ -50,6 +75,23 @@ bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
 void Model::Draw(Shader shader)
 {
+//    std::vector<glm::mat4> convertedBonesMatrices(bonesTransforms.size());
+//    shader.use();
+//    for (int i = 0; i < bonesTransforms.size(); i++)
+//    {
+//        glm::mat4 convertedBoneMatrix;
+//        aiToGlmTransformMatrix(bonesTransforms[i], convertedBoneMatrix);
+//        shader.setMat4("bones[" + std::to_string(i) + "]", convertedBoneMatrix);
+//        drawGLMMatrix(convertedBoneMatrix);
+//    }
+
+//    for (int i = 0; i < offsetMatrices.size(); i++)
+//    {
+//        glm::mat4 convertedOffsetMatrix;
+//        aiToGlmTransformMatrix(offsetMatrices[i], convertedOffsetMatrix);
+//        shader.setMat4("bonesOffsetMats[" + std::to_string(i) + "]", convertedOffsetMatrix);
+//    }
+
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
             if (meshes[i].getTexturesSetId() != loadedSet)
@@ -110,27 +152,34 @@ void Model::loadModel(std::string path)
 
 #ifdef MODEL_GENERAL_INFO_LOG
     printf("Meshes: %u, Animations: %u \n", scene->mNumMeshes, scene->mNumAnimations);
+    if (scene->mNumAnimations != 0)
+    {
+        for (int i = 0; i < scene->mAnimations[0]->mNumChannels; i++)
+        {
+            std::cout << "channel " << scene->mAnimations[0]->mChannels[i]->mNodeName.C_Str() << std::endl;
+        }
+    }
 #endif
 
     // process ASSIMP's root node recursively
     aiMatrix4x4 startMatrix;
     processNode(scene->mRootNode, scene, &startMatrix, 0);
+
+    // after processing all nodes, match bones with corresponding nodes transformations
+//    bonesTransforms.resize(boneToId.size());
+//    offsetMatrices.resize(boneToId.size());
+//    for (auto& boneAndId : boneToId)
+//    {
+//        bonesTransforms[boneAndId.second] = nodeNameToTransform[boneAndId.first];
+//        offsetMatrices[boneAndId.second] = bonesToOffsetMatrices[boneAndId.first];
+//    }
+
 #ifdef MODEL_GENERAL_INFO_LOG
     printf("Total nodes in model: %u\n", totalNodes);
+//    printf("BoneToId size: %llu\n", boneToId.size());
+//    printf("nodeNameToTransform size: %llu\n", nodeNameToTransform.size());
+//    printf("bonesToOffsetMatrices size: %llu\n", bonesToOffsetMatrices.size());
 #endif
-}
-
-// draws matrix in console for debugging
-void drawMatrix(aiMatrix4x4 matrix)
-{
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            std::cout << matrix[i][j] << ", ";
-        }
-        std::cout << std::endl;
-    }
 }
 
 // variable depth if only for debugging and printing simple node tree in console
@@ -141,7 +190,6 @@ void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transfo
     for (int i = 0; i < depth; i++) depthPrefix.append("-");
     printf("%sNode_name: %s, meshes: %u\n", depthPrefix.c_str(), node->mName.C_Str(), node->mNumMeshes);
     depth++;
-
 #endif
 #ifdef MODEL_GENERAL_INFO_LOG
     totalNodes++;
@@ -149,6 +197,12 @@ void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transfo
 
     // multiply given matrix with transform matrix of the current node
     aiMatrix4x4 currentTransform = *transformMatrix * node->mTransformation;
+
+    //Ten if raczej jest niepotrzebny
+//    if(nodeNameToTransform.find(node->mName.C_Str()) == nodeNameToTransform.end())
+//    {
+//        nodeNameToTransform[node->mName.C_Str()] = currentTransform;
+//    }
     // process each mesh located at the current node
     for(unsigned int i = 0; i < node->mNumMeshes; i++)
     {
@@ -227,21 +281,22 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             vec.y = mesh->mTextureCoords[0][i].y;
             vertex.TexCoords = vec;
             // tangent
-            vector.x = mesh->mTangents[i].x;
-            vector.y = mesh->mTangents[i].y;
-            vector.z = mesh->mTangents[i].z;
-            vertex.Tangent = vector;
+//            vector.x = mesh->mTangents[i].x;
+//            vector.y = mesh->mTangents[i].y;
+//            vector.z = mesh->mTangents[i].z;
+//            vertex.Tangent = vector;
             // bitangent
-            vector.x = mesh->mBitangents[i].x;
-            vector.y = mesh->mBitangents[i].y;
-            vector.z = mesh->mBitangents[i].z;
-            vertex.Bitangent = vector;
+//            vector.x = mesh->mBitangents[i].x;
+//            vector.y = mesh->mBitangents[i].y;
+//            vector.z = mesh->mBitangents[i].z;
+//            vertex.Bitangent = vector;
         }
         else
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 
-        vertices.push_back(vertex);
+        setVertexBoneDataDefault(vertex);
 
+        vertices.push_back(vertex);
     }
 
     // now walk through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
@@ -253,34 +308,47 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             indices.push_back(face.mIndices[j]);
     }
 
-    for(unsigned int i = 0; i < mesh->mNumBones; i++)
-    {
-        for(unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++)
-        {
-            if(j >= MAX_BONE_INFLUENCE) break;
-            vertices[mesh->mBones[i]->mWeights[j].mVertexId].m_Weights[j] = mesh->mBones[i]->mWeights[j].mWeight;
-        }
-    }
+//    for(unsigned int i = 0; i < mesh->mNumBones; i++)
+//    {
+//        aiBone *tmpBone = mesh->mBones[i];
+//        bonesToOffsetMatrices[std::string(tmpBone->mName.C_Str())] = tmpBone->mOffsetMatrix;
+//        printf("\nOffset matrix %u\n", i);
+//        drawAiMatrix(tmpBone->mOffsetMatrix);
+//
+//        for(unsigned int j = 0; j < tmpBone->mNumWeights; j++)
+//        {
+//            if(j >= MAX_BONE_INFLUENCE) break;
+//            std::string boneName(tmpBone->mName.C_Str());
+//            int boneID = 0;
+//            if (boneToId.find(boneName) == boneToId.end())
+//            {
+//                boneID = (int)boneToId.size();
+//                boneToId[boneName] = boneID;
+//            }
+//            else
+//            {
+//                boneID = (int)boneToId[boneName];
+//            }
+//            vertices[tmpBone->mWeights[j].mVertexId].m_BoneIDs[j] = boneID;
+//            vertices[tmpBone->mWeights[j].mVertexId].m_Weights[j] = tmpBone->mWeights[j].mWeight;
+//        }
+//    }
 
-    glm::mat4 convertedMatrix;
+    glm::mat4 convertedMatrix(1.0f);
 
     // Matrices from assimp and glm have different indexing, so they have to be converted
-    for(int i = 0; i < 4; i++)
-    {
-        for(int j = 0; j < 4; j++)
-        {
-            convertedMatrix[i][j] = transformMatrix[j][i];
-        }
-    }
+    aiToGlmTransformMatrix(transformMatrix, convertedMatrix);
 
 //    printf("ASSIMP MAT\n");
-//    drawMatrix(transformMatrix);
+//    drawAiMatrix(transformMatrix);
     //printf("GLM MAT\n");
     //std::cout << glm::to_string(convertedMatrix) << '\n';
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, convertedMatrix, textureSetId);
 }
+
+
 
 GLuint Model::loadMapsSet(const std::string &prefix)
 {
@@ -364,7 +432,8 @@ void Model::passMapsToShader(GLuint mapsId)
     }
 }
 
-std::vector<BoxCollider> Model::getColliders() {
+std::vector<BoxCollider> Model::getColliders()
+{
 
     std::vector<BoxCollider> ret;
 
@@ -389,4 +458,72 @@ std::vector<BoxCollider> Model::getColliders() {
 
     return ret;
 
+}
+
+void Model::aiToGlmTransformMatrix(aiMatrix4x4 &source, glm::mat4 &target)
+{
+    for(int i = 0; i < 4; i++)
+    {
+        for(int j = 0; j < 4; j++)
+        {
+            target[i][j] = source[j][i];
+        }
+    }
+}
+
+void Model::setVertexBoneDataDefault(Vertex &vertex)
+{
+    for (GLuint i = 0; i < MAX_BONE_INFLUENCE; i++)
+    {
+        vertex.m_BoneIDs[i] = -1;
+        vertex.m_Weights[i] = 0.0f;
+    }
+}
+
+void Model::setVertexBoneData(Vertex &vertex, int boneId, float weight)
+{
+    for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+    {
+        if (vertex.m_BoneIDs[i] < 0)
+        {
+            vertex.m_Weights[i] = weight;
+            vertex.m_BoneIDs[i] = boneId;
+            break;
+        }
+    }
+}
+
+void Model::extractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh)
+{
+    for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+    {
+        int boneID = -1;
+        std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+        if (BoneInfoMap.find(boneName) == BoneInfoMap.end())
+        {
+            BoneInfo newBoneInfo{};
+            newBoneInfo.Id = BoneCounter;
+            glm::mat4 offsetMatrix(0);
+            aiToGlmTransformMatrix(mesh->mBones[boneIndex]->mOffsetMatrix, offsetMatrix);
+            newBoneInfo.offsetMatrix = offsetMatrix;
+            BoneInfoMap[boneName] = newBoneInfo;
+            boneID = BoneCounter;
+            BoneCounter++;
+        }
+        else
+        {
+            boneID = BoneInfoMap[boneName].Id;
+        }
+        assert(boneID != -1);
+        auto weights = mesh->mBones[boneIndex]->mWeights;
+        unsigned int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+        for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+        {
+            unsigned int vertexId = weights[weightIndex].mVertexId;
+            float weight = weights[weightIndex].mWeight;
+            assert(vertexId <= vertices.size());
+            setVertexBoneData(vertices[vertexId], boneID, weight);
+        }
+    }
 }

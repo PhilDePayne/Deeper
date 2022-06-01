@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <map>
+
 #include "Mesh.h"
 
 #include <assimp/Importer.hpp>
@@ -26,6 +28,12 @@ struct MapsSet
     GLuint Roughness;
     GLuint AO;
     GLuint Emissive;
+};
+
+struct BoneInfo
+{
+    int Id;
+    glm::mat4 offsetMatrix;
 };
 
 //enum MapType
@@ -60,6 +68,18 @@ private:
     std::string directory;
     GLuint totalNodes = 0;
 
+    std::map<std::string, BoneInfo> BoneInfoMap;
+    int BoneCounter = 0;
+
+    void setVertexBoneDataDefault(Vertex &vertex);
+    void setVertexBoneData(Vertex &vertex, int boneId, float weight);
+    void extractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh);
+//    std::map<std::string, unsigned int> boneToId; // nazwy kości do ich Id które są potrzebne w Shaderze
+//    std::map<std::string, aiMatrix4x4> nodeNameToTransform; // transformacje dla każdego węzła
+//    std::vector<aiMatrix4x4> bonesTransforms; // Transformacje kości według Id
+//    std::map<std::string, aiMatrix4x4> bonesToOffsetMatrices; // Offset matrixy dla każdej kości
+//    std::vector<aiMatrix4x4> offsetMatrices;
+
     void loadModel(std::string path);
     void processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix, GLuint depth);
     Mesh processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformMatrix);
@@ -67,4 +87,5 @@ private:
     void passMapsToShader(GLuint mapsId);
     unsigned int textureFromFile(const std::string &prefix, const std::string &type);
 
+    void aiToGlmTransformMatrix(aiMatrix4x4 &source, glm::mat4 &target);
 };

@@ -288,12 +288,21 @@ int main(int, char**)
     PBRShader.setInt("aoMap", 4);
     PBRShader.setInt("emissiveMap", 5);
 
+    Shader skeletonShader("./res/shaders/PBRskeleton.vert", "./res/shaders/PBRskeleton.frag");
+    skeletonShader.use();
+    skeletonShader.setInt("albedoMap", 0);
+    skeletonShader.setInt("normalMap", 1);
+    skeletonShader.setInt("metallicMap", 2);
+    skeletonShader.setInt("roughnessMap", 3);
+    skeletonShader.setInt("aoMap", 4);
+    skeletonShader.setInt("emissiveMap", 5);
+
 //    Model rocks("./res/models/Rocks/rocks.fbx");
 //    rocks.transform.scale = glm::vec3(30.0f);
 
-    Model lamp("./res/models/lampka/lamp_mdl.fbx");
-    lamp.transform.scale = glm::vec3(30.0f);
-    lamp.transform.position = glm::vec3(-300.0f, -20.0f, 0.0f);
+//    Model lamp("./res/models/lampka/lamp_mdl.fbx");
+//    lamp.transform.scale = glm::vec3(30.0f);
+//    lamp.transform.position = glm::vec3(-300.0f, -20.0f, 0.0f);
 
     Model colliders("./res/models/Colliders/Test.fbx");
     colliders.transform.scale = glm::vec3(20.0f);
@@ -313,9 +322,11 @@ int main(int, char**)
     player.getBody()->transform.scale = glm::vec3(1.5f);
     player.getBody()->transform.position = glm::vec3(0.0f, 200.0f, 0.0f);
 
-    Model zombieAnimTestModel("./res/models/zombie/zombieAnimTest.fbx");
-    zombieAnimTestModel.transform.scale = glm::vec3(2.5f);
-    zombieAnimTestModel.transform.position = glm::vec3(0.0f, -200.0f, 0.0f);
+//    Model zombieAnimTestModel("./res/models/zombie/zombieAnimTest.fbx");
+//    zombieAnimTestModel.transform.scale = glm::vec3(2.5f);
+//    zombieAnimTestModel.transform.position = glm::vec3(0.0f, -200.0f, 0.0f);
+
+    Model simpleModel("./res/models/debug/simpleAFanim.fbx");
 
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
@@ -414,7 +425,8 @@ int main(int, char**)
 
         player.render(PBRShader);
 
-        zombieAnimTestModel.Draw(PBRShader);
+        simpleModel.Draw(skeletonShader);
+//        zombieAnimTestModel.Draw(PBRShader);
 
         //PLAYER + LEVEL
 //        if(!rotate) {
