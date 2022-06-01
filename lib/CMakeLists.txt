@@ -37,7 +37,11 @@ set(SOURCE_FILES
 		include/Bone.h
 		src/Bone.cpp
 		include/AssimpGLMHelpers.h
-		src/AssimpGLMHelpers.cpp include/Animation.h src/Animation.cpp include/Animator.h src/Animator.cpp)
+		src/AssimpGLMHelpers.cpp
+		include/Animation.h
+		src/Animation.cpp
+		include/Animator.h
+		src/Animator.cpp)
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})

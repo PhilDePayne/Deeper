@@ -29,10 +29,10 @@ public:
 
     Bone* FindBone(const std::string& name);
 
-    inline float GetTicksPerSecond() const;
-    inline float GetDuration() const;
-    inline const AssimpNodeData& GetRootNode();
-    inline const std::map<std::string,BoneInfo>& GetBoneIDMap();
+    float GetTicksPerSecond() const;
+    float GetDuration() const;
+    const AssimpNodeData& GetRootNode();
+    const std::map<std::string,BoneInfo>& GetBoneIDMap();
 
 private:
     void ReadMissingBones(const aiAnimation* animation, Model& model);

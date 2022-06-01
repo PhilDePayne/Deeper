@@ -22,6 +22,9 @@
 #include "Player.h"
 #include "LightSource.h"
 #include "Model.h"
+#include "Bone.h"
+#include "Animation.h"
+#include "Animator.h"
 #include "Frustum.h"
 #include "typedefs.h"
 
@@ -326,7 +329,18 @@ int main(int, char**)
 //    zombieAnimTestModel.transform.scale = glm::vec3(2.5f);
 //    zombieAnimTestModel.transform.position = glm::vec3(0.0f, -200.0f, 0.0f);
 
-    Model simpleModel("./res/models/debug/simpleAFanim.fbx");
+    Model simpleModel("./res/models/zombie/zombieCorrect.fbx");
+    simpleModel.transform.scale = glm::vec3(1.5f);
+    simpleModel.transform.position = glm::vec3(0.0f, -200.0f, 20.0f);
+    Animation animation("./res/models/zombie/zombieCorrect.fbx", &simpleModel);
+//    Model simpleModel("./res/models/debug/simpleAnimAF.fbx");
+//    simpleModel.transform.scale = glm::vec3(3.5f);
+//    simpleModel.transform.position = glm::vec3(0.0f, 000.0f, 0.0f);
+//    simpleModel.transform.x_rotation_angle = 90.0f;
+//    Animation animation("./res/models/debug/simpleAnimAF.fbx", &simpleModel);
+    Animator animator(&animation);
+
+
 
     Frustum camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
@@ -365,6 +379,8 @@ int main(int, char**)
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        animator.UpdateAnimation(deltaTime);
         
         int display_w, display_h;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -408,6 +424,7 @@ int main(int, char**)
         PBRShader.setVec3("camPos", camera.Position);
         PBRShader.setFloat("scale", scale);
 
+
         for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
         {
             glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
@@ -415,6 +432,7 @@ int main(int, char**)
             PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
             PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
         }
+
 
         camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
@@ -424,6 +442,17 @@ int main(int, char**)
         //pickaxe.Draw(PBRShader);
 
         player.render(PBRShader);
+
+
+        skeletonShader.use();
+        skeletonShader.setMat4("projection", proj);
+        skeletonShader.setMat4("view", view);
+        skeletonShader.setVec3("camPos", camera.Position);
+        skeletonShader.setFloat("scale", scale);
+
+        auto transforms = animator.GetFinalBoneMatrices();
+        for (int i = 0; i < transforms.size(); ++i)
+            skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
 
         simpleModel.Draw(skeletonShader);
 //        zombieAnimTestModel.Draw(PBRShader);

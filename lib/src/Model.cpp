@@ -344,6 +344,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
     //printf("GLM MAT\n");
     //std::cout << glm::to_string(convertedMatrix) << '\n';
 
+    extractBoneWeightForVertices(vertices, mesh);
+
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, convertedMatrix, textureSetId);
 }
