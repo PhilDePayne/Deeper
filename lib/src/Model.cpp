@@ -527,3 +527,13 @@ void Model::extractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *
         }
     }
 }
+
+std::map<std::string, BoneInfo> &Model::GetBoneInfoMap()
+{
+    return BoneInfoMap;
+}
+
+int &Model::GetBoneCount()
+{
+    return BoneCounter;
+}

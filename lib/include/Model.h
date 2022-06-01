@@ -60,6 +60,9 @@ public:
 
     Transform transform;
 
+    std::map<std::string, BoneInfo> &GetBoneInfoMap();
+    int &GetBoneCount();
+
 private:
     GLuint loadedSet = 0; // current mapsSet in shader. Count from 1
     std::vector<MapsSet> mapsSets_loaded; // already loaded mapsSets from files
