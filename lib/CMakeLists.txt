@@ -33,7 +33,11 @@ set(SOURCE_FILES
     src/Mesh.cpp
     include/Frustum.h
 	include/Player.h
-	include/LogMacros.h)
+	include/LogMacros.h
+		include/Bone.h
+		src/Bone.cpp
+		include/AssimpGLMHelpers.h
+		src/AssimpGLMHelpers.cpp)
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})
