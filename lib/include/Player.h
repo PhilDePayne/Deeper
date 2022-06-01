@@ -27,7 +27,7 @@ public:
         collider.setRadius(15.0f);
     }
 
-    void render(Shader &shader) {
+    void render(Shader shader) {
         body->Draw(shader);
     }
 

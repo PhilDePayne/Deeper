@@ -88,12 +88,8 @@ public:
         return proj;
     }
 
-//    glm::mat4 GetHudViewMatrix() {
-//        return view;
-//    }
-
     glm::mat4 GetHudProjMatrix(float width, float height) {
-        return glm::ortho(0.0f, width, 0.0f, height, -10.0f, 10.0f);
+        return glm::ortho(0.0f, width, 0.0f, height, -1000.0f, 1000.0f);
 
     }
 
@@ -129,7 +125,7 @@ public:
                 if(dir < FRONT_DIR)
                     dir = LEFT_DIR;
 
-
+                //tu blad z depthPos
                 if(dir == FRONT_DIR || dir == BACK_DIR) {
                     zPos = pos.z * direction;
                 }
@@ -155,6 +151,7 @@ public:
 
         view = glm::lookAt(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, camY, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+        camPos = glm::vec3(camX, camY, camZ);
         //clipping plane
 //        if(angle == 0.0f || angle == 180.0f)
 //            view = glm::translate(view, glm::vec3(0.0f, 0.0f, zPos));
@@ -214,6 +211,10 @@ public:
         return totalDegrees;
     }
 
+    const glm::vec3 &getCamPos() const {
+        return camPos;
+    }
+
 
     /*--------------------DEBUG--------------------*/
 
@@ -265,7 +266,8 @@ private:
     glm::mat4 proj;
     glm::mat4 view;
     float angle = 0.0f;
-    float totalDegrees = 0.0f; //pomocnicza
+    float totalDegrees = 0.0f;
+    glm::vec3 camPos = glm::vec3(0.0f);
 
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()

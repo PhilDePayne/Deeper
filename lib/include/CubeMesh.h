@@ -19,6 +19,7 @@ public:
 	~CubeMesh();
 
     std::vector<float> getVertices();
+    std::vector<float> getVerticesCol();
 
     unsigned int getVAO();
 
@@ -78,7 +79,8 @@ private:
          0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
         -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-    };
+        };
+
 
     unsigned int VAO;
     unsigned int VBO;

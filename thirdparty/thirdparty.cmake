@@ -13,7 +13,7 @@ if((NOT ASSIMP_LIBRARY) OR (NOT ASSIMP_INCLUDE_DIR))
     execute_process(COMMAND git submodule update --init ${ASSIMP_DIR}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-	set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build package with shared libraries.")
+	set(BUILD_SHARED_LIBS ON CACHE INTERNAL "Build package with shared libraries.") #tu
 	set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE INTERNAL "If the supplementary tools for Assimp are built in addition to the library.")
 	set(ASSIMP_BUILD_TESTS OFF CACHE INTERNAL "If the test suite for Assimp is built in addition to the library.")
 
@@ -103,18 +103,24 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/src")
 file(COPY "${FMOD_DIR}/lib/fmod.dll" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
 
 # freetype
-#find_library(FREETYPE_LIBRARY "freetype" "/usr/lib" "/usr/local/lib")
-#find_path(FREETYPE_INCLUDE_DIR "freetype/ft2build.h" "/usr/include" "/usr/local/include")
-#
-#if((NOT FREETYPE_LIBRARY) OR (NOT FREETYPE_INCLUDE_DIR))
-#	set(FREETYPE_DIR "${THIRDPARTY_DIR}/freetype")
-#
-#	message("Unable to find freetype, cloning...")
-#    execute_process(COMMAND git submodule update --init ${FREETYPE_DIR}
-#                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-#
-#    add_subdirectory("${FREETYPE_DIR}")
-#
-#	set(FREETYPE_LIBRARY "freetype" "${FREETYPE_LIBRARIES}")
-#	set(FREETYPE_INCLUDE_DIR "${FREETYPE_DIR}/include")
-#endif()
+find_library(FREETYPE_LIBRARY "freetype" "/usr/lib" "/usr/local/lib")
+find_path(FREETYPE_INCLUDE_DIR "freetype/ft2build.h" "/usr/include" "/usr/local/include")
+
+if((NOT FREETYPE_LIBRARY) OR (NOT FREETYPE_INCLUDE_DIR))
+	set(FREETYPE_DIR "${THIRDPARTY_DIR}/freetype")
+
+	message("Unable to find freetype, cloning...")
+    execute_process(COMMAND git submodule update --init ${FREETYPE_DIR}
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+#	set(FT_DISABLE_ZLIB ON)
+
+    add_subdirectory("${FREETYPE_DIR}")
+
+	set(FREETYPE_LIBRARY "freetype" "${FREETYPE_LIBRARIES}")
+	set(FREETYPE_INCLUDE_DIR "${FREETYPE_DIR}/include")
+endif()
+
+#kopiowanie dllek
+file(COPY "${THIRDPARTY_DIR}/dlls/glfw3.dll" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
+file(COPY "${THIRDPARTY_DIR}/dlls/assimp-vc142-mtd.dll" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
