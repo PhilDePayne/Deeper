@@ -69,10 +69,8 @@ int Bone::GetBoneID() const
 int Bone::GetPositionIndex(float animationTime)
 {
     if (NumPositions <= 0) assert(0);
-    printf("Positions size: %llu\n", Positions.size());
     for (int index = 0; index < NumPositions - 1; ++index)
     {
-        printf("Animation Time: %f, timeStamp: %f\n", animationTime, Positions[index + 1].timeStamp);
         if (animationTime < Positions[index + 1].timeStamp)
             return index;
     }
