@@ -16,7 +16,6 @@
 #include "Transform.h"
 #include "BoxCollider.h"
 #include "Frustum.h"
-//#include <stb_image.h>
 
 struct MapsSet
 {
@@ -35,16 +34,6 @@ struct BoneInfo
     int Id;
     glm::mat4 offsetMatrix;
 };
-
-//enum MapType
-//{
-//    ALBEDO,
-//    NORMAL,
-//    METALLIC,
-//    ROUGHNESS,
-//    AO,
-//    EMISSIVE
-//};
 
 class Model
 {
@@ -66,7 +55,7 @@ public:
 private:
     GLuint loadedSet = 0; // current mapsSet in shader. Count from 1
     std::vector<MapsSet> mapsSets_loaded; // already loaded mapsSets from files
-//    std::vector<Texture> textures_loaded;
+
     std::vector<Mesh> meshes;
     std::string directory;
     GLuint totalNodes = 0;
@@ -77,11 +66,6 @@ private:
     void setVertexBoneDataDefault(Vertex &vertex);
     void setVertexBoneData(Vertex &vertex, int boneId, float weight);
     void extractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh);
-//    std::map<std::string, unsigned int> boneToId; // nazwy kości do ich Id które są potrzebne w Shaderze
-//    std::map<std::string, aiMatrix4x4> nodeNameToTransform; // transformacje dla każdego węzła
-//    std::vector<aiMatrix4x4> bonesTransforms; // Transformacje kości według Id
-//    std::map<std::string, aiMatrix4x4> bonesToOffsetMatrices; // Offset matrixy dla każdej kości
-//    std::vector<aiMatrix4x4> offsetMatrices;
 
     void loadModel(std::string path);
     void processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix, GLuint depth);

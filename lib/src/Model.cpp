@@ -75,32 +75,13 @@ bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
 void Model::Draw(Shader shader)
 {
-//    std::vector<glm::mat4> convertedBonesMatrices(bonesTransforms.size());
-//    shader.use();
-//    for (int i = 0; i < bonesTransforms.size(); i++)
-//    {
-//        glm::mat4 convertedBoneMatrix;
-//        aiToGlmTransformMatrix(bonesTransforms[i], convertedBoneMatrix);
-//        shader.setMat4("bones[" + std::to_string(i) + "]", convertedBoneMatrix);
-//        drawGLMMatrix(convertedBoneMatrix);
-//    }
-
-//    for (int i = 0; i < offsetMatrices.size(); i++)
-//    {
-//        glm::mat4 convertedOffsetMatrix;
-//        aiToGlmTransformMatrix(offsetMatrices[i], convertedOffsetMatrix);
-//        shader.setMat4("bonesOffsetMats[" + std::to_string(i) + "]", convertedOffsetMatrix);
-//    }
-
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
             if (meshes[i].getTexturesSetId() != loadedSet)
             {
                 passMapsToShader(meshes[i].getTexturesSetId());
             }
-
             meshes[i].Draw(shader, transform);
-        
     }
 }
 
@@ -128,7 +109,6 @@ void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &vi
 
             meshes[i].Draw(shader, transform);
         }
-
     }
 }
 
@@ -165,20 +145,8 @@ void Model::loadModel(std::string path)
     aiMatrix4x4 startMatrix;
     processNode(scene->mRootNode, scene, &startMatrix, 0);
 
-    // after processing all nodes, match bones with corresponding nodes transformations
-//    bonesTransforms.resize(boneToId.size());
-//    offsetMatrices.resize(boneToId.size());
-//    for (auto& boneAndId : boneToId)
-//    {
-//        bonesTransforms[boneAndId.second] = nodeNameToTransform[boneAndId.first];
-//        offsetMatrices[boneAndId.second] = bonesToOffsetMatrices[boneAndId.first];
-//    }
-
 #ifdef MODEL_GENERAL_INFO_LOG
     printf("Total nodes in model: %u\n", totalNodes);
-//    printf("BoneToId size: %llu\n", boneToId.size());
-//    printf("nodeNameToTransform size: %llu\n", nodeNameToTransform.size());
-//    printf("bonesToOffsetMatrices size: %llu\n", bonesToOffsetMatrices.size());
 #endif
 }
 
@@ -198,11 +166,6 @@ void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transfo
     // multiply given matrix with transform matrix of the current node
     aiMatrix4x4 currentTransform = *transformMatrix * node->mTransformation;
 
-    //Ten if raczej jest niepotrzebny
-//    if(nodeNameToTransform.find(node->mName.C_Str()) == nodeNameToTransform.end())
-//    {
-//        nodeNameToTransform[node->mName.C_Str()] = currentTransform;
-//    }
     // process each mesh located at the current node
     for(unsigned int i = 0; i < node->mNumMeshes; i++)
     {
@@ -225,11 +188,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
     {
         printf("bone%u_name: %s, numWeights: %u\n", i,
                mesh->mBones[i]->mName.C_Str(), mesh->mBones[i]->mNumWeights);
-//        printf("--Weight1 Id: %u, weight: %f\n", mesh->mBones[i]->mWeights[0].mVertexId, mesh->mBones[i]->mWeights[0].mWeight);
-//        printf("--Weight2 Id: %u, weight: %f\n", mesh->mBones[i]->mWeights[1].mVertexId, mesh->mBones[i]->mWeights[1].mWeight);
     }
 #endif
-
 
     // Check if the texture with given prefix is already loaded. If it is - don't load again, if it's not - load.
     std::vector<Vertex> vertices;
@@ -280,16 +240,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             vec.x = mesh->mTextureCoords[0][i].x;
             vec.y = mesh->mTextureCoords[0][i].y;
             vertex.TexCoords = vec;
-            // tangent
-//            vector.x = mesh->mTangents[i].x;
-//            vector.y = mesh->mTangents[i].y;
-//            vector.z = mesh->mTangents[i].z;
-//            vertex.Tangent = vector;
-            // bitangent
-//            vector.x = mesh->mBitangents[i].x;
-//            vector.y = mesh->mBitangents[i].y;
-//            vector.z = mesh->mBitangents[i].z;
-//            vertex.Bitangent = vector;
         }
         else
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
@@ -308,41 +258,10 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             indices.push_back(face.mIndices[j]);
     }
 
-//    for(unsigned int i = 0; i < mesh->mNumBones; i++)
-//    {
-//        aiBone *tmpBone = mesh->mBones[i];
-//        bonesToOffsetMatrices[std::string(tmpBone->mName.C_Str())] = tmpBone->mOffsetMatrix;
-//        printf("\nOffset matrix %u\n", i);
-//        drawAiMatrix(tmpBone->mOffsetMatrix);
-//
-//        for(unsigned int j = 0; j < tmpBone->mNumWeights; j++)
-//        {
-//            if(j >= MAX_BONE_INFLUENCE) break;
-//            std::string boneName(tmpBone->mName.C_Str());
-//            int boneID = 0;
-//            if (boneToId.find(boneName) == boneToId.end())
-//            {
-//                boneID = (int)boneToId.size();
-//                boneToId[boneName] = boneID;
-//            }
-//            else
-//            {
-//                boneID = (int)boneToId[boneName];
-//            }
-//            vertices[tmpBone->mWeights[j].mVertexId].m_BoneIDs[j] = boneID;
-//            vertices[tmpBone->mWeights[j].mVertexId].m_Weights[j] = tmpBone->mWeights[j].mWeight;
-//        }
-//    }
-
     glm::mat4 convertedMatrix(1.0f);
 
     // Matrices from assimp and glm have different indexing, so they have to be converted
     aiToGlmTransformMatrix(transformMatrix, convertedMatrix);
-
-//    printf("ASSIMP MAT\n");
-//    drawAiMatrix(transformMatrix);
-    //printf("GLM MAT\n");
-    //std::cout << glm::to_string(convertedMatrix) << '\n';
 
     extractBoneWeightForVertices(vertices, mesh);
 
