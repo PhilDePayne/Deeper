@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <map>
+
 #include "Mesh.h"
 
 #include <assimp/Importer.hpp>
@@ -15,7 +17,6 @@
 #include "Transform.h"
 #include "BoxCollider.h"
 #include "Frustum.h"
-//#include <stb_image.h>
 
 struct MapsSet
 {
@@ -29,15 +30,11 @@ struct MapsSet
     GLuint Emissive;
 };
 
-//enum MapType
-//{
-//    ALBEDO,
-//    NORMAL,
-//    METALLIC,
-//    ROUGHNESS,
-//    AO,
-//    EMISSIVE
-//};
+struct BoneInfo
+{
+    int Id;
+    glm::mat4 offsetMatrix;
+};
 
 class Model : public Component
 {
@@ -54,21 +51,32 @@ public:
     Transform transform;
 
     bool isType(ComponentType t) override;
-
     void test() override;
+
+    std::map<std::string, BoneInfo> &GetBoneInfoMap();
+    int &GetBoneCount();
 
 private:
     GLuint loadedSet = 0; // current mapsSet in shader. Count from 1
     std::vector<MapsSet> mapsSets_loaded; // already loaded mapsSets from files
-//    std::vector<Texture> textures_loaded;
+
     std::vector<Mesh> meshes;
     std::string directory;
+    GLuint totalNodes = 0;
+
+    std::map<std::string, BoneInfo> BoneInfoMap;
+    int BoneCounter = 0;
+
+    void setVertexBoneDataDefault(Vertex &vertex);
+    void setVertexBoneData(Vertex &vertex, int boneId, float weight);
+    void extractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh);
 
     void loadModel(std::string path);
-    void processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix);
+    void processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix, GLuint depth);
     Mesh processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformMatrix);
     GLuint loadMapsSet(const std::string &prefix); // returns Id of the maps set
     void passMapsToShader(GLuint mapsId);
     unsigned int textureFromFile(const std::string &prefix, const std::string &type);
 
+    void aiToGlmTransformMatrix(aiMatrix4x4 &source, glm::mat4 &target);
 };
