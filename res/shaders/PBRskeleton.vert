@@ -43,20 +43,4 @@ void main()
     mat4 viewModel = view * model;
 
     gl_Position =  projection * viewModel * totalPosition;
-//    gl_Position =  projection * viewModel * vec4(aPos, 1.0f);
-
-    //    mat4 bone_transformation = bones[aBoneIDs[0]] * aWeights[0];
-    //    bone_transformation += bones[aBoneIDs[1]] * aWeights[1];
-    //    bone_transformation += bones[aBoneIDs[2]] * aWeights[2];
-    //    bone_transformation += bones[aBoneIDs[3]] * aWeights[3];
-    //
-    //    TexCoords = aTexCoords;
-    //    WorldPos = vec3(model * vec4(aPos, 1.0));
-    //    Normal = mat3(model) * aNormal;
-    //
-    //    vec4 tmp = offsetTransformation * vec4(WorldPos, 1.0);
-    //    gl_Position = projection * view * bone_transformation * tmp;
-    //    gl_Position = bone_transformation * projection * view * offsetTransformation * vec4(WorldPos, 1.0);
-    //    gl_Position = bone_transformation * projection * view * vec4(aPos, 1.0);
-    //    gl_Position = projection * view * vec4(WorldPos, 1.0);
 }

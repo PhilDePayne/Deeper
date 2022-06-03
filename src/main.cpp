@@ -329,15 +329,15 @@ int main(int, char**)
 //    zombieAnimTestModel.transform.scale = glm::vec3(2.5f);
 //    zombieAnimTestModel.transform.position = glm::vec3(0.0f, -200.0f, 0.0f);
 
-//    Model simpleModel("./res/models/zombie/zombieCorrect.fbx");
-//    simpleModel.transform.scale = glm::vec3(1.5f);
-//    simpleModel.transform.position = glm::vec3(0.0f, -200.0f, 20.0f);
-//    Animation animation("./res/models/zombie/zombieCorrect.fbx", &simpleModel);
-    Model simpleModel("./res/models/debug/simpleAnimAF.fbx");
-    simpleModel.transform.scale = glm::vec3(3.5f);
-    simpleModel.transform.position = glm::vec3(0.0f, 000.0f, 0.0f);
-    simpleModel.transform.x_rotation_angle = 90.0f;
-    Animation animation("./res/models/debug/simpleAnimAF.fbx", &simpleModel);
+    Model simpleModel("./res/models/zombie/zombieCorrect.fbx");
+    simpleModel.transform.scale = glm::vec3(1.5f);
+    simpleModel.transform.position = glm::vec3(0.0f, -200.0f, 20.0f);
+    Animation animation("./res/models/zombie/zombieCorrect.fbx", &simpleModel);
+//    Model simpleModel("./res/models/debug/simpleAnimAF.fbx");
+//    simpleModel.transform.scale = glm::vec3(3.5f);
+//    simpleModel.transform.position = glm::vec3(0.0f, 000.0f, 0.0f);
+//    simpleModel.transform.x_rotation_angle = 90.0f;
+//    Animation animation("./res/models/debug/simpleAnimAF.fbx", &simpleModel);
     Animator animator(&animation);
 
 
