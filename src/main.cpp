@@ -444,10 +444,10 @@ int main(int, char**)
     //level.transform.scale = glm::vec3(30.0f);
     //level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
-//    Model level("./res/models/caveSystem/caveSystem.fbx");
+    Model level("./res/models/caveSystem/caveTest.fbx");
 
-//    level.transform.scale = glm::vec3(30.0f);
-//    level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
+    level.transform.scale = glm::vec3(30.0f);
+    level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
 
     Model lightColliders("./res/models/Colliders/testLightColliders.fbx");
@@ -631,7 +631,7 @@ int main(int, char**)
             //lampMdl.Draw(PBRShader, camFrustum, proj, view);
             //colliders.Draw(PBRShader);
             //pickaxe.Draw(PBRShader);
-            //level.Draw(PBRShader);
+            level.Draw(PBRShader);
             //lightColliders.Draw(PBRShader);
 
             //cube->getComponent<AI>(ComponentType::AI)->onTriggerEnter(PBRShader);

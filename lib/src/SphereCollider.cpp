@@ -1,9 +1,19 @@
 #include "SphereCollider.h"
 
 #include "BoxCOllider.h"
+#include "LogMacros.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+
+#ifdef DEEPER_SPHERECOLLIDER_CLASS_LOGS
+
+#define TEST_LOG
+#define COLLISION_RESOLVING_LOG
+
+#endif
+
 
 SphereCollider::SphereCollider(glm::vec3 center, float radius) : center(center), radius(radius) {};
 
@@ -106,9 +116,9 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
     else if (distance < getRadius() && !resolve) {
         
         ret.w = 1;
-
+#ifdef COLLISION_RESOLVING_LOG
         printf("NOT RESOLVING\n");
-
+#endif
         return ret;
 
     }
@@ -124,7 +134,7 @@ bool SphereCollider::isType(ComponentType t) {
 }
 
 void SphereCollider::test() {
-
+#ifdef TEST_LOG
 	printf("TEST_SPHERECOLLIDER\n");
-
+#endif
 }

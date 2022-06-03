@@ -17,6 +17,7 @@
 #define PROCESS_MESH_LOG
 //#define COLLIDER_COORD_LOG
 #define MODEL_GENERAL_INFO_LOG
+#define TEST_LOG
 
 #endif
 
@@ -399,7 +400,9 @@ bool Model::isType(ComponentType t)
 
 void Model::test()
 {
+#ifdef TEST_LOG
     printf("TEST_MODEL\n");
+#endif
 }
 
 void Model::aiToGlmTransformMatrix(aiMatrix4x4 &source, glm::mat4 &target)

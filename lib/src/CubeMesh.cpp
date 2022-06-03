@@ -1,4 +1,12 @@
 #include "CubeMesh.h"
+#include "LogMacros.h"
+
+#ifdef DEEPER_CUBEMESH_CLASS_LOGS
+
+#define TEST_LOG
+
+#endif
+
 
 CubeMesh::CubeMesh() {
 
@@ -42,7 +50,7 @@ bool CubeMesh::isType(ComponentType t) {
 }
 
 void CubeMesh::test() {
-
+#ifdef TEST_LOG
 	printf("TEST_CUBEMESH\n");
-
+#endif
 }
