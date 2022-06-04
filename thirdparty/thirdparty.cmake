@@ -124,3 +124,4 @@ endif()
 #kopiowanie dllek
 file(COPY "${THIRDPARTY_DIR}/dlls/glfw3.dll" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
 file(COPY "${THIRDPARTY_DIR}/dlls/assimp-vc142-mtd.dll" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")
+file(COPY "${THIRDPARTY_DIR}/dlls/freetyped.dll" DESTINATION "${EXECUTABLE_OUTPUT_PATH}")

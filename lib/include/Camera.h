@@ -89,7 +89,7 @@ public:
     }
 
     glm::mat4 GetHudProjMatrix(float width, float height) {
-        return glm::ortho(0.0f, width, 0.0f, height, -1000.0f, 1000.0f);
+        return glm::ortho(0.0f, width, 0.0f, height, -10.0f, 10.0f);
 
     }
 

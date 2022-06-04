@@ -30,6 +30,7 @@
 #include "Texture.h"
 #include "LampAI.h"
 #include "Compass.h"
+#include "TextRenderer.h"
 
 #include <stdio.h>
 #include <memory>
@@ -457,9 +458,10 @@ int main(int, char**)
     hudShader.setMat4("proj", camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
 
     //Compass compass("./res/hud/credits.png", hudShader);
-//    Text points;
+    TextRenderer points(camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
+    Shader textShader("./res/shaders/text.vert", "./res/shaders/text.frag");
 
-    state.setState(GAME_RUNNING);
+    state.setState(GAME_OVER);
 
     /// Main loop
     while (!glfwWindowShouldClose(window))
@@ -491,6 +493,9 @@ int main(int, char**)
         switch(state.getCurState()) {
             case GAME_RUNNING: {
                 state.gameRunning(window);
+
+                points.setPoints(123);
+                points.renderPoints(camera.GetHudProjMatrix(display_w, display_h), textShader, display_w, display_h);
 
                 //ImGui
                 {
@@ -528,77 +533,77 @@ int main(int, char**)
                     basicShader.setMat4("projection", proj);
                     basicShader.setMat4("view", view);
 
-            glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-            basicShader.setMat4("model", model);
+                glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+                basicShader.setMat4("model", model);
 
-            glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-            glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glBindVertexArray(skyboxVAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+                glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+                glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glBindVertexArray(skyboxVAO);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+            }
 
-        if (!rotate) {
-            player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-            //camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
-        }
-        else {
-            //camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
-        }
+            if (!rotate) {
+                player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+                //camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
+            }
+            else {
+                //camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
+            }
 
-        for (int i = 0; i < 1; i++) {
-            //player.gravityOn(deltaTime);
-            //player.checkCollision(lightColliders.getColliders());
-            //player.detectCollision(lightColliders.getColliders());
-            player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-        }
+            for (int i = 0; i < 1; i++) {
+                //player.gravityOn(deltaTime);
+                //player.checkCollision(lightColliders.getColliders());
+                //player.detectCollision(lightColliders.getColliders());
+                player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+            }
 
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            PBRShader.use();
-            PBRShader.setMat4("projection", proj);
-            PBRShader.setMat4("view", view);
-            PBRShader.setVec3("camPos", camera.Position);
-            PBRShader.setFloat("scale", scale);
-            PBRShader.setFloat("lightStrength", lightStrength);
+                PBRShader.use();
+                PBRShader.setMat4("projection", proj);
+                PBRShader.setMat4("view", view);
+                PBRShader.setVec3("camPos", camera.Position);
+                PBRShader.setFloat("scale", scale);
+                PBRShader.setFloat("lightStrength", lightStrength);
 
-            for (unsigned int i = 0; i < lightPositions.size(); ++i)
-            {
-                glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-                newPos = lightPositions[i];
-                PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-                PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
-            }
+                for (unsigned int i = 0; i < lightPositions.size(); ++i)
+                {
+                    glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+                    newPos = lightPositions[i];
+                    PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+                    PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+                }
 
-                camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
+                    camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
-            rocks.Draw(PBRShader);
-            //lampMdl.Draw(PBRShader, camFrustum, proj, view);
-            //colliders.Draw(PBRShader);
-            //pickaxe.Draw(PBRShader);
-            //level.Draw(PBRShader);
-            //lightColliders.Draw(PBRShader);
+                rocks.Draw(PBRShader);
+                //lampMdl.Draw(PBRShader, camFrustum, proj, view);
+                //colliders.Draw(PBRShader);
+                //pickaxe.Draw(PBRShader);
+                //level.Draw(PBRShader);
+                //lightColliders.Draw(PBRShader);
 
-            //cube->getComponent<AI>(ComponentType::AI)->onTriggerEnter(PBRShader);
-            lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                //cube->getComponent<AI>(ComponentType::AI)->onTriggerEnter(PBRShader);
+                lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
                 player.render(PBRShader);
 
-            //SKYBOX
-            if (skybox) {
-                useDebugCamera(proj, view, window, scale);
-                glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-                skyboxShader.use();
-                skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
-                skyboxShader.setMat4("projection", proj);
-                // skybox cube
-                glBindVertexArray(skyboxVAO);
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-                glBindVertexArray(0);
-                glDepthFunc(GL_LESS); // set depth function back to default
-            }
+                //SKYBOX
+                if (skybox) {
+                    useDebugCamera(proj, view, window, scale);
+                    glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+                    skyboxShader.use();
+                    skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
+                    skyboxShader.setMat4("projection", proj);
+                    // skybox cube
+                    glBindVertexArray(skyboxVAO);
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+                    glDrawArrays(GL_TRIANGLES, 0, 36);
+                    glBindVertexArray(0);
+                    glDepthFunc(GL_LESS); // set depth function back to default
+                }
 
                 break;
             }
@@ -620,14 +625,6 @@ int main(int, char**)
 
                 break;
             }
-            case RANKING: {
-                hudShader.use();
-                hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
-
-                state.leaderboard(window, hudShader);
-
-                break;
-            }
             case CREDITS: {
                 hudShader.use();
                 hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
@@ -641,6 +638,7 @@ int main(int, char**)
                 hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
 
                 state.gameOver(window, hudShader);
+                points.renderPoints(camera.GetHudProjMatrix(display_w, display_h), textShader, display_w, 683.0f/1080.0f * display_h);
 
                 break;
             }

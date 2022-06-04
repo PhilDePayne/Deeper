@@ -10,7 +10,7 @@ enum State {
     GAME_RUNNING,
     PAUSE,
     GAME_OVER,
-    RANKING,
+//    RANKING,
     CREDITS,
     EXIT
 };
@@ -35,8 +35,8 @@ public:
     void credits(GLFWwindow * window, Shader shader);
     void loadCreditsResources(int display_w, int display_h, Shader shader);
 
-    void leaderboard(GLFWwindow * window, Shader shader);
-    void loadLeaderboardResources(int display_w, int display_h, Shader shader);
+//    void leaderboard(GLFWwindow * window, Shader shader);
+//    void loadLeaderboardResources(int display_w, int display_h, Shader shader);
 
     void gameOver(GLFWwindow * window, Shader shader);
     void loadGameOverResources(int display_w, int display_h, Shader shader);
