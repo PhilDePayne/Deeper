@@ -5,8 +5,8 @@
 #ifndef DEEPER_LOGMACROS_H
 #define DEEPER_LOGMACROS_H
 
-// comment this macro if you want to disable all logs
-#define LOGS_ENABLED
+
+#define LOGS_ENABLED // comment this macro if you want to disable all logs
 
 
 #ifdef LOGS_ENABLED // check if logs are enabled
