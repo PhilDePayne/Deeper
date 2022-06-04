@@ -8,8 +8,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <stb_image.h>
 #include <cstdio>
-#include <ft2build.h>
-#include FT_FREETYPE_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
 
 #include "GameObject.h"
 #include "CubeMesh.h"
@@ -30,6 +30,7 @@
 #include "Texture.h"
 #include "LampAI.h"
 #include "Compass.h"
+#include "TextRenderer.h"
 
 #include <stdio.h>
 #include <memory>
@@ -457,7 +458,7 @@ int main(int, char**)
     hudShader.setMat4("proj", camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
 
     //Compass compass("./res/hud/credits.png", hudShader);
-//    Text points;
+    TextRenderer points(camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
 
     state.setState(GAME_RUNNING);
 
@@ -511,6 +512,8 @@ int main(int, char**)
 
                     ImGui::Text("camera's position x: %f  | y: %f | z: %f", camera.getCamPos().x,
                                 camera.getCamPos().y, camera.getCamPos().z);
+
+                    ImGui::Text("points: %i", points.getPoints());
 
 
                     ImGui::End();
@@ -617,14 +620,6 @@ int main(int, char**)
                 hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
 
                 state.pause(window, hudShader);
-
-                break;
-            }
-            case RANKING: {
-                hudShader.use();
-                hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
-
-                state.leaderboard(window, hudShader);
 
                 break;
             }

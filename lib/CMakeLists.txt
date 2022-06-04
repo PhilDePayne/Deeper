@@ -38,7 +38,10 @@ set(SOURCE_FILES
     "include/LampAI.h"
 	include/GameState.h
 	src/GameState.cpp
-	include/hudRect.h "src/LampAI.cpp")
+	include/hudRect.h
+	"src/LampAI.cpp"
+	include/TextRenderer.h
+		)
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})
