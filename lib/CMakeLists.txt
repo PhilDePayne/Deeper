@@ -48,7 +48,7 @@ set(SOURCE_FILES
 		include/Animation.h
 		src/Animation.cpp
 		include/Animator.h
-		src/Animator.cpp)
+		src/Animator.cpp include/Sound.h src/Sound.cpp include/SoundSystem.h src/SoundSystem.cpp)
 
 
 #TODO: Biblioteka variable
