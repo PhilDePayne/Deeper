@@ -33,3 +33,8 @@ void Sound::play()
 {
     system->playSound(sound, nullptr, false, nullptr);
 }
+
+Sound::~Sound()
+{
+    sound->release();
+}

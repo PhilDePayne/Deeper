@@ -16,6 +16,9 @@ private:
 public:
     static void setSystem(FMOD::System *system);
     Sound(const char* path);
+
+    virtual ~Sound();
+
     void play();
 };
 
