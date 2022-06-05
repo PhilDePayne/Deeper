@@ -13,7 +13,7 @@
 #ifdef DEEPER_MODEL_CLASS_LOGS
 
 #define DRAW_NODE_TREE_LOG
-//#define TEXTURE_LOAD_LOG
+#define TEXTURE_LOAD_LOG
 #define PROCESS_MESH_LOG
 //#define COLLIDER_COORD_LOG
 #define MODEL_GENERAL_INFO_LOG
@@ -300,6 +300,21 @@ unsigned int Model::textureFromFile(const std::string &prefix, const std::string
 
     int width, height, nrComponents;
     unsigned char *data = stbi_load(filePath.c_str(), &width, &height, &nrComponents, 0);
+    if (!data)
+    {
+#ifdef TEXTURE_LOAD_LOG
+        std::cout << "Texture failed to load at path: " << filePath << " | Loading default texture" << std::endl;
+#endif
+        filePath = "./res/defaultMaps/default_" + type + ".png";
+        data = stbi_load(filePath.c_str(), &width, &height, &nrComponents, 0);
+    }
+    else
+    {
+#ifdef TEXTURE_LOAD_LOG
+        std::cout << "Texture loaded at path: " << filePath << std::endl;
+#endif
+    }
+
     if (data)
     {
         GLenum format;
@@ -319,16 +334,6 @@ unsigned int Model::textureFromFile(const std::string &prefix, const std::string
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        stbi_image_free(data);
-#ifdef TEXTURE_LOAD_LOG
-        std::cout << "Texture loaded at path: " << filePath << std::endl;
-#endif
-    }
-    else
-    {
-#ifdef TEXTURE_LOAD_LOG
-        std::cout << "Texture failed to load at path: " << filePath << std::endl;
-#endif
         stbi_image_free(data);
     }
 
