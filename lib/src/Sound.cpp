@@ -26,15 +26,43 @@ Sound::Sound(const char *path)
     {
         //TODO: Jakieś info albo wyjatek, że chuj z tego
     }
-
-}
-#define true 0
-void Sound::play()
-{
-    system->playSound(sound, nullptr, false, nullptr);
+    setupChannel();
 }
 
 Sound::~Sound()
 {
     sound->release();
+}
+
+void Sound::play()
+{
+    channel->setPaused(false);
+}
+
+void Sound::pause()
+{
+    channel->setPaused(true);
+}
+
+void Sound::stop()
+{
+    channel->stop();
+    setupChannel();
+}
+
+void Sound::setVolume(float level)
+{
+    channel->setVolume(level);
+}
+
+float Sound::getVolume()
+{
+    float volume;
+    channel->getVolume(&volume);
+    return volume;
+}
+
+void Sound::setupChannel()
+{
+    system->playSound(sound, nullptr, true, &channel);
 }
