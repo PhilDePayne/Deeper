@@ -115,8 +115,6 @@ public:
         camPos = glm::vec3(camX, camY, camZ);
     }
 
-
-
     void AdjustPlanes(float width, float height, float depthPos, float planeWidth) {
         proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, depthPos - planeWidth, depthPos + planeWidth);
     }
@@ -126,7 +124,9 @@ public:
             angle = 90.0f * (float)dir;
         }
     }
+
     ///GETTERS & SETTERS FOR MATRICES
+
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix()
     {
@@ -145,7 +145,6 @@ public:
         return glm::ortho(0.0f, width, 0.0f, height, -10.0f, 10.0f);
     }
 
-    //do dopasowania po wgraniu levelu
     void SetProjMatrix(float width, float height, float nearPlane, float farPlane) {
         proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, nearPlane, farPlane);
 //        proj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);

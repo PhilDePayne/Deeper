@@ -442,14 +442,21 @@ int main(int, char**)
     // pickaxe("./res/models/Kilof/kilof.fbx");
     //pickaxe.transform.scale = glm::vec3(400.0f);
 
-    ///LEVEL
-    Model level("./res/models/caveSystem/caveTest.fbx");
+//    Model level("./res/models/caveSystem/caveTest.fbx");
+//
+//    level.transform.scale = glm::vec3(30.0f);
+//    level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
-    level.transform.scale = glm::vec3(30.0f);
-    level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
-
+    //TODO: cave3
     ///LEVEL GENERATION
-    LevelGenerator gen(level, level, level);
+
+    Model cave1("./res/models/cave1/cave1_mdl.fbx");
+    cave1.transform.scale = glm::vec3(11.0f);
+
+    Model cave2("./res/models/cave2/cave2_mdl.fbx");
+    cave2.transform.scale = glm::vec3(11.0f);
+
+    LevelGenerator gen(cave1, cave2, cave1);
     gen.newGame(SCR_HEIGHT);
 
 
@@ -460,7 +467,7 @@ int main(int, char**)
     ///PLAYER
     Player player("./res/models/Box/box.fbx");
     player.getBody()->transform.scale = glm::vec3(1.5f);
-    player.getBody()->transform.position = glm::vec3(0.0f, 200.0f, 0.0f);
+    player.getBody()->transform.position = glm::vec3(0.0f, 180.0f, 0.0f);
     player.getBody()->transform.y_rotation_angle = 90.0f;
 
 
@@ -539,7 +546,7 @@ int main(int, char**)
             case GAME_RUNNING: {
 
                 if(restart) {
-                    gen.newGame(SCR_HEIGHT);
+//                    gen.newGame(SCR_HEIGHT);
                     player.newGame(depthPos);
                     restart = false;
                 }
@@ -572,7 +579,8 @@ int main(int, char**)
 
                     ImGui::Text("points: %i", points.getPoints());
 
-                    ImGui::SliderFloat("clipping width", &clipWidth, 0.0f, 100.0f);
+                    ImGui::SliderFloat("clipping width", &clipWidth, 0.0f, 150.0f);
+                    ImGui::NewLine();
 
                     ImGui::End();
                 }
@@ -601,15 +609,16 @@ int main(int, char**)
                     glDrawArrays(GL_TRIANGLES, 0, 36);
                 }
 
-                if (!rotate) {
+//                camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, 5000.0f);
+                if (rotate == 0) {
                     player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-                    camera.AdjustPlanes(display_w, display_h, depthPos, clipWidth);
+                    camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
 
                 }
                 else {
                     //obracanie przodem do kamery zepsute, ale gracz jest zatrzymywany podczas obrotu kamery
                     player.rotate(rotationSpeed * deltaTime * rotate);
-                    camera.AdjustPlanes(display_w, display_h, depthPos, 5000.0f);
+                    camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, 5000.0f);
                 }
 
                 for (int i = 0; i < 1; i++)

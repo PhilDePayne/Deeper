@@ -5,7 +5,7 @@
 #ifndef DEEPER_LEVELGENERATOR_H
 #define DEEPER_LEVELGENERATOR_H
 
-//TODO: source file
+//TODO: instancjonowanie
 class LevelGenerator {
 
 public:
@@ -31,11 +31,15 @@ public:
     }
 
     void DrawLevels(Shader shader) {
-//        for(auto& cave : caveModels) {
-//            cave.Draw(shader);
-//        }
+        for(auto& cave : caveModels) {
+            cave.Draw(shader);
+        }
 
-        caveModels[num[1]].Draw(shader);
+//        caveModels[num[1]].Draw(shader);
+    }
+
+    void move(float pos) {
+        caveModels[num[1]].transform.position = glm::vec3(0.0f, pos, 0.0f);
     }
 
     void update(float camY) {
@@ -55,7 +59,7 @@ private:
     float initPos;
     std::vector<Model> caveModels;
     int num[3] = {0, 1, 2};
-    float levelH = 1170.0f;
+    float levelH = 1040.0f;
     int iter = 0;
 
 
