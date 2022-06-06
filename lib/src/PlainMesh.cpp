@@ -1,4 +1,12 @@
 #include "PlainMesh.h"
+#include "LogMacros.h"
+
+#ifdef DEEPER_PLAINMESH_CLASS_LOGS
+
+#define TEST_LOG
+
+#endif
+
 
 PlainMesh::PlainMesh() {
 
@@ -51,7 +59,7 @@ bool PlainMesh::isType(ComponentType t) {
 }
 
 void PlainMesh::test() {
-
+#ifdef TEST_LOG
 	printf("TEST_PLAINMESH");
-
+#endif
 }

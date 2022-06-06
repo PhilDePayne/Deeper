@@ -1,10 +1,18 @@
 #include "LampAI.h"
+#include "LogMacros.h"
+
+#ifdef DEEPER_LAMPAI_CLASS_LOGS
+
+#define ON_COLLISION_ENTER_LOG
+
+#endif
+
 
 void LampAI::onCollisionEnter() {
-
+#ifdef ON_COLLISION_ENTER_LOG
 	printf("ENTERED COLLISION\n");
-
-};
+#endif
+}
 
 void LampAI::onTriggerEnter(BoxCollider collided) {
 

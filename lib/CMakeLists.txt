@@ -32,7 +32,6 @@ set(SOURCE_FILES
 	include/Mesh.h
     src/Mesh.cpp
     include/Frustum.h
-	include/Player.h 
     "include/AI.h" 
     src/AI.cpp 
     "include/LampAI.h"
@@ -40,6 +39,20 @@ set(SOURCE_FILES
 	src/GameState.cpp
 	include/hudRect.h
 	"src/LampAI.cpp"
+	include/Player.h
+	include/LogMacros.h
+	include/Bone.h
+	src/Bone.cpp
+	include/AssimpGLMHelpers.h
+	src/AssimpGLMHelpers.cpp
+	include/Animation.h
+	src/Animation.cpp
+	include/Animator.h
+	src/Animator.cpp
+	include/Sound.h
+	src/Sound.cpp
+	include/SoundSystem.h
+	src/SoundSystem.cpp
 	include/TextRenderer.h
 		)
 

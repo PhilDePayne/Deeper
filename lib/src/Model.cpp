@@ -7,12 +7,49 @@
 #include "Model.h"
 #include "glm/gtx/string_cast.hpp"
 #include <stb_image.h>
+#include "LogMacros.h"
+
+// Log macros to disable/enable certain logs in model class
+#ifdef DEEPER_MODEL_CLASS_LOGS
+
+#define DRAW_NODE_TREE_LOG
+#define TEXTURE_LOAD_LOG
+#define PROCESS_MESH_LOG
+//#define COLLIDER_COORD_LOG
+#define MODEL_GENERAL_INFO_LOG
+#define TEST_LOG
+
+#endif
+
+// draws matrix in console for debugging
+void drawAiMatrix(aiMatrix4x4 matrix)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            std::cout << matrix[i][j] << ", ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void drawGLMMatrix(glm::mat4 matrix)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            std::cout << matrix[j][i] << ", ";
+        }
+        std::cout << std::endl;
+    }
+}
 
 Model::Model(char *path)
 {
     loadModel(path);
 }
-
 
 bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
@@ -39,17 +76,13 @@ bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
 void Model::Draw(Shader shader)
 {
-    
-
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
             if (meshes[i].getTexturesSetId() != loadedSet)
             {
                 passMapsToShader(meshes[i].getTexturesSetId());
             }
-
             meshes[i].Draw(shader, transform);
-        
     }
 }
 
@@ -80,13 +113,15 @@ void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &vi
 
             meshes[i].Draw(shader, transform);
         }
-        else printf("NOT RENDERING\n");
-
     }
 }
 
 void Model::loadModel(std::string path)
 {
+#ifdef MODEL_GENERAL_INFO_LOG
+    printf("\nLoading model at path: %s \n", path.c_str());
+#endif
+
     // read file via ASSIMP
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -98,29 +133,39 @@ void Model::loadModel(std::string path)
     }
     // retrieve the directory path of the filepath
     directory = path.substr(0, path.find_last_of('/'));
-    std::cout << "Meshes Count: " << scene->mNumMeshes << std::endl;
+
+#ifdef MODEL_GENERAL_INFO_LOG
+    printf("Meshes: %u, Animations: %u \n", scene->mNumMeshes, scene->mNumAnimations);
+    if (scene->mNumAnimations != 0)
+    {
+        for (int i = 0; i < scene->mAnimations[0]->mNumChannels; i++)
+        {
+            std::cout << "channel " << scene->mAnimations[0]->mChannels[i]->mNodeName.C_Str() << std::endl;
+        }
+    }
+#endif
+
     // process ASSIMP's root node recursively
     aiMatrix4x4 startMatrix;
-    processNode(scene->mRootNode, scene, &startMatrix);
+    processNode(scene->mRootNode, scene, &startMatrix, 0);
+
+#ifdef MODEL_GENERAL_INFO_LOG
+    printf("Total nodes in model: %u\n", totalNodes);
+#endif
 }
 
-// draws matrix in console for debugging
-void drawMatrix(aiMatrix4x4 matrix)
+// variable depth if only for debugging and printing simple node tree in console
+void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix, GLuint depth)
 {
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            std::cout << matrix[i][j] << ", ";
-        }
-        std::cout << std::endl;
-    }
-}
-
-void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transformMatrix)
-{
-//    std::cout << "Node name: " << node->mName.C_Str() << std::endl;
-//    std::cout << "Node meshes: " << node->mNumMeshes << std::endl;
+#ifdef DRAW_NODE_TREE_LOG
+    std::string depthPrefix;
+    for (int i = 0; i < depth; i++) depthPrefix.append("-");
+    printf("%sNode_name: %s, meshes: %u\n", depthPrefix.c_str(), node->mName.C_Str(), node->mNumMeshes);
+    depth++;
+#endif
+#ifdef MODEL_GENERAL_INFO_LOG
+    totalNodes++;
+#endif
 
     // multiply given matrix with transform matrix of the current node
     aiMatrix4x4 currentTransform = *transformMatrix * node->mTransformation;
@@ -135,17 +180,25 @@ void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 *transfo
     // process all children nodes
     for(unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene, &currentTransform);
+        processNode(node->mChildren[i], scene, &currentTransform, depth);
     }
 }
 
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformMatrix)
 {
-    std::vector<Vertex> vertices;
-    std::vector<unsigned int> indices;
-//    std::cout << "Mesh Name: " << mesh->mName.C_Str() << std::endl;
+#ifdef PROCESS_MESH_LOG
+    printf("Mesh_name: %s, num_bones: %u, numVertices: %u\n", mesh->mName.C_Str(), mesh->mNumBones, mesh->mNumVertices);
+    for (unsigned int i = 0; i < mesh->mNumBones; ++i)
+    {
+        printf("bone%u_name: %s, numWeights: %u\n", i,
+               mesh->mBones[i]->mName.C_Str(), mesh->mBones[i]->mNumWeights);
+    }
+#endif
 
     // Check if the texture with given prefix is already loaded. If it is - don't load again, if it's not - load.
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+    // Texture loading
     std::string texturePrefix = mesh->mName.C_Str();
     texturePrefix = texturePrefix.substr(0, texturePrefix.find_first_of('_'));
     bool textureNotLoaded = true;
@@ -163,7 +216,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
     {
         textureSetId = loadMapsSet(texturePrefix);
     }
-
 
     for(unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -192,22 +244,13 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             vec.x = mesh->mTextureCoords[0][i].x;
             vec.y = mesh->mTextureCoords[0][i].y;
             vertex.TexCoords = vec;
-            // tangent
-            vector.x = mesh->mTangents[i].x;
-            vector.y = mesh->mTangents[i].y;
-            vector.z = mesh->mTangents[i].z;
-            vertex.Tangent = vector;
-            // bitangent
-            vector.x = mesh->mBitangents[i].x;
-            vector.y = mesh->mBitangents[i].y;
-            vector.z = mesh->mBitangents[i].z;
-            vertex.Bitangent = vector;
         }
         else
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 
-        vertices.push_back(vertex);
+        setVertexBoneDataDefault(vertex);
 
+        vertices.push_back(vertex);
     }
 
     // now walk through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
@@ -219,27 +262,19 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
             indices.push_back(face.mIndices[j]);
     }
 
-    glm::mat4 convertedMatrix;
+    glm::mat4 convertedMatrix(1.0f);
 
     // Matrices from assimp and glm have different indexing, so they have to be converted
-    for(int i = 0; i < 4; i++)
-    {
-        for(int j = 0; j < 4; j++)
-        {
-            convertedMatrix[i][j] = transformMatrix[j][i];
-        }
-    }
-    //printf("ASSIMP MAT\n");
 
-    //drawMatrix(transformMatrix);
+    aiToGlmTransformMatrix(transformMatrix, convertedMatrix);
 
-    //printf("GLM MAT\n");
-
-    //std::cout << glm::to_string(convertedMatrix) << '\n';
+    extractBoneWeightForVertices(vertices, mesh);
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, convertedMatrix, textureSetId);
 }
+
+
 
 GLuint Model::loadMapsSet(const std::string &prefix)
 {
@@ -265,6 +300,21 @@ unsigned int Model::textureFromFile(const std::string &prefix, const std::string
 
     int width, height, nrComponents;
     unsigned char *data = stbi_load(filePath.c_str(), &width, &height, &nrComponents, 0);
+    if (!data)
+    {
+#ifdef TEXTURE_LOAD_LOG
+        std::cout << "Texture failed to load at path: " << filePath << " | Loading default texture" << std::endl;
+#endif
+        filePath = "./res/defaultMaps/default_" + type + ".png";
+        data = stbi_load(filePath.c_str(), &width, &height, &nrComponents, 0);
+    }
+    else
+    {
+#ifdef TEXTURE_LOAD_LOG
+        std::cout << "Texture loaded at path: " << filePath << std::endl;
+#endif
+    }
+
     if (data)
     {
         GLenum format;
@@ -284,11 +334,6 @@ unsigned int Model::textureFromFile(const std::string &prefix, const std::string
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        stbi_image_free(data);
-    }
-    else
-    {
-        std::cout << "Texture failed to load at path: " << filePath << std::endl;
         stbi_image_free(data);
     }
 
@@ -318,7 +363,8 @@ void Model::passMapsToShader(GLuint mapsId)
     }
 }
 
-std::vector<BoxCollider> Model::getColliders() {
+std::vector<BoxCollider> Model::getColliders()
+{
 
     std::vector<BoxCollider> ret;
 
@@ -339,24 +385,103 @@ std::vector<BoxCollider> Model::getColliders() {
 
         tmp.parent = this->parent;
 
-        //printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
+#ifdef COLLIDER_COORD_LOG
+        printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
+#endif
 
         ret.push_back(tmp);
-
     }
 
     return ret;
 
 }
 
-bool Model::isType(ComponentType t) {
-
+bool Model::isType(ComponentType t)
+{
     return t == ComponentType::MODEL;
-
 }
 
-void Model::test() {
-
+void Model::test()
+{
+#ifdef TEST_LOG
     printf("TEST_MODEL\n");
+#endif
+}
 
+void Model::aiToGlmTransformMatrix(aiMatrix4x4 &source, glm::mat4 &target)
+{
+    for(int i = 0; i < 4; i++)
+    {
+        for(int j = 0; j < 4; j++)
+        {
+            target[i][j] = source[j][i];
+        }
+    }
+}
+
+void Model::setVertexBoneDataDefault(Vertex &vertex)
+{
+    for (GLuint i = 0; i < MAX_BONE_INFLUENCE; i++)
+    {
+        vertex.m_BoneIDs[i] = -1;
+        vertex.m_Weights[i] = 0.0f;
+    }
+}
+
+void Model::setVertexBoneData(Vertex &vertex, int boneId, float weight)
+{
+    for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+    {
+        if (vertex.m_BoneIDs[i] < 0)
+        {
+            vertex.m_Weights[i] = weight;
+            vertex.m_BoneIDs[i] = boneId;
+            break;
+        }
+    }
+}
+
+void Model::extractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh)
+{
+    for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+    {
+        int boneID = -1;
+        std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+        if (BoneInfoMap.find(boneName) == BoneInfoMap.end())
+        {
+            BoneInfo newBoneInfo{};
+            newBoneInfo.Id = BoneCounter;
+            glm::mat4 offsetMatrix(0);
+            aiToGlmTransformMatrix(mesh->mBones[boneIndex]->mOffsetMatrix, offsetMatrix);
+            newBoneInfo.offsetMatrix = offsetMatrix;
+            BoneInfoMap[boneName] = newBoneInfo;
+            boneID = BoneCounter;
+            BoneCounter++;
+        }
+        else
+        {
+            boneID = BoneInfoMap[boneName].Id;
+        }
+        assert(boneID != -1);
+        auto weights = mesh->mBones[boneIndex]->mWeights;
+        unsigned int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+        for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+        {
+            unsigned int vertexId = weights[weightIndex].mVertexId;
+            float weight = weights[weightIndex].mWeight;
+            assert(vertexId <= vertices.size());
+            setVertexBoneData(vertices[vertexId], boneID, weight);
+        }
+    }
+}
+
+std::map<std::string, BoneInfo> &Model::GetBoneInfoMap()
+{
+    return BoneInfoMap;
+}
+
+int &Model::GetBoneCount()
+{
+    return BoneCounter;
 }

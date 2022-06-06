@@ -1,4 +1,12 @@
 #include "SphereMesh.h"
+#include "LogMacros.h"
+
+#ifdef DEEPER_SPHEREMESH_CLASS_LOGS
+
+#define TEST_LOG
+
+#endif
+
 
 SphereMesh::SphereMesh() {
 
@@ -106,8 +114,8 @@ bool SphereMesh::isType(ComponentType t) {
 }
 
 void SphereMesh::test() {
-
+#ifdef TEST_LOG
     printf("TEST_SPHEREMESH\n");
-
+#endif
 }
 

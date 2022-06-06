@@ -15,7 +15,6 @@ uniform sampler2D emissiveMap;
 // lights
 uniform vec3 lightPositions[9];
 uniform vec3 lightColors[9];
-uniform float lightStrength;
 
 uniform vec3 camPos;
 
@@ -92,7 +91,7 @@ void main()
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedo, metallic);
 
-
+    // reflectance equation
     vec3 Lo = vec3(0.0);
     for(int i = 0; i < 9; ++i)
     {
@@ -100,7 +99,7 @@ void main()
         vec3 L = normalize(lightPositions[i] - WorldPos);
         vec3 H = normalize(V + L);
         float distance = length(lightPositions[i] - WorldPos);
-        float attenuation = lightStrength * 1.0 / (distance * distance);
+        float attenuation = 1.0 / (distance * distance);
         vec3 radiance = lightColors[i] * attenuation;
 
         // Cook-Torrance BRDF
@@ -136,6 +135,4 @@ void main()
     color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(color, 1.0) + vec4(emissive, 0.0);
-//    FragColor = vec4(color, 1.0);
-
 }

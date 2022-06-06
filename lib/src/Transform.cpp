@@ -1,4 +1,13 @@
 #include "Transform.h"
+#include "LogMacros.h"
+
+
+#ifdef DEEPER_TRANSFORM_CLASS_LOGS
+
+#define TEST_LOG
+
+#endif
+
 
 Transform::Transform() :worldMatrix(1.0f){
 }
@@ -23,7 +32,7 @@ bool Transform::isType(ComponentType t) {
 }
 
 void Transform::test() {
-
+#ifdef TEST_LOG
     printf("TEST_TRANSFORM\n");
-
+#endif
 }

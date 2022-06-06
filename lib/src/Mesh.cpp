@@ -9,6 +9,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include "glm/gtx/string_cast.hpp"
+#include "LogMacros.h"
+
+#ifdef DEEPER_MESH_CLASS_LOGS
+
+#define BOUNDING_VOLUME_LOG
+
+#endif
+
 
 Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat4 modelMatrix, GLuint texturesSetID)
 {
@@ -43,9 +51,10 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
                                      glm::abs((maxY - minY)),
                                      glm::abs((maxZ - minZ))));
 
+#ifdef BOUNDING_VOLUME_LOG
     printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
         boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
-
+#endif
 }
 
 void Mesh::Draw(Shader &shader, Transform modelTransform)
@@ -83,6 +92,13 @@ void Mesh::setupMesh()
     // TexCoords
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+    //BoneIDS
+    glEnableVertexAttribArray(3);
+    glVertexAttribIPointer(3, MAX_BONE_INFLUENCE, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs));
+    //Bone weights
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, MAX_BONE_INFLUENCE, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Weights));
+
 
     glBindVertexArray(0);
 }

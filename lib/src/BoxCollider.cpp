@@ -1,4 +1,12 @@
 #include "BoxCollider.h"
+#include "LogMacros.h"
+
+#ifdef DEEPER_BOXCOLLIDER_CLASS_LOGS
+
+#define TEST_LOG
+
+#endif
+
 
 BoxCollider::BoxCollider(glm::vec3 center, glm::vec3 size) : center(center), size(size) {};
 
@@ -83,7 +91,7 @@ bool BoxCollider::isType(ComponentType t) {
 }
 
 void BoxCollider::test() {
-
+#ifdef TEST_LOG
 	printf("TEST_BOXCOLLIDER\n");
-
+#endif
 }

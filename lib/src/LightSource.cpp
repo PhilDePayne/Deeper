@@ -1,4 +1,13 @@
 #include "LightSource.h"
+#include "LogMacros.h"
+
+#ifdef DEEPER_LIGHTSOURCE_CLASS_LOGS
+
+#define TEST_LOG
+#define SET_CUT_OFF_LOG
+
+#endif
+
 
 LightSource::LightSource() {};
 
@@ -135,8 +144,9 @@ void LightSource::setQuadratic(float q) {
 void LightSource::setCutOff(float c) {
 
 	cutOff = glm::cos(glm::radians(c));
+#ifdef SET_CUT_OFF_LOG
 	printf("%f\n", cutOff);
-
+#endif
 }
 
 void LightSource::setOuterCutOff(float c) {
@@ -151,8 +161,9 @@ bool LightSource::isType(ComponentType t) {
 
 }
 
-void LightSource::test() {
-
+void LightSource::test()
+{
+#ifdef TEST_LOG
 	printf("TEST_LIGHTSOURCE\n");
-
+#endif
 }
