@@ -54,6 +54,7 @@ set(SOURCE_FILES
 	include/SoundSystem.h
 	src/SoundSystem.cpp
 	include/TextRenderer.h
+	include/LevelGenerator.h
 		)
 
 #TODO: Biblioteka variable
