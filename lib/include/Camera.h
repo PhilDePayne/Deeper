@@ -74,7 +74,7 @@ public:
         updateCameraVectors();
     }
 
-    void ProcessMovement(float radius, float speed, int &move, float camY, float &zPos, glm::vec3 &pos, int direction) {
+    void ProcessMovement(float radius, float speed, int &move, float camY, float &depthPos, glm::vec3 &pos) {
 
         if(move != 0) {
             totalDegrees += speed;
@@ -92,13 +92,7 @@ public:
                 if(dir < FRONT_DIR)
                     dir = LEFT_DIR;
 
-                //tu blad z depthPos
-                if(dir == FRONT_DIR || dir == BACK_DIR) {
-                    zPos = pos.z * direction;
-                }
-                else {
-                    zPos = pos.x * direction;
-                }
+                setDepthPos(depthPos, pos);
 
                 totalDegrees = 0.0f;
                 move = 0;
@@ -119,16 +113,12 @@ public:
         view = glm::lookAt(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, camY, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
         camPos = glm::vec3(camX, camY, camZ);
-        //clipping plane
-//        if(angle == 0.0f || angle == 180.0f)
-//            view = glm::translate(view, glm::vec3(0.0f, 0.0f, zPos));
-//        else if(angle == 90.0f || angle == 270.0f)
-//            view = glm::translate(view, glm::vec3(zPos, 0.0f, 0.0f));
-
     }
 
-    void AdjustPlanes(float width, float height, float zPos, float planeWidth) {
-        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, zPos - planeWidth, zPos + planeWidth);
+
+
+    void AdjustPlanes(float width, float height, float depthPos, float planeWidth) {
+        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, depthPos - planeWidth, depthPos + planeWidth);
     }
 
     void correctAngle() {
@@ -250,5 +240,28 @@ private:
         // also re-calculate the Right and Up vector
         Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up = glm::normalize(glm::cross(Right, Front));
+    }
+
+    void setDepthPos(float &depthPos, glm::vec3 pos) {
+        switch (dir) {
+            case FRONT_DIR: {
+                depthPos = -pos.z;
+                break;
+            }
+            case RIGHT_DIR: {
+                depthPos = -pos.x;
+                break;
+            }
+            case BACK_DIR: {
+                depthPos = pos.z;
+//                depthPos = -pos.z;
+                break;
+            }
+            case LEFT_DIR: {
+                depthPos = pos.x;
+//                depthPos = -pos.x;
+                break;
+            }
+        }
     }
 };

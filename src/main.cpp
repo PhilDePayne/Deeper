@@ -63,8 +63,6 @@ const unsigned int SCR_HEIGHT = 720;
 
 int display_w, display_h;
 
-const float nearPlane = -100.0f;
-const float farPlane = 100.0f;
 
 bool debugBox = 0;
 bool skybox = 0;
@@ -166,6 +164,8 @@ bool firstMouse = true;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+bool restart = true;
 
 //camera var
 int rotate = 0;
@@ -497,8 +497,6 @@ int main(int, char**)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-
-
     ///HUD RESOURCES
     int old_w, old_h;
     Shader hudShader("./res/shaders/basicTexture.vert", "./res/shaders/basicTexture.frag");
@@ -540,24 +538,18 @@ int main(int, char**)
         switch(state.getCurState()) {
             case GAME_RUNNING: {
 
-            state.gameRunning(window);
+                if(restart) {
+                    gen.newGame(SCR_HEIGHT);
+                    player.newGame(depthPos);
+                    restart = false;
+                }
 
-//            animator.UpdateAnimation(deltaTime);
+                state.gameRunning(window);
+//              animator.UpdateAnimation(deltaTime);
 
-            int display_w, display_h;
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glfwMakeContextCurrent(window);
-            glfwGetFramebufferSize(window, &display_w, &display_h);
-
-//            useDebugCamera(proj, view, window, scale);
-            useOrthoCamera(proj, view, window, cameraY, scale, player);
-            //TODO: renderManager/meshComponent
-
-            state.gameRunning(window);
-
-//                hudShader.use();
-//                hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
-//                compass.Draw(hudShader, camera.getCameraDirection());
+//              hudShader.use();
+//              hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
+//              compass.Draw(hudShader, camera.getCameraDirection());
 
                 //ImGui
                 {
@@ -580,6 +572,8 @@ int main(int, char**)
 
                     ImGui::Text("points: %i", points.getPoints());
 
+                    ImGui::SliderFloat("clipping width", &clipWidth, 0.0f, 100.0f);
+
                     ImGui::End();
                 }
 
@@ -587,109 +581,109 @@ int main(int, char**)
                 useOrthoCamera(proj, view, window, cameraY, scale, player);
                 //TODO: renderManager/meshComponent
 
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-            if(debugBox)
-            {
+                if(debugBox)
+                {
 
-                basicShader.use();
-                basicShader.setFloat("scale", scale);
-                basicShader.setMat4("projection", proj);
-                basicShader.setMat4("view", view);
+                    basicShader.use();
+                    basicShader.setFloat("scale", scale);
+                    basicShader.setMat4("projection", proj);
+                    basicShader.setMat4("view", view);
 
-                glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-                basicShader.setMat4("model", model);
+                    glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+                    basicShader.setMat4("model", model);
 
-                glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-                glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-                glBindVertexArray(skyboxVAO);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-            }
+                    glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+                    glDrawArrays(GL_TRIANGLES, 0, 36);
+                    glBindVertexArray(skyboxVAO);
+                    glDrawArrays(GL_TRIANGLES, 0, 36);
+                }
 
-            if (!rotate)
-            {
-                player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-                //camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
-            }
-            else
-            {
-                //camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
-            }
+                if (!rotate) {
+                    player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+                    camera.AdjustPlanes(display_w, display_h, depthPos, clipWidth);
 
-            for (int i = 0; i < 1; i++)
-            {
-                //player.gravityOn(deltaTime);
-                //player.checkCollision(lightColliders.getColliders());
-                //player.detectCollision(lightColliders.getColliders());
-                player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-            }
+                }
+                else {
+                    //obracanie przodem do kamery zepsute, ale gracz jest zatrzymywany podczas obrotu kamery
+                    player.rotate(rotationSpeed * deltaTime * rotate);
+                    camera.AdjustPlanes(display_w, display_h, depthPos, 5000.0f);
+                }
 
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                for (int i = 0; i < 1; i++)
+                {
+                    //player.gravityOn(deltaTime);
+                    //player.checkCollision(lightColliders.getColliders());
+                    //player.detectCollision(lightColliders.getColliders());
+                    player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                }
 
-            PBRShader.use();
-            PBRShader.setMat4("projection", proj);
-            PBRShader.setMat4("view", view);
-            PBRShader.setVec3("camPos", camera.Position);
-            PBRShader.setFloat("scale", scale);
-            PBRShader.setFloat("lightStrength", lightStrength);
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            for (unsigned int i = 0; i < lightPositions.size(); ++i)
-            {
-                glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-                newPos = lightPositions[i];
-                PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-                PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
-            }
+                PBRShader.use();
+                PBRShader.setMat4("projection", proj);
+                PBRShader.setMat4("view", view);
+                PBRShader.setVec3("camPos", camera.Position);
+                PBRShader.setFloat("scale", scale);
+                PBRShader.setFloat("lightStrength", lightStrength);
 
-            camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
+                for (unsigned int i = 0; i < lightPositions.size(); ++i)
+                {
+                    glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+                    newPos = lightPositions[i];
+                    PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+                    PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+                }
 
-            //rocks.Draw(PBRShader);
-            //lampMdl.Draw(PBRShader, camFrustum, proj, view);
-            //colliders.Draw(PBRShader);
-            //pickaxe.Draw(PBRShader);
-            //level.Draw(PBRShader);
-            //lightColliders.Draw(PBRShader);
+                camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
-            gen.update(camera.getCamPos().y);
-            gen.DrawLevels(PBRShader);
+                //rocks.Draw(PBRShader);
+                //lampMdl.Draw(PBRShader, camFrustum, proj, view);
+                //colliders.Draw(PBRShader);
+                //pickaxe.Draw(PBRShader);
+                //level.Draw(PBRShader);
+                //lightColliders.Draw(PBRShader);
 
-            //cube->getComponent<AI>(ComponentType::AI)->onTriggerEnter(PBRShader);
-//            lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                gen.update(camera.getCamPos().y);
+                gen.DrawLevels(PBRShader);
 
-            if(rotate != 0)
-                player.rotate(rotationSpeed * deltaTime * rotate);
-            player.render(PBRShader);
+                //cube->getComponent<AI>(ComponentType::AI)->onTriggerEnter(PBRShader);
+    //            lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
-            // Animation model
-//            skeletonShader.use();
-//            skeletonShader.setMat4("projection", proj);
-//            skeletonShader.setMat4("view", view);
-//            skeletonShader.setVec3("camPos", camera.Position);
-//            skeletonShader.setFloat("scale", scale);
 
-//            auto transforms = animator.GetFinalBoneMatrices();
-//            for (int i = 0; i < transforms.size(); ++i)
-//                skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
+                player.render(PBRShader);
 
-            //simpleModel.Draw(skeletonShader);
+                // Animation model
+    //            skeletonShader.use();
+    //            skeletonShader.setMat4("projection", proj);
+    //            skeletonShader.setMat4("view", view);
+    //            skeletonShader.setVec3("camPos", camera.Position);
+    //            skeletonShader.setFloat("scale", scale);
 
-            //SKYBOX
-            if (skybox)
-            {
-                useDebugCamera(proj, view, window, scale);
-                glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-                skyboxShader.use();
-                skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
-                skyboxShader.setMat4("projection", proj);
-                // skybox cube
-                glBindVertexArray(skyboxVAO);
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-                glBindVertexArray(0);
-                glDepthFunc(GL_LESS); // set depth function back to default
-            }
+    //            auto transforms = animator.GetFinalBoneMatrices();
+    //            for (int i = 0; i < transforms.size(); ++i)
+    //                skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
+
+                //simpleModel.Draw(skeletonShader);
+
+                //SKYBOX
+                if (skybox)
+                {
+                    useDebugCamera(proj, view, window, scale);
+                    glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+                    skyboxShader.use();
+                    skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
+                    skyboxShader.setMat4("projection", proj);
+                    // skybox cube
+                    glBindVertexArray(skyboxVAO);
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+                    glDrawArrays(GL_TRIANGLES, 0, 36);
+                    glBindVertexArray(0);
+                    glDepthFunc(GL_LESS); // set depth function back to default
+                }
 
                 break;
             }
@@ -698,6 +692,8 @@ int main(int, char**)
                 hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
 
                 state.mainMenu(window, hudShader);
+
+                restart = true;
 
                 break;
             }
@@ -724,6 +720,8 @@ int main(int, char**)
                 hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
 
                 state.gameOver(window, hudShader);
+
+                restart = true;
 
                 break;
             }
@@ -780,9 +778,8 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
     glfwSetKeyCallback(window, key_callback);
 
     //obrot kamery
-    camera.ProcessMovement(6.0f, rotationSpeed * deltaTime, rotate, cameraY, depthPos, player.getBody()->transform.position, player.getDirection());
-    //camera.ProcessMovementNoPlayer(6.0f, 50.0f * deltaTime, rotate, 0.0f);
-    camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipZ);
+    camera.ProcessMovement(6.0f, rotationSpeed * deltaTime, rotate, cameraY, depthPos, player.getBody()->transform.position);
+//    camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipZ);
 }
 
 ///INPUT HANDLING FUNCTIONS
@@ -863,7 +860,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     lastX = xpos;
     lastY = ypos;
 
-    state.processMouse(lastX, display_h - lastY);
+    state.processMouse(lastX, (float)display_h - lastY);
     //camera.ProcessMouseMovement(xoffset, yoffset);
 }
 

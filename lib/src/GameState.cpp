@@ -46,6 +46,7 @@ void GameState::mainMenu(GLFWwindow * window, Shader shader) {
 void GameState::gameRunning(GLFWwindow *window) {
     if (setUp) {
         btnPress = false;
+//        glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
 //        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);

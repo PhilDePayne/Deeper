@@ -3,6 +3,7 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <random>
 
 #include "GameObject.h"
 #include "SceneGraphNode.h"
@@ -25,6 +26,11 @@ public:
 
     void render(Shader shader) {
         body->Draw(shader);
+    }
+
+    void newGame(float &depthPos) {
+        body->transform.position = glm::vec3(350.0f * randNum(), 200.0f, 350.0f * randNum());
+        depthPos = -body->transform.position.z;
     }
 
     void move(GLFWwindow* window, Camera_Facing_Direction dir, float deltaTime, float &depthPos) {
@@ -67,7 +73,7 @@ public:
         //clamp velocities
         if(x != 0.0f) {
             x += velocity * 10.0f * dirLR;
-            if(fabs(x) < 0.5f)
+            if(fabs(x) < 1.0f)
                 x = 0.0f;
             if(x > 10.0f)
                 x = 10.0f;
@@ -77,7 +83,7 @@ public:
 
         if(z != 0.0f) {
             z += velocity * 10.0f * dirLR;
-            if(fabs(z) < 0.5f)
+            if(fabs(z) < 1.0f)
                 z = 0.0f;
             if(z > 10.0f)
                 z = 10.0f;
@@ -220,6 +226,14 @@ private:
     float gravity = -30.0f;
     float x = 0.0f, z = 0.0f;
     int dirLR = 0;
+
+    int randNum() {
+        std::random_device generator;
+        std::mt19937 mt(generator());
+        std::uniform_int_distribution<int> distribution(0,1);
+        int tmp[2] = {-1, 1};
+        return tmp[distribution(mt)];
+    }
 
 };
 

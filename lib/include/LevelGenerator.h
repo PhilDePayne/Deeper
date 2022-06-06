@@ -17,7 +17,7 @@ public:
         randomize();
         initPos = (float)height * -1.0f - 200.0f;
 
-        //gora (czy to bedzie dzialac po zmianie poczatkowej wielkosci ekranu?????) -> initPos + 1170.0f
+        //gora
         caveModels[num[0]].transform.position = glm::vec3(0.0f, initPos + levelH, 0.0f);
         caveModels[num[0]].transform.y_rotation_angle = 90.0f * randNum();
 
