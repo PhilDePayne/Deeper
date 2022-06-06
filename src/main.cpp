@@ -457,7 +457,7 @@ int main(int, char**)
     hudShader.use();
     hudShader.setMat4("proj", camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
 
-    //Compass compass("./res/hud/credits.png", hudShader);
+    //Compass compass(SCR_WIDTH, SCR_HEIGHT, hudShader);
     TextRenderer points(camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
 
     state.setState(GAME_RUNNING);
@@ -492,6 +492,10 @@ int main(int, char**)
         switch(state.getCurState()) {
             case GAME_RUNNING: {
                 state.gameRunning(window);
+
+                hudShader.use();
+                hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
+                //compass.Draw(hudShader, camera.getCameraDirection());
 
                 //ImGui
                 {
@@ -602,6 +606,8 @@ int main(int, char**)
                 glBindVertexArray(0);
                 glDepthFunc(GL_LESS); // set depth function back to default
             }
+
+
 
                 break;
             }
