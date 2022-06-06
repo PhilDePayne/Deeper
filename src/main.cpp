@@ -381,7 +381,7 @@ int main(int, char**)
         lamp->getComponent<LampAI>(ComponentType::AI)->lights = &lightPositions;
         //lamp->getComponent<LampAI>(ComponentType::AI)->lights[0][0].x = 12.0f;
         //printf("\n%f %f\n", lamp->getComponent<LampAI>(ComponentType::AI)->lights->at(0).x, lightPositions[0].x);
-        //groundBox->addComponent<CubeMesh>();
+//        groundBox->addComponent<CubeMesh>();
     }
 
     basicShader.use();
@@ -442,21 +442,26 @@ int main(int, char**)
     // pickaxe("./res/models/Kilof/kilof.fbx");
     //pickaxe.transform.scale = glm::vec3(400.0f);
 
-    //level
+    ///LEVEL
     Model level("./res/models/caveSystem/caveTest.fbx");
 
     level.transform.scale = glm::vec3(30.0f);
     level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
+
+    ///LEVEL GENERATION
+    LevelGenerator gen(level, level, level);
+    gen.newGame(SCR_HEIGHT);
 
 
 //    Model lightColliders("./res/models/Colliders/testLightColliders.fbx");
 //    lightColliders.transform.scale = glm::vec3(20.0f);
 //    lightColliders.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
-    //Player
+    ///PLAYER
     Player player("./res/models/Box/box.fbx");
     player.getBody()->transform.scale = glm::vec3(1.5f);
     player.getBody()->transform.position = glm::vec3(0.0f, 200.0f, 0.0f);
+    player.getBody()->transform.y_rotation_angle = 90.0f;
 
 
     Frustum camFrustum = createFrustumFromCamera(camera,
@@ -492,9 +497,7 @@ int main(int, char**)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-    ///LEVEL GENERATION
-    LevelGenerator gen(level, level, level);
-    gen.newGame(SCR_HEIGHT);
+
 
     ///HUD RESOURCES
     int old_w, old_h;
@@ -654,6 +657,8 @@ int main(int, char**)
             //cube->getComponent<AI>(ComponentType::AI)->onTriggerEnter(PBRShader);
 //            lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
+            if(rotate != 0)
+                player.rotate(rotationSpeed * deltaTime * rotate);
             player.render(PBRShader);
 
             // Animation model
@@ -685,8 +690,6 @@ int main(int, char**)
                 glBindVertexArray(0);
                 glDepthFunc(GL_LESS); // set depth function back to default
             }
-
-
 
                 break;
             }

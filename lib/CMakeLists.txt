@@ -40,7 +40,7 @@ set(SOURCE_FILES
 	include/hudRect.h
 	"src/LampAI.cpp"
 	include/Player.h
-	include/LogMacros.h
+    include/LogMacros.h
 	include/Bone.h
 	src/Bone.cpp
 	include/AssimpGLMHelpers.h

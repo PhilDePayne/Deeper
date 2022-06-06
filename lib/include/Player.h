@@ -1,7 +1,3 @@
-//
-// Created by fujitsu on 29.04.2022.
-//
-
 #ifndef DEEPER_PLAYER_H
 #define DEEPER_PLAYER_H
 
@@ -33,13 +29,13 @@ public:
 
     void move(GLFWwindow* window, Camera_Facing_Direction dir, float deltaTime, float &depthPos) {
         if(dir == FRONT_DIR || dir == LEFT_DIR) {
-            direction = -1;
+            front_or_left = -1;
         }
         else {
-            direction = 1;
+            front_or_left = 1;
         }
 
-        float velocity = (float)direction * deltaTime;
+        float velocity = (float)front_or_left * deltaTime;
 
         //poruszanie prawo lewo i grawitacja
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
@@ -73,21 +69,25 @@ public:
             x += velocity * 10.0f * dirLR;
             if(fabs(x) < 0.5f)
                 x = 0.0f;
-            if(x > 16.0f)
-                x = 16.0f;
+            if(x > 10.0f)
+                x = 10.0f;
+            else if(x < -10.0f)
+                x = -10.0f;
         }
 
         if(z != 0.0f) {
             z += velocity * 10.0f * dirLR;
             if(fabs(z) < 0.5f)
                 z = 0.0f;
-            if(z > 16.0f)
-                z = 16.0f;
+            if(z > 10.0f)
+                z = 10.0f;
+            else if(z < -10.0f)
+                z = -10.0f;
         }
 
         body->transform.position += glm::vec3(x, 0.0f, z);
 
-//        //DEBUG
+//        //DEBUGUG
 //        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 //            if (dir == FRONT_DIR || dir == BACK_DIR) {
 //                body->transform.position += glm::vec3(
@@ -118,7 +118,7 @@ public:
 //        }
 
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        
+
             body->transform.position -= glm::vec3(
                 0.0f, 10.0f, 0.0f);
 
@@ -131,8 +131,8 @@ public:
 
         }
 
-        rotateLeftRight((int) dir);
-        //correctAngle((int)dir + dirLR);
+//        rotateLeftRight((int) dir);
+//        correctAngle((int)dir);
 
         collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
 
@@ -173,16 +173,16 @@ public:
     }
 
     int getDirection() const {
-        return direction;
+        return front_or_left;
     }
 
     //zatrzymywanie podczas obrotu i ustawianie gracza przodem do kamery
     void rotate(float angle) {
         x = 0.0f;
         z = 0.0f;
-        body->transform.y_rotation_angle -= angle;
+//        body->transform.y_rotation_angle = angle; //zle
     }
-
+//
     void correctAngle(int dir) {
         if(fmodf(body->transform.y_rotation_angle, 90.0f) != 0) {
             body->transform.y_rotation_angle = -90.0f * (float)dir;
@@ -190,12 +190,12 @@ public:
     }
 
     //???? źle
-    void rotateLeftRight(int dir) {
-        body->transform.y_rotation_angle = 90.0f * (dir + (float)dirLR) * direction;
-        if(dir == 2)
-            body->transform.y_rotation_angle = -90.0f * (dir + (float)dirLR) * direction;
-
-    }
+//    void rotateLeftRight(int dir) {
+//        body->transform.y_rotation_angle = 90.0f * (dir + (float)dirLR) * direction;
+//        if(dir == 2)
+//            body->transform.y_rotation_angle = -90.0f * (dir + (float)dirLR) * direction;
+//
+//    }
 
     SphereCollider collider;
 
@@ -216,7 +216,7 @@ private:
     Model* body;
 
     float speed = 200.0f;
-    int direction = 1;
+    int front_or_left = 1;
     float gravity = -30.0f;
     float x = 0.0f, z = 0.0f;
     int dirLR = 0;

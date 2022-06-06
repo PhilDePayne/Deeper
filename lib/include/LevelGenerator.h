@@ -11,12 +11,10 @@ class LevelGenerator {
 public:
     LevelGenerator(Model cave1, Model cave2, Model cave3) {
         caveModels = {std::move(cave1), std::move(cave2), std::move(cave3)};
-        std::copy(std::begin(num), std::end(num), std::begin(cur));
     }
 
     void newGame(int height) {
         randomize();
-        std::copy(std::begin(num), std::end(num), std::begin(cur));
         initPos = (float)height * -1.0f - 200.0f;
 
         //gora (czy to bedzie dzialac po zmianie poczatkowej wielkosci ekranu?????) -> initPos + 1170.0f
@@ -33,9 +31,11 @@ public:
     }
 
     void DrawLevels(Shader shader) {
-        for(auto& cave : caveModels) {
-            cave.Draw(shader);
-        }
+//        for(auto& cave : caveModels) {
+//            cave.Draw(shader);
+//        }
+
+        caveModels[num[1]].Draw(shader);
     }
 
     void update(float camY) {
@@ -46,12 +46,15 @@ public:
         }
     }
 
+    const int *getNum() const {
+        return num;
+    }
+
 
 private:
     float initPos;
     std::vector<Model> caveModels;
     int num[3] = {0, 1, 2};
-    int cur[3];
     float levelH = 1170.0f;
     int iter = 0;
 

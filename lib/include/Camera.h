@@ -74,39 +74,6 @@ public:
         updateCameraVectors();
     }
 
-    // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    glm::mat4 GetViewMatrix()
-    {
-        return glm::lookAt(Position, Position + Front, Up);
-    }
-
-    glm::mat4 GetOrthoViewMatrix() {
-        return view;
-    }
-
-    glm::mat4 GetProjMatrix() {
-        return proj;
-    }
-
-    glm::mat4 GetHudProjMatrix(float width, float height) {
-        return glm::ortho(0.0f, width, 0.0f, height, -1000.0f, 1000.0f);
-
-    }
-
-    //do dopasowania po wgraniu levelu
-    void SetProjMatrix(float width, float height, float nearPlane, float farPlane) {
-        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, nearPlane, farPlane);
-//        proj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
-    }
-
-    void AdjustPlanes(float width, float height, float zPos, float planeWidth) {
-        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, zPos - planeWidth, zPos + planeWidth);
-    }
-
-    glm::mat4 GetMultipliedMatrices() {
-        return proj * view;
-    }
-
     void ProcessMovement(float radius, float speed, int &move, float camY, float &zPos, glm::vec3 &pos, int direction) {
 
         if(move != 0) {
@@ -160,44 +127,46 @@ public:
 
     }
 
+    void AdjustPlanes(float width, float height, float zPos, float planeWidth) {
+        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, zPos - planeWidth, zPos + planeWidth);
+    }
+
     void correctAngle() {
         if(fmodf(angle, 90.0f) != 0) {
             angle = 90.0f * (float)dir;
         }
     }
-
-    void ProcessMovementNoPlayer(float radius, float speed, int &move, float camY) {
-
-        if(move != 0) {
-            totalDegrees += speed;
-            angle += speed * move;
-
-            if(totalDegrees >= 90.0f) {
-                //ustalanie kierunku
-                int dirInt = (int)dir + move;
-                dir = (Camera_Facing_Direction)dirInt;
-                if(dir > LEFT_DIR)
-                    dir = FRONT_DIR;
-                if(dir < FRONT_DIR)
-                    dir = LEFT_DIR;
-
-                totalDegrees = 0.0f;
-                move = 0;
-
-            }
-
-            if(angle >= 360.0f)
-                angle = 0.0f;
-            else if(angle <= -90.0f)
-                angle = 270.0f;
-        }
-
-        float camX = sin(glm::radians(angle)) * radius;
-        float camZ = cos(glm::radians(angle)) * radius;
-        Position += camY;
-        view = glm::lookAt(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, camY, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
+    ///GETTERS & SETTERS FOR MATRICES
+    // returns the view matrix calculated using Euler Angles and the LookAt Matrix
+    glm::mat4 GetViewMatrix()
+    {
+        return glm::lookAt(Position, Position + Front, Up);
     }
+
+    glm::mat4 GetOrthoViewMatrix() {
+        return view;
+    }
+
+    glm::mat4 GetProjMatrix() {
+        return proj;
+    }
+
+    glm::mat4 GetHudProjMatrix(float width, float height) {
+        return glm::ortho(0.0f, width, 0.0f, height, -10.0f, 10.0f);
+    }
+
+    //do dopasowania po wgraniu levelu
+    void SetProjMatrix(float width, float height, float nearPlane, float farPlane) {
+        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, nearPlane, farPlane);
+//        proj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
+    }
+
+    glm::mat4 GetMultipliedMatrices() {
+        return proj * view;
+    }
+
+
+    ///GETTERS & SETTERS
 
     Camera_Facing_Direction getCameraDirection() {
         return dir;
