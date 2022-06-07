@@ -40,7 +40,7 @@ class Model : public Component
 {
 public:
 
-    Model(char *path);
+    Model(char *path, bool bound = 0);
 
     void Draw(Shader shader);
 
@@ -62,6 +62,7 @@ private:
 
     std::vector<Mesh> meshes;
     std::string directory;
+    bool boundMeshes;
     GLuint totalNodes = 0;
 
     std::map<std::string, BoneInfo> BoneInfoMap;

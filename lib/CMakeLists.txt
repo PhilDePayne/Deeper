@@ -55,7 +55,10 @@ set(SOURCE_FILES
 	src/SoundSystem.cpp
 	include/TextRenderer.h
 	include/LevelGenerator.h
-		)
+	include/hudRect.h 
+    "src/LampAI.cpp" 
+    "include/PickaxeAI.h" 
+    "src/PickaxeAI.cpp")
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})

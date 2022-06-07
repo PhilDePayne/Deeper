@@ -14,18 +14,23 @@
 #include "Camera.h"
 #include "SphereCollider.h"
 #include "AI.h"
+#include "PickaxeAI.h"
 
 
 class Player {
 public:
 
-    Player(char *path) {
+    Player(char *path, gameObjectPtr pickaxe) : pickaxe(pickaxe) {
         body = new Model(path);
-        collider.setRadius(15.0f);
+        collider.setRadius(30.0f);
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position = body->transform.position;
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
     }
 
     void render(Shader shader) {
         body->Draw(shader);
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->Draw(shader);
     }
 
     void newGame(float &depthPos) {
@@ -141,6 +146,14 @@ public:
 //        correctAngle((int)dir);
 
         collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
+        //pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position = body->transform.position;
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerDir = dirLR;
+        int facingDir = 0;
+        if (dir == FRONT_DIR || dir == BACK_DIR) facingDir = 1;
+        else facingDir = -1;
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerFacingDir = facingDir;
+
 
     }
 
@@ -234,6 +247,8 @@ private:
         int tmp[2] = {-1, 1};
         return tmp[distribution(mt)];
     }
+
+    gameObjectPtr pickaxe;
 
 };
 

@@ -17,44 +17,46 @@
 
 #endif
 
-
-Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat4 modelMatrix, GLuint texturesSetID)
+Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat4 modelMatrix, GLuint texturesSetID, bool bound)
 {
     Mesh::vertices = vertices;
     Mesh::indices = indices;
     Mesh::modelMatrix = modelMatrix;
     Mesh::textureSetId = texturesSetID;
     setupMesh();
-    for (auto i : vertices) {
 
-        if(i.Position.x > maxX) maxX = i.Position.x;
-        if (i.Position.x < minX) minX = i.Position.x;
-        if (i.Position.z > maxY) maxY = i.Position.z;
-        if (i.Position.z < minY) minY = i.Position.z;
-        if (i.Position.y > maxZ) maxZ = i.Position.y;
-        if (i.Position.y < minZ) minZ = i.Position.y;
+    if (bound) {
+        for (auto i : vertices) {
 
-    }
+            if (i.Position.x > maxX) maxX = i.Position.x;
+            if (i.Position.x < minX) minX = i.Position.x;
+            if (i.Position.z > maxY) maxY = i.Position.z;
+            if (i.Position.z < minY) minY = i.Position.z;
+            if (i.Position.y > maxZ) maxZ = i.Position.y;
+            if (i.Position.y < minZ) minZ = i.Position.y;
 
-    boundingVolume.setCenter(glm::vec3((maxX + minX) / 2 , (maxY + minY) / 2 , (maxZ + minZ) / 2 ));
+        }
 
-    glm::vec4 localTransform = glm::vec4(modelMatrix[3][0], modelMatrix[3][1], modelMatrix[3][2], modelMatrix[3][3]);
+        boundingVolume.setCenter(glm::vec3((maxX + minX) / 2, (maxY + minY) / 2, (maxZ + minZ) / 2));
 
-    glm::vec3 lt = localTransform;
+        glm::vec4 localTransform = glm::vec4(modelMatrix[3][0], modelMatrix[3][1], modelMatrix[3][2], modelMatrix[3][3]);
 
-    boundingVolume.x_rotation_angle = glm::degrees(glm::asin(modelMatrix[1][1]));
-    boundingVolume.z_rotation_angle = glm::degrees(glm::asin(modelMatrix[2][0]));
+        glm::vec3 lt = localTransform;
 
-    boundingVolume.setCenter(glm::translate(glm::mat4(1.0f), lt) * glm::vec4(boundingVolume.getCenter(), 1.0f));
+        boundingVolume.x_rotation_angle = glm::degrees(glm::asin(modelMatrix[1][1]));
+        boundingVolume.z_rotation_angle = glm::degrees(glm::asin(modelMatrix[2][0]));
+        boundingVolume.y_rotation_angle = glm::degrees(glm::asin(modelMatrix[1][2]));
 
-    boundingVolume.setSize(glm::vec3(glm::abs((maxX - minX)), //TODO: rotacja
-                                     glm::abs((maxY - minY)),
-                                     glm::abs((maxZ - minZ))));
+        boundingVolume.setCenter(glm::translate(glm::mat4(1.0f), lt) * glm::vec4(boundingVolume.getCenter(), 1.0f));
 
+        boundingVolume.setSize(glm::vec3(glm::abs((maxX - minX)), //TODO: rotacja
+            glm::abs((maxY - minY)),
+            glm::abs((maxZ - minZ))));
 #ifdef BOUNDING_VOLUME_LOG
     printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
         boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
 #endif
+    }
 }
 
 void Mesh::Draw(Shader &shader, Transform modelTransform)

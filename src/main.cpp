@@ -35,6 +35,7 @@
 #include "Compass.h"
 #include "TextRenderer.h"
 #include "LevelGenerator.h"
+#include "PickaxeAI.h"
 
 #include <stdio.h>
 #include <memory>
@@ -58,14 +59,14 @@
 #include <GLFW/glfw3.h> // Include glfw3.h after our OpenGL definitions
 
 
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 1920;
+const unsigned int SCR_HEIGHT = 1080;
 
 int display_w, display_h;
 
 
 bool debugBox = 0;
-bool skybox = 0;
+bool skybox = 1;
 
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                                 float zNear, float zFar)
@@ -98,21 +99,21 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
     int width, height, nrChannels;
-    unsigned char* data = stbi_load(faces[0].c_str(), &width, &height, &nrChannels, 0);
+    //unsigned char* data = stbi_load(faces[0].c_str(), &width, &height, &nrChannels, 0);
     for (unsigned int i = 0; i < faces.size(); i++)
     {
-        //unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
         if (data)
         {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
             );
-            //stbi_image_free(data);
+            stbi_image_free(data);
         }
         else
         {
             std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
-            //stbi_image_free(data);
+            stbi_image_free(data);
         }
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -121,7 +122,7 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-    stbi_image_free(data);
+    //stbi_image_free(data);
 
     return textureID;
 }
@@ -157,7 +158,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 GameState state(MAIN_MENU);
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -170,7 +171,7 @@ bool restart = true;
 //camera var
 int rotate = 0;
 float clipZ = 720.0f;
-float clipWidth = 100.0f;
+float clipWidth = 50.0f;
 float depthPos = 0.0f;
 float rotationSpeed = 50.0f;
 
@@ -183,6 +184,50 @@ float zPos = 0.0;
 bool collision = false;
 bool move = 0;
 glm::mat4 projection = glm::ortho(0.0f, 720.0f, 0.0f, 1280.0f);
+float cubeVertices[] = {
+    // positions          // normals
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+};
 float skyboxVertices[] = {
     // positions          
     -1.0f,  1.0f, -1.0f,
@@ -291,7 +336,7 @@ int main(int, char**)
         return(-1);
     }
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
@@ -310,6 +355,7 @@ int main(int, char**)
 
     Shader basicShader("./res/shaders/basic.vert", "./res/shaders/basic.frag");
     Shader skyboxShader("./res/shaders/cubemap.vert", "./res/shaders/cubemap.frag");
+    Shader reflShader("./res/shaders/reflect.vert", "./res/shaders/reflect.frag");
 
     // LIGHTS
     std::vector<glm::vec3> lightPositions = {
@@ -336,7 +382,7 @@ int main(int, char**)
             glm::vec3(180.0f, 180.0f, 180.0f),
     };
 
-    float lightStrength = 30.0f;
+    float lightStrength = 100.0f;
 
     nodePtr root(new SceneGraphNode());
     nodePtr cube1(new SceneGraphNode());
@@ -347,9 +393,13 @@ int main(int, char**)
     gameObjectPtr sphere(new GameObject());
     gameObjectPtr cave(new GameObject());
     gameObjectPtr lamp(new GameObject());
+    gameObjectPtr pickaxe(new GameObject());
 
-    componentPtr caveModel(new Model("./res/models/Colliders/caveTestColliders.fbx"));
-    componentPtr lampModel(new Model("./res/models/Colliders/testLightColliders.fbx"));
+    componentPtr caveModel(new Model("./res/models/Colliders/caveTestColliders.fbx", true));
+    //componentPtr caveModel(new Model("./res/models/Colliders/collidersCave.fbx"));
+    //componentPtr caveModel(new Model("./res/models/Colliders/delete.fbx"));
+    componentPtr lampModel(new Model("./res/models/Colliders/testLightColliders.fbx", true));
+    componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof.fbx"));
 
     //OBJECT PARAMETERS
     {
@@ -375,13 +425,17 @@ int main(int, char**)
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
         lamp->addComponent(lampModel, lamp);
-        lamp->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(30.0f);
-        lamp->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -670.0f, 0.0f);
+        lamp->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
+        lamp->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
         lamp->addComponent<LampAI>(lamp);
         lamp->getComponent<LampAI>(ComponentType::AI)->lights = &lightPositions;
-        //lamp->getComponent<LampAI>(ComponentType::AI)->lights[0][0].x = 12.0f;
-        //printf("\n%f %f\n", lamp->getComponent<LampAI>(ComponentType::AI)->lights->at(0).x, lightPositions[0].x);
-//        groundBox->addComponent<CubeMesh>();
+        
+        cave->addComponent(caveModel, cave);
+        cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
+        cave->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
+
+        pickaxe->addComponent(pickaxeModel, pickaxe);
+        pickaxe->addComponent<PickaxeAI>(pickaxe);
     }
 
     basicShader.use();
@@ -410,6 +464,8 @@ int main(int, char**)
     PBRShader.setInt("aoMap", 4);
     PBRShader.setInt("emissiveMap", 5);
 
+    Model rocks("./res/models/Rocks/rocks.fbx");
+    rocks.transform.scale = glm::vec3(30.0f);
 
 //    Model rocks("./res/models/Rocks/rocks.fbx");
 //    rocks.transform.scale = glm::vec3(30.0f);
@@ -436,20 +492,24 @@ int main(int, char**)
 
 
     //Model colliders("./res/models/Colliders/caveTestColliders.fbx");
-    //colliders.transform.scale = glm::vec3(20.0f);
-    //colliders.transform.position = glm::vec3(0.0f, -370.0f, 0.0f);
+    //colliders.transform.scale = glm::vec3(50.0f);
+    //colliders.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
 
-    // pickaxe("./res/models/Kilof/kilof.fbx");
+    //Model pickaxe("./res/models/Kilof/kilof.fbx");
     //pickaxe.transform.scale = glm::vec3(400.0f);
 
-//    Model level("./res/models/caveSystem/caveTest.fbx");
-//
-//    level.transform.scale = glm::vec3(30.0f);
-//    level.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
+    //level
+    //Model level("./res/models/caveSystem/cave1/cave1_mdl.fbx");
+    //level.transform.scale = glm::vec3(50.0f * 0.39f);
+    //level.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
 
-    //TODO: cave3
-    ///LEVEL GENERATION
+    Model lightColliders("./res/models/Colliders/testLightColliders.fbx");
+    lightColliders.transform.scale = glm::vec3(20.0f);
+    lightColliders.transform.position = glm::vec3(0.0f, -360.0f, 0.0f);
 
+    Model lamps("./res/models/lampka/testLamps.fbx");
+    lamps.transform.scale = glm::vec3(50.0f);
+    lamps.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
     Model cave1("./res/models/cave1/cave1_mdl.fbx");
     cave1.transform.scale = glm::vec3(11.0f);
 
@@ -491,10 +551,24 @@ int main(int, char**)
 
 
     unsigned int cubemapTexture = loadCubemap(faces);
+    reflShader.use();
+    reflShader.setInt("skybox", 0);
+
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 
     //DEBUG
+    unsigned int cubeVAO, cubeVBO;
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    glBindVertexArray(cubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
     unsigned int skyboxVAO, skyboxVBO;
     glGenVertexArrays(1, &skyboxVAO);
     glGenBuffers(1, &skyboxVBO);
@@ -567,6 +641,9 @@ int main(int, char**)
                     ImGui::Text("player's position x: %f  | y: %f | z: %f", player.getBody()->transform.position.x,
                                 player.getBody()->transform.position.y, player.getBody()->transform.position.z);
 
+                ImGui::Text("player's angle: %f | camera's angle: %f", player.getAngle(), camera.getAngle());
+                ImGui::Text("camera's direction: %i ", (int)camera.getCameraDirection());
+                //ImGui::Text("level's angle: %f", level.transform.y_rotation_angle);
                     ImGui::Text("depthPos: %f   clipWidth: %f", depthPos, clipWidth);
 
                     ImGui::Text("x velocity: %f | z velocity: %f", player.getVelX(), player.getVelZ());
@@ -584,35 +661,52 @@ int main(int, char**)
 
                     ImGui::End();
                 }
+        if (!rotate) {
+            player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
+        }
+        else {
+            camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, SCR_WIDTH);
+        }
 
                 //useDebugCamera(proj, view, window, scale);
                 useOrthoCamera(proj, view, window, cameraY, scale, player);
                 //TODO: renderManager/meshComponent
 
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->update(window);
+
+        lightPositions[lightPositions.size()-1] = player.getBody()->transform.position;
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
                 if(debugBox)
-                {
+        {
+            basicShader.use();
+            basicShader.setFloat("scale", scale);
+            basicShader.setMat4("projection", proj);
+            basicShader.setMat4("view", view);
 
-                    basicShader.use();
-                    basicShader.setFloat("scale", scale);
-                    basicShader.setMat4("projection", proj);
-                    basicShader.setMat4("view", view);
+            glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
+            basicShader.setMat4("model", model);
 
-                    glm::mat4 model = cube1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->getCombinedMatrix();
-                    basicShader.setMat4("model", model);
+            glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
+            glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glBindVertexArray(skyboxVAO);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
-                    glBindVertexArray(cube1->getGameObject()->getComponent<CubeMesh>(ComponentType::CUBEMESH)->getVAO());
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.size(), &vertices.front(), GL_STATIC_DRAW);
-                    glDrawArrays(GL_TRIANGLES, 0, 36);
-                    glBindVertexArray(skyboxVAO);
-                    glDrawArrays(GL_TRIANGLES, 0, 36);
-                }
+            //rocks.Draw(PBRShader);
+            //lampMdl.Draw(PBRShader, camFrustum, proj, view);
+            //colliders.Draw(PBRShader);
+            //pickaxe.Draw(PBRShader);
+            level.Draw(PBRShader);
+            //lightColliders.Draw(PBRShader);
+            lamps.Draw(PBRShader);
 
-//                camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, 5000.0f);
-                if (rotate == 0) {
-                    player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-                    camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
+            //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+            cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
                 }
                 else {
@@ -763,7 +857,8 @@ int main(int, char**)
 ///CAMERA TYPE FUNCTIONS
 void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &scale) {
     scale = 1.0f;
-    processInput(window);
+    //processInput(window);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     proj = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     view = camera.GetViewMatrix();
 }
@@ -798,8 +893,9 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         camera.ProcessKeyboard(FORWARD, deltaTime);
+    }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         camera.ProcessKeyboard(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
