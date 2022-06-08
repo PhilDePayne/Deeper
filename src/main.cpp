@@ -604,10 +604,12 @@ int main(int, char**)
         switch (state.getCurState()) {
         case GAME_RUNNING: {
 
-            //TODO: reset kamery
             if (restart) {
                 //                    gen.newGame(SCR_HEIGHT);
-                player.newGame(depthPos);
+                player.newGame();
+                cameraY = 0.0f;
+                depthPos = 0.0f;
+                camera.newGame();
                 restart = false;
             }
 

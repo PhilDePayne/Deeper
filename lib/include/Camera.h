@@ -74,7 +74,15 @@ public:
         updateCameraVectors();
     }
 
-    void ProcessMovement(float radius, float speed, int &move, float camY, float &depthPos, glm::vec3 &pos) {
+    void newGame() {
+        dir = FRONT_DIR;
+        angle = 0.0f;
+        totalDegrees = 0.0f;
+        Yaw = YAW;
+        Pitch = PITCH;
+    }
+
+    void ProcessMovement(float radius, float speed, int &move, float camY, float &depthPos, glm::vec3 pos) {
 
         float centerX = -pos.x;
         float centerZ = -pos.z;
@@ -102,7 +110,6 @@ public:
                 if(dir < FRONT_DIR)
                     dir = LEFT_DIR;
 
-//                setDepthPos(depthPos, pos);
 
                 if(dir == BACK_DIR) depthPos = 2.0f * pos.z;
                 else depthPos = 0.0f;
@@ -132,7 +139,7 @@ public:
         float camX = sin(glm::radians(angle)) * radius;
         float camZ = cos(glm::radians(angle)) * radius;
 
-        //TODO: camera
+
         view = glm::lookAt(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, camY, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         view = glm::translate(view, glm::vec3(centerX, 0.0f, centerZ));
 

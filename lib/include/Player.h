@@ -33,10 +33,10 @@ public:
         pickaxe->getComponent<Model>(ComponentType::MODEL)->Draw(shader);
     }
 
-    void newGame(float &depthPos) {
-        body->transform.position = glm::vec3(330.0f * randNum(), 100.0f, 330.0f * randNum());
-//        depthPos = -body->transform.position.z;
-        depthPos = 0.0f;
+    void newGame() {
+//        body->transform.position = glm::vec3(330.0f * randNum(), 100.0f, 330.0f * randNum());
+        body->transform.position = glm::vec3(0.0f, 100.0f, 0.0f);
+
     }
 
     void move(GLFWwindow* window, Camera_Facing_Direction dir, float deltaTime, float &depthPos) {
@@ -98,36 +98,6 @@ public:
         }
 
         body->transform.position += glm::vec3(x, 0.0f, z);
-
-//        //DEBUGUG
-//        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-//            if (dir == FRONT_DIR || dir == BACK_DIR) {
-//                body->transform.position += glm::vec3(
-//                        0.0f, 0.0f, speed * velocity);
-//                    depthPos = body->transform.position.z * direction;
-//
-//            } else {
-//                body->transform.position += glm::vec3(
-//                        -speed * velocity, 0.0f, 0.0f);
-//                depthPos = body->transform.position.x * -direction;
-//            }
-//        }
-//
-//        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-//            if (dir == FRONT_DIR || dir == BACK_DIR) {
-//
-//                body->transform.position += glm::vec3(
-//                        0.0f, 0.0f, -speed * velocity);
-//
-//                depthPos = body->transform.position.z * direction;
-//
-//            } else {
-//                body->transform.position += glm::vec3(
-//                        speed * velocity, 0.0f, 0.0f);
-//
-//                depthPos = body->transform.position.x * -direction;
-//            }
-//        }
 
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 
