@@ -1,9 +1,10 @@
 #pragma once
 
 #include "AI.h"
+#include "Model.h"
 #include "typedefs.h"
 
-#include <GLFW/glfw3.h>
+
 
 class PickaxeAI : public AI {
 
@@ -14,7 +15,7 @@ public:
 
 	void onCollisionEnter() override;
 	void onTriggerEnter(BoxCollider collided) override;
-	void update(GLFWwindow* window); //TODO: override
+	void update(GLFWwindow* window, float deltaTime) override; //TODO: override
 	void onKeyPressed(int key, int action); //TODO: override
 	
 	glm::vec3 playerPos;

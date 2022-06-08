@@ -12,7 +12,7 @@ void PickaxeAI::onTriggerEnter(BoxCollider collided) {
 
 }
 
-void PickaxeAI::update(GLFWwindow* window) {
+void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && !isThrown) {
 

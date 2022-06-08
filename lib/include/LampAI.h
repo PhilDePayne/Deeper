@@ -12,6 +12,7 @@ public:
 
 	void onCollisionEnter() override;
 	void onTriggerEnter(BoxCollider collided) override;
+	void update(GLFWwindow* window, float deltaTime) override;
 
 	std::vector<glm::vec3>* lights;
 

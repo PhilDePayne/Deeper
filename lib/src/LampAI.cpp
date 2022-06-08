@@ -33,3 +33,7 @@ void LampAI::onTriggerEnter(BoxCollider collided) {
 	}
 
 }
+
+void LampAI::update(GLFWwindow* window, float deltaTime) {
+
+}

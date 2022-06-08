@@ -6,6 +6,8 @@
 #include "Model.h"
 #include "typedefs.h"
 
+#include <GLFW/glfw3.h>
+
 class AI : public Component {
 
 public: 
@@ -19,5 +21,8 @@ public:
 
 	virtual void onCollisionEnter();
 	virtual void onTriggerEnter(BoxCollider collided);
+	virtual void update(GLFWwindow* window, float deltaTime);
+
+	glm::vec3 moveTowards(glm::vec3 from, glm::vec3 to, float step);
 
 };
