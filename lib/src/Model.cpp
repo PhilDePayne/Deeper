@@ -46,9 +46,10 @@ void drawGLMMatrix(glm::mat4 matrix)
     }
 }
 
-Model::Model(char *path)
+Model::Model(char *path, bool bound)
 {
     loadModel(path);
+    boundMeshes = bound;
 }
 
 bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
@@ -271,7 +272,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
     extractBoneWeightForVertices(vertices, mesh);
 
     // return a mesh object created from the extracted mesh data
-    return Mesh(vertices, indices, convertedMatrix, textureSetId);
+    return Mesh(vertices, indices, convertedMatrix, textureSetId, boundMeshes);
 }
 
 

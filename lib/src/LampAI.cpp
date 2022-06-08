@@ -28,7 +28,6 @@ void LampAI::onTriggerEnter(BoxCollider collided) {
 	if (!exists) {
 
 		lights->erase(lights->begin());
-		//glm::vec3 newLightPos = collided.getCenter();
 		lights->push_back(collided.getCenter());
 
 	}
