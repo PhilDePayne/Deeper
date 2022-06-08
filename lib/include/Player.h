@@ -29,8 +29,9 @@ public:
     }
 
     void newGame(float &depthPos) {
-        body->transform.position = glm::vec3(350.0f * randNum(), 200.0f, 350.0f * randNum());
-        depthPos = -body->transform.position.z;
+        body->transform.position = glm::vec3(330.0f * randNum(), 100.0f, 330.0f * randNum());
+//        depthPos = -body->transform.position.z;
+        depthPos = 0.0f;
     }
 
     void move(GLFWwindow* window, Camera_Facing_Direction dir, float deltaTime, float &depthPos) {
@@ -221,7 +222,7 @@ public:
 private:
     Model* body;
 
-    float speed = 200.0f;
+    float speed = 100.0f;
     int front_or_left = 1;
     float gravity = -30.0f;
     float x = 0.0f, z = 0.0f;

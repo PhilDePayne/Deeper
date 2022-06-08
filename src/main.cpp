@@ -174,6 +174,8 @@ float clipWidth = 100.0f;
 float depthPos = 0.0f;
 float rotationSpeed = 50.0f;
 
+float r = 0.4f;
+
 //DEBUG
 float testScale = 1;
 float testScale2 = 1;
@@ -396,6 +398,7 @@ int main(int, char**)
 
     glm::mat4 proj = glm::mat4(1.0f);
     glm::mat4 view = glm::mat4(1.0f);
+//    camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, -SCR_WIDTH, SCR_WIDTH);
     camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, -SCR_WIDTH, SCR_WIDTH);
 
     float cameraY = 0.0f;
@@ -453,12 +456,11 @@ int main(int, char**)
     Model cave1("./res/models/cave1/cave1_mdl.fbx");
     cave1.transform.scale = glm::vec3(11.0f);
 
-    Model cave2("./res/models/cave2/cave2_mdl.fbx");
-    cave2.transform.scale = glm::vec3(11.0f);
+//    Model cave2("./res/models/cave2/cave2_mdl.fbx");
+//    cave2.transform.scale = glm::vec3(11.0f);
 
-    LevelGenerator gen(cave1, cave2, cave1);
+    LevelGenerator gen(cave1, cave1, cave1);
     gen.newGame(SCR_HEIGHT);
-
 
 //    Model lightColliders("./res/models/Colliders/testLightColliders.fbx");
 //    lightColliders.transform.scale = glm::vec3(20.0f);
@@ -469,7 +471,6 @@ int main(int, char**)
     player.getBody()->transform.scale = glm::vec3(1.5f);
     player.getBody()->transform.position = glm::vec3(0.0f, 180.0f, 0.0f);
     player.getBody()->transform.y_rotation_angle = 90.0f;
-
 
     Frustum camFrustum = createFrustumFromCamera(camera,
         (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
@@ -510,10 +511,12 @@ int main(int, char**)
     hudShader.use();
     hudShader.setMat4("proj", camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
 
-    //Compass compass(SCR_WIDTH, SCR_HEIGHT, hudShader);
+    Compass compass(SCR_WIDTH, SCR_HEIGHT, hudShader);
     TextRenderer points(camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
 
     state.setState(GAME_RUNNING);
+
+
 
     /// Main loop
     while (!glfwWindowShouldClose(window))
@@ -536,6 +539,7 @@ int main(int, char**)
 
         if(display_w != old_w || display_h != old_h) {
             state.setSetUp(true);
+            compass.init(display_w, display_h, PBRShader);
         }
 
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -545,6 +549,7 @@ int main(int, char**)
         switch(state.getCurState()) {
             case GAME_RUNNING: {
 
+                //TODO: reset kamery
                 if(restart) {
 //                    gen.newGame(SCR_HEIGHT);
                     player.newGame(depthPos);
@@ -555,7 +560,7 @@ int main(int, char**)
 //              animator.UpdateAnimation(deltaTime);
 
 //              hudShader.use();
-//              hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
+//              hudShader.setMat4("proj", glm::ortho(-(display_w/2.0f), display_w/2.0f, -(display_h/2.0f), display_h/2.0f, -10.0f, 10.0f));
 //              compass.Draw(hudShader, camera.getCameraDirection());
 
                 //ImGui
@@ -566,24 +571,23 @@ int main(int, char**)
 
                     ImGui::Text("player's position x: %f  | y: %f | z: %f", player.getBody()->transform.position.x,
                                 player.getBody()->transform.position.y, player.getBody()->transform.position.z);
-
                     ImGui::Text("depthPos: %f   clipWidth: %f", depthPos, clipWidth);
-
                     ImGui::Text("x velocity: %f | z velocity: %f", player.getVelX(), player.getVelZ());
-
                     ImGui::Text("player's angle: %f | camera's angle: %f", player.getAngle(), camera.getAngle());
+                    ImGui::NewLine();
                     ImGui::Text("camera's direction: %i ", (int)camera.getCameraDirection());
-
                     ImGui::Text("camera's position x: %f  | y: %f | z: %f", camera.getCamPos().x,
                                 camera.getCamPos().y, camera.getCamPos().z);
-
-                    ImGui::Text("points: %i", points.getPoints());
-
-                    ImGui::SliderFloat("clipping width", &clipWidth, 0.0f, 150.0f);
                     ImGui::NewLine();
+
+                    ImGui::SliderFloat("random variable", &r, 0.1f, 1.0f);
+
+                    ImGui::NewLine();
+                    ImGui::Text("points: %i", points.getPoints());
 
                     ImGui::End();
                 }
+
 
                 //useDebugCamera(proj, view, window, scale);
                 useOrthoCamera(proj, view, window, cameraY, scale, player);
@@ -609,16 +613,16 @@ int main(int, char**)
                     glDrawArrays(GL_TRIANGLES, 0, 36);
                 }
 
-//                camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, 5000.0f);
+//                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f);
                 if (rotate == 0) {
                     player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-                    camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipWidth);
+                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 1.0f, clipWidth);
 
                 }
                 else {
                     //obracanie przodem do kamery zepsute, ale gracz jest zatrzymywany podczas obrotu kamery
                     player.rotate(rotationSpeed * deltaTime * rotate);
-                    camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, 5000.0f);
+                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 }
 
                 for (int i = 0; i < 1; i++)
@@ -787,7 +791,7 @@ void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
     glfwSetKeyCallback(window, key_callback);
 
     //obrot kamery
-    camera.ProcessMovement(6.0f, rotationSpeed * deltaTime, rotate, cameraY, depthPos, player.getBody()->transform.position);
+    camera.ProcessMovement(r, rotationSpeed * deltaTime, rotate, cameraY, depthPos, player.getBody()->transform.position);
 //    camera.AdjustPlanes(SCR_WIDTH, SCR_HEIGHT, depthPos, clipZ);
 }
 

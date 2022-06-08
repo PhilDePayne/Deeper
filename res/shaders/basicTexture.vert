@@ -15,7 +15,7 @@ out vec2 texCoord;
 void main()
 {
     // Outputs the positions/coordinates of all vertices
-    gl_Position = model * proj *  vec4(aPos, 1.0);
+    gl_Position = proj * model *  vec4(aPos, 1.0);
     // Assigns the texture coordinates from the Vertex Data to "texCoord"
     texCoord = aTex;
 }

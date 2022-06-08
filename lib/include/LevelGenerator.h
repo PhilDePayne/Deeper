@@ -15,7 +15,7 @@ public:
 
     void newGame(int height) {
         randomize();
-        initPos = (float)height * -1.0f - 200.0f;
+        initPos = (float)height * -1.0f - 300.0f;
 
         //gora
         caveModels[num[0]].transform.position = glm::vec3(0.0f, initPos + levelH, 0.0f);
@@ -31,11 +31,11 @@ public:
     }
 
     void DrawLevels(Shader shader) {
-        for(auto& cave : caveModels) {
-            cave.Draw(shader);
-        }
+//        for(auto& cave : caveModels) {
+//            cave.Draw(shader);
+//        }
 
-//        caveModels[num[1]].Draw(shader);
+        caveModels[num[1]].Draw(shader);
     }
 
     void move(float pos) {

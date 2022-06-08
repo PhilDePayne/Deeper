@@ -76,12 +76,22 @@ public:
 
     void ProcessMovement(float radius, float speed, int &move, float camY, float &depthPos, glm::vec3 &pos) {
 
+        float centerX = -pos.x;
+        float centerZ = -pos.z;
+
+        //cos dziwnie
+//        if(pos.y - 2.0f < camY)
+//            camY = pos.y - 2.0f;
+
+
         if(move != 0) {
             totalDegrees += speed;
             angle += speed * move;
             Yaw += speed * move;
 
             //printf("%f %f\n", speed * move, Yaw);
+
+            depthPos = 0.0f;
 
             if(totalDegrees >= 90.0f) {
                 //ustalanie kierunku
@@ -92,7 +102,10 @@ public:
                 if(dir < FRONT_DIR)
                     dir = LEFT_DIR;
 
-                setDepthPos(depthPos, pos);
+//                setDepthPos(depthPos, pos);
+
+                if(dir == BACK_DIR) depthPos = 2.0f * pos.z;
+                else depthPos = 0.0f;
 
                 totalDegrees = 0.0f;
                 move = 0;
@@ -101,8 +114,17 @@ public:
                 updateCameraVectors();
 
             }
+
+
             updateCameraVectors();
 
+        }
+        else {
+
+            if(dir == BACK_DIR)
+                centerZ = pos.z;
+
+            updateCameraVectors();
         }
 
         updateCameraVectors();
@@ -110,13 +132,17 @@ public:
         float camX = sin(glm::radians(angle)) * radius;
         float camZ = cos(glm::radians(angle)) * radius;
 
+        //TODO: camera
         view = glm::lookAt(glm::vec3(camX, camY, camZ), glm::vec3(0.0f, camY, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        view = glm::translate(view, glm::vec3(centerX, 0.0f, centerZ));
+
 
         camPos = glm::vec3(camX, camY, camZ);
     }
 
-    void AdjustPlanes(float width, float height, float depthPos, float planeWidth) {
-        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, depthPos - planeWidth, depthPos + planeWidth);
+    void AdjustPlanes(float width, float height, float depthPos, float nearPlane, float farPlane) {
+//        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, depthPos - planeWidth/10.0f, depthPos + planeWidth);
+        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, depthPos - nearPlane, depthPos + farPlane);
     }
 
     void correctAngle() {
@@ -146,8 +172,8 @@ public:
     }
 
     void SetProjMatrix(float width, float height, float nearPlane, float farPlane) {
+//        proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, nearPlane, farPlane);
         proj = glm::ortho(-(width/2.0f), width/2.0f, -(height/2.0f), height/2.0f, nearPlane, farPlane);
-//        proj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
     }
 
     glm::mat4 GetMultipliedMatrices() {
@@ -242,25 +268,24 @@ private:
     }
 
     void setDepthPos(float &depthPos, glm::vec3 pos) {
-        switch (dir) {
-            case FRONT_DIR: {
-                depthPos = -pos.z;
-                break;
-            }
-            case RIGHT_DIR: {
-                depthPos = -pos.x;
-                break;
-            }
-            case BACK_DIR: {
-                depthPos = pos.z;
+//        switch (dir) {
+//            case FRONT_DIR: {
 //                depthPos = -pos.z;
-                break;
-            }
-            case LEFT_DIR: {
-                depthPos = pos.x;
+//                break;
+//            }
+//            case RIGHT_DIR: {
 //                depthPos = -pos.x;
-                break;
-            }
-        }
+//                break;
+//            }
+//            case BACK_DIR: {
+//                depthPos = pos.z;
+//                break;
+//            }
+//            case LEFT_DIR: {
+//                depthPos = pos.x;
+//                break;
+//            }
+//        }
+    depthPos = 0.0f;
     }
 };
