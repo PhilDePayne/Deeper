@@ -8,7 +8,7 @@
 #endif
 
 
-void LampAI::onCollisionEnter() {
+void LampAI::onCollisionEnter(BoxCollider collided) {
 #ifdef ON_COLLISION_ENTER_LOG
 	printf("ENTERED COLLISION\n");
 #endif

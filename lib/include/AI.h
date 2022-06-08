@@ -19,7 +19,7 @@ public:
 	bool isType(ComponentType t) override;
 	void test() override;
 
-	virtual void onCollisionEnter();
+	virtual void onCollisionEnter(BoxCollider collided);
 	virtual void onTriggerEnter(BoxCollider collided);
 	virtual void update(GLFWwindow* window, float deltaTime);
 

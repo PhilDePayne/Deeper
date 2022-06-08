@@ -127,6 +127,19 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
 
 }
 
+void SphereCollider::separate(std::vector<BoxCollider> colliders) {
+
+    for (auto i : colliders) {
+
+        parent->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::translate(glm::mat4(1.0f), glm::vec3(isCollision(&i, true))) *
+            glm::vec4(parent->getComponent<Model>(ComponentType::MODEL)->transform.position, 1.0f);
+
+        setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
+
+    }
+
+}
+
 bool SphereCollider::isType(ComponentType t) {
 
 	return t == ComponentType::SPHERECOLLIDER;

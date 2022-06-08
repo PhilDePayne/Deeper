@@ -11,7 +11,7 @@ public:
 	LarvaAI(gameObjectPtr parent) : AI(parent) {};
 	~LarvaAI() {};
 
-	void onCollisionEnter() override;
+	void onCollisionEnter(BoxCollider collided) override;
 	void onTriggerEnter(BoxCollider collided) override;
 	void update(GLFWwindow* window, float deltaTime) override;
 

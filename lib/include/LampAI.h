@@ -10,7 +10,7 @@ public:
 	LampAI(gameObjectPtr parent) : AI(parent) {};
 	~LampAI() {};
 
-	void onCollisionEnter() override;
+	void onCollisionEnter(BoxCollider collided) override;
 	void onTriggerEnter(BoxCollider collided) override;
 	void update(GLFWwindow* window, float deltaTime) override;
 

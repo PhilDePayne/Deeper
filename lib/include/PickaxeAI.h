@@ -13,7 +13,7 @@ public:
 	PickaxeAI(gameObjectPtr parent) : AI(parent) {};
 	~PickaxeAI() {};
 
-	void onCollisionEnter() override;
+	void onCollisionEnter(BoxCollider collided) override;
 	void onTriggerEnter(BoxCollider collided) override;
 	void update(GLFWwindow* window, float deltaTime) override; //TODO: override
 	void onKeyPressed(int key, int action); //TODO: override

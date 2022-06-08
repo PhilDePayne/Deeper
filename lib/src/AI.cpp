@@ -27,7 +27,7 @@ void AI::onTriggerEnter(BoxCollider collided) {
 #endif
 }
 
-void AI::onCollisionEnter() {
+void AI::onCollisionEnter(BoxCollider collided) {
 #ifdef ON_COLLISION_ENTER_LOG
 	printf("ERROR: BASE_AI_onCollisionEnter\n"); //TODO: exception
 #endif

@@ -1,6 +1,6 @@
 #include "PickaxeAI.h"
 
-void PickaxeAI::onCollisionEnter() {
+void PickaxeAI::onCollisionEnter(BoxCollider collided) {
 
 	printf("ENTERED COLLISION\n");
 

@@ -702,7 +702,7 @@ int main(int, char**)
                 player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
 
                 larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
-                //larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->
+                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
             }
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

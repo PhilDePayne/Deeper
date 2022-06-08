@@ -1,6 +1,6 @@
 #include "LarvaAI.h"
 
-void LarvaAI::onCollisionEnter() {
+void LarvaAI::onCollisionEnter(BoxCollider collided) {
 
 }
 
