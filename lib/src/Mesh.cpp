@@ -53,8 +53,11 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
             glm::abs((maxY - minY)),
             glm::abs((maxZ - minZ))));
 #ifdef BOUNDING_VOLUME_LOG
-    printf("%f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
-        boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ());
+    printf("%f %f %f %f %f %f %f %f %f\n", boundingVolume.getCenter().x, boundingVolume.getCenter().y, boundingVolume.getCenter().z,
+        boundingVolume.getSizeX(), boundingVolume.getSizeY(), boundingVolume.getSizeZ(),
+        boundingVolume.x_rotation_angle, boundingVolume.x_rotation_angle, boundingVolume.x_rotation_angle);
+
+    std::cout << glm::to_string(modelMatrix) << std::endl;
 #endif
     }
 }

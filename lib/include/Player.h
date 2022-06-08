@@ -22,7 +22,7 @@ public:
 
     Player(char *path, gameObjectPtr pickaxe) : pickaxe(pickaxe) {
         body = new Model(path);
-        collider.setRadius(30.0f);
+        collider.setRadius(20.0f);
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position = body->transform.position;
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
