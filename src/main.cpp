@@ -62,6 +62,9 @@
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
+//const unsigned int SCR_WIDTH = 1280;
+//const unsigned int SCR_HEIGHT = 720;
+
 int display_w, display_h;
 
 
@@ -498,9 +501,6 @@ int main(int, char**)
     Model cave1("./res/models/cave1/cave1_mdl.fbx");
     cave1.transform.scale = glm::vec3(11.0f);
 
-    //Model cave1("./res/models/cave1/cave1_mdl.fbx");
-    //cave1.transform.scale = glm::vec3(11.0f);
-
     //Model cave2("./res/models/cave2/cave2_mdl.fbx");
     //cave2.transform.scale = glm::vec3(11.0f);
 
@@ -636,7 +636,7 @@ int main(int, char**)
                                 camera.getCamPos().y, camera.getCamPos().z);
                     ImGui::NewLine();
 
-                    ImGui::SliderFloat("random variable", &r, 0.1f, 1.0f);
+                    ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
 
                     ImGui::NewLine();
                     ImGui::Text("points: %i", points.getPoints());

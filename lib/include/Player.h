@@ -78,23 +78,23 @@ public:
 
         //clamp velocities
         if(x != 0.0f) {
-            x += velocity * 10.0f * dirLR;
-            if(fabs(x) < 1.0f)
+            x += velocity * 5.0f * dirLR;
+            if(fabs(x) < 0.3f)
                 x = 0.0f;
-            if(x > 10.0f)
-                x = 10.0f;
-            else if(x < -10.0f)
-                x = -10.0f;
+            if(x > 4.0f)
+                x = 4.0f;
+            else if(x < -4.0f)
+                x = -4.0f;
         }
 
         if(z != 0.0f) {
-            z += velocity * 10.0f * dirLR;
-            if(fabs(z) < 1.0f)
+            z += velocity * 5.0f * dirLR;
+            if(fabs(z) < 0.3f)
                 z = 0.0f;
-            if(z > 10.0f)
-                z = 10.0f;
-            else if(z < -10.0f)
-                z = -10.0f;
+            if(z > 4.0f)
+                z = 4.0f;
+            else if(z < -4.0f)
+                z = -4.0f;
         }
 
         body->transform.position += glm::vec3(x, 0.0f, z);
@@ -235,7 +235,7 @@ public:
 private:
     Model* body;
 
-    float speed = 100.0f;
+    float speed = 200.0f;
     int front_or_left = 1;
     float gravity = -30.0f;
     float x = 0.0f, z = 0.0f;

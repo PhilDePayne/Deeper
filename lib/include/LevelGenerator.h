@@ -5,7 +5,7 @@
 #ifndef DEEPER_LEVELGENERATOR_H
 #define DEEPER_LEVELGENERATOR_H
 
-//TODO: instancjonowanie
+//TODO: skala
 class LevelGenerator {
 
 public:
@@ -31,11 +31,11 @@ public:
     }
 
     void DrawLevels(Shader shader) {
-//        for(auto& cave : caveModels) {
-//            cave.Draw(shader);
-//        }
+        for(auto& cave : caveModels) {
+            cave.Draw(shader);
+        }
 
-        caveModels[num[1]].Draw(shader);
+//        caveModels[num[1]].Draw(shader);
     }
 
     void move(float pos) {
