@@ -402,10 +402,11 @@ int main(int, char**)
 
     componentPtr caveModel(new Model("./res/models/Colliders/caveTestColliders.fbx", true));
     componentPtr lampModel(new Model("./res/models/Colliders/testLightColliders.fbx", true));
-    componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof.fbx"));
+    componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
     //TODO: zmienic przypisanie kilofa do gracza
     pickaxe->addComponent(pickaxeModel, pickaxe);
     pickaxe->addComponent<PickaxeAI>(pickaxe);
+    pickaxe->addComponent<SphereCollider>(pickaxe);
 
     componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
 
@@ -446,6 +447,9 @@ int main(int, char**)
         cave->addComponent(caveModel, cave);
         cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
         cave->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
+
+        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
+        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
         larva->addComponent(larvaModel, larva);
         larva->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(581.819336f, 303.709015f, -365.3f);
@@ -713,6 +717,8 @@ int main(int, char**)
 
                 larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
                 larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+
+                pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
             }
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

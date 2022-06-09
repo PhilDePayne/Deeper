@@ -140,6 +140,30 @@ void SphereCollider::separate(std::vector<BoxCollider> colliders) {
 
 }
 
+void SphereCollider::checkTrigger(std::vector<BoxCollider> colliders) {
+
+    for (auto i : colliders) {
+
+        if (isCollision(&i, false).w == 1) {
+
+            i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i);
+
+        }
+
+    }
+
+}
+
+void SphereCollider::checkTrigger(BoxCollider* collided) {
+
+    if (isCollision(collided, false).w == 1) {
+
+        collided->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*collided);
+
+    }
+
+}
+
 bool SphereCollider::isType(ComponentType t) {
 
 	return t == ComponentType::SPHERECOLLIDER;

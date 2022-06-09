@@ -41,4 +41,6 @@ void PickaxeAI::pickaxeThrow(int dir, int orientation) {
 
 	parent->getComponent<Model>(ComponentType::MODEL)->transform.position.y += glm::cos(0.5*(glfwGetTime() - throwTime));
 
+	parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
+
 }

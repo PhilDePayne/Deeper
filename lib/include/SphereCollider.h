@@ -3,6 +3,7 @@
 #include "Component.h"
 #include "GameObject.h"
 #include "Model.h"
+#include "AI.h"
 
 #include <glm/glm.hpp>
 
@@ -28,6 +29,8 @@ public:
 	glm::vec4 isCollision(BoxCollider* other, bool resolve);
 
 	void separate(std::vector<BoxCollider> colliders);
+	void checkTrigger(std::vector<BoxCollider> colliders);
+	void checkTrigger(BoxCollider* other);
 
 	bool isType(ComponentType t) override;
 	void test() override;

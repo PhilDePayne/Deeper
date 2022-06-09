@@ -179,7 +179,6 @@ public:
             if (collider.isCollision(&i, false).w == 1) {
                 
                 i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i);
-                //printf("trigger position: %f %f %f", i.getCenter().x, i.getCenter().y, i.getCenter().z);
 
             }
 

@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "GameObject.h"
 #include "Model.h"
+#include "SphereCollider.h"
 #include "typedefs.h"
 
 #include <GLFW/glfw3.h>
