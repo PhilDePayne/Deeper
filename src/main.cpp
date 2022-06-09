@@ -510,7 +510,7 @@ int main(int, char**)
     Player player("./res/models/Box/box.fbx", pickaxe);
     player.getBody()->transform.scale = glm::vec3(2.0f);
     player.getBody()->transform.position = glm::vec3(-318.877960f, 100.421379f, -54.0f);
-    player.getBody()->transform.y_rotation_angle = 90.0f;
+//    player.getBody()->transform.y_rotation_angle = 90.0f;
 
     Frustum camFrustum = createFrustumFromCamera(camera,
         (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
@@ -570,7 +570,6 @@ int main(int, char**)
 
     state.setState(GAME_RUNNING);
 
-    float x = 0.0f, y = 0.0f;
 
     /// Main loop
     while (!glfwWindowShouldClose(window))
@@ -639,13 +638,10 @@ int main(int, char**)
                 ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
 
                 ImGui::NewLine();
-                ImGui::SliderFloat("x", &x, -display_w, display_w);
-                ImGui::SliderFloat("y", &y, -display_h/2.0f, 0.0f);
 
                 ImGui::End();
                 }
 
-                compass.moveArrow(x, y);
 
             //useDebugCamera(proj, view, window, scale);
             useOrthoCamera(proj, view, window, cameraY, scale, player);
@@ -675,22 +671,18 @@ int main(int, char**)
                 glDrawArrays(GL_TRIANGLES, 0, 36);
             }
 
-//rocks.Draw(PBRShader);
-            //lampMdl.Draw(PBRShader, camFrustum, proj, view);
-            //colliders.Draw(PBRShader);
-            //pickaxe.Draw(PBRShader);
-            //lightColliders.Draw(PBRShader);
-
 //                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f);
                 if (rotate == 0) {
-                    player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+                    player.move(window, camera.getCameraDirection(), deltaTime, depthPos); //obrot gracza
                     camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 1.0f, clipWidth);
                 }
                 else {
-                    //obracanie przodem do kamery zepsute, ale gracz jest zatrzymywany podczas obrotu kamery
-                    player.rotate(rotationSpeed * deltaTime * rotate);
+                    player.stop();
                     camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 }
+
+            //TODO: czemu gracz sie obraca po zatrzymaniu
+            player.rotate(-camera.getAngle());
 
             for (int i = 0; i < 1; i++)
             {
@@ -725,10 +717,10 @@ int main(int, char**)
             //lampMdl.Draw(PBRShader, camFrustum, proj, view);
             //colliders.Draw(PBRShader);
             //pickaxe.Draw(PBRShader);
-            level.Draw(PBRShader);
+//            level.Draw(PBRShader);
             lamps.Draw(PBRShader);
             //LRcolliders.Draw(PBRShader);
-            FBcolliders.Draw(PBRShader);
+//            FBcolliders.Draw(PBRShader);
 
             //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 

@@ -158,6 +158,10 @@ public:
 
     }
 
+    void rotate(float angle) {
+        body->transform.y_rotation_angle = angle;
+    }
+
     Model *getBody() const {
         return body;
     }
@@ -166,26 +170,10 @@ public:
         return front_or_left;
     }
 
-    //zatrzymywanie podczas obrotu i ustawianie gracza przodem do kamery
-    void rotate(float angle) {
+    void stop() {
         x = 0.0f;
         z = 0.0f;
-//        body->transform.y_rotation_angle = angle; //zle
     }
-//
-    void correctAngle(int dir) {
-        if(fmodf(body->transform.y_rotation_angle, 90.0f) != 0) {
-            body->transform.y_rotation_angle = -90.0f * (float)dir;
-        }
-    }
-
-    //???? źle
-//    void rotateLeftRight(int dir) {
-//        body->transform.y_rotation_angle = 90.0f * (dir + (float)dirLR) * direction;
-//        if(dir == 2)
-//            body->transform.y_rotation_angle = -90.0f * (dir + (float)dirLR) * direction;
-//
-//    }
 
     SphereCollider collider;
 

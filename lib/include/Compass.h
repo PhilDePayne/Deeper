@@ -43,11 +43,6 @@ public:
 
     }
 
-    void moveArrow(float x, float y) {
-//        arrow->model = glm::translate(oldModelArrow, glm::vec3(x, y, 0.0f));
-    }
-
-
 
 private:
 
