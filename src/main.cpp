@@ -67,7 +67,7 @@ int display_w, display_h;
 
 
 bool debugBox = 0;
-bool skybox = 0;
+bool skybox = 1;
 
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                                 float zNear, float zFar)
@@ -171,8 +171,7 @@ bool restart = true;
 
 //camera var
 int rotate = 0;
-float clipZ = 720.0f;
-float clipWidth = 50.0f;
+float clipWidth = 40.0f;
 float depthPos = 0.0f;
 float rotationSpeed = 70.0f;
 
@@ -452,7 +451,7 @@ int main(int, char**)
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
         larva->addComponent(larvaModel, larva);
-        larva->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(581.819336f, 303.709015f, -365.3f);
+        larva->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(581.819336f, 303.709015f, -582.5f);
         larva->addComponent<LarvaAI>(larva);
         larva->getComponent<LarvaAI>(ComponentType::AI)->lights = &lightPositions;
         //-------- PHYSICS COLLIDER --------//
@@ -704,11 +703,11 @@ int main(int, char**)
             //-------- PHYSICS --------//
             for (int i = 0; i < 1; i++)
             {
-                //player.gravityOn(deltaTime);
+                player.gravityOn(deltaTime);
                 //-------- COLLISIONS --------//
                 player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
                 player.checkCollision(FBcolliders.getColliders());
-                //player.checkCollision(LRcolliders.getColliders());
+                player.checkCollision(LRcolliders.getColliders());
                  
                 //-------- TRIGGERS --------//
                 //player.detectCollision(lightColliders.getColliders());
@@ -742,8 +741,8 @@ int main(int, char**)
 
             //-------- DRAW --------//
             {
-                //level.Draw(PBRShader);
-                //lamps.Draw(PBRShader);
+                level.Draw(PBRShader);
+                lamps.Draw(PBRShader);
                 //LRcolliders.Draw(PBRShader);
                 //FBcolliders.Draw(PBRShader);
                 cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);

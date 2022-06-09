@@ -24,7 +24,7 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 
 	}
 
-	else if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && isThrown) isThrown = false;
+	else if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS && isThrown) isThrown = false;
 
 	if (isThrown) pickaxeThrow(throwDir, throwFacingDir);
 
@@ -35,11 +35,11 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 void PickaxeAI::pickaxeThrow(int dir, int orientation) {
 
 	if(orientation == 1)
-		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += orientation * dir * glm::sin(0.5 * (glfwGetTime() - throwTime));
+		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += orientation * dir * 2 * glm::sin(0.5 * (glfwGetTime() - throwTime));
 	else
-		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += orientation * dir * glm::sin(0.5 * (glfwGetTime() - throwTime));
+		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += orientation * dir * 2 * glm::sin(0.5 * (glfwGetTime() - throwTime));
 
-	parent->getComponent<Model>(ComponentType::MODEL)->transform.position.y += glm::cos(0.5*(glfwGetTime() - throwTime));
+	parent->getComponent<Model>(ComponentType::MODEL)->transform.position.y += 2 * glm::cos(0.5*(glfwGetTime() - throwTime));
 
 	parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
