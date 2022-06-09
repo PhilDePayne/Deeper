@@ -19,7 +19,7 @@ public:
 
 private:
 
-	bool active;
+	bool active = false;
 	float speed = 30.0f;
 
 };

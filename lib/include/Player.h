@@ -187,6 +187,16 @@ public:
 
     }
 
+    void detectCollision(BoxCollider* other) {
+
+            if (collider.isCollision(other, false).w == 1) {
+
+                other->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*other);
+
+            }
+
+    }
+
     Model *getBody() const {
         return body;
     }

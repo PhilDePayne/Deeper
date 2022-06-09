@@ -411,7 +411,7 @@ int main(int, char**)
 
     Player player("./res/models/Box/box.fbx", pickaxe);
     player.getBody()->transform.scale = glm::vec3(2.0f);
-    player.getBody()->transform.position = glm::vec3(-318.877960f, 100.421379f, -54.0f);
+    player.getBody()->transform.position = glm::vec3(581.374207f, 303.709045f, -250.4f);
     player.getBody()->transform.y_rotation_angle = 90.0f;
 
     //OBJECT PARAMETERS
@@ -445,14 +445,20 @@ int main(int, char**)
 
         cave->addComponent(caveModel, cave);
         cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
-        cave->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
+        cave->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
 
         larva->addComponent(larvaModel, larva);
+        larva->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(581.819336f, 303.709015f, -365.3f);
         larva->addComponent<LarvaAI>(larva);
         larva->getComponent<LarvaAI>(ComponentType::AI)->lights = &lightPositions;
+        //-------- PHYSICS COLLIDER --------//
         larva->addComponent<SphereCollider>(larva);
         larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(10.0f);
         larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(larva->getComponent<Model>(ComponentType::MODEL)->transform.position);
+        //-------- TRIGGER COLLIDER --------//
+        larva->addComponent<BoxCollider>(larva);
+        larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(10.0f));
+        larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(larva->getComponent<Model>(ComponentType::MODEL)->transform.position);
     }
 
     basicShader.use();
@@ -695,11 +701,15 @@ int main(int, char**)
             for (int i = 0; i < 1; i++)
             {
                 //player.gravityOn(deltaTime);
+                //-------- COLLISIONS --------//
                 player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
                 player.checkCollision(FBcolliders.getColliders());
                 //player.checkCollision(LRcolliders.getColliders());
+                 
+                //-------- TRIGGERS --------//
                 //player.detectCollision(lightColliders.getColliders());
                 player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
 
                 larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
                 larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
