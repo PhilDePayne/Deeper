@@ -4,15 +4,17 @@ void LarvaAI::onCollisionEnter(BoxCollider collided) {
 
 }
 
-void LarvaAI::onTriggerEnter(BoxCollider collided) {
+void LarvaAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
 	active = true;
-	printf("%d", larvas->size());
-	if(larvas->size() > 0){ 
 
-		parent.~shared_ptr();
-		larvas->erase(larvas->begin());
+	if (colliderTag == Tag::PICKAXE) {
+		if (larvas->size() > 0) {
 
+			parent.~shared_ptr();
+			larvas->erase(larvas->begin());
+
+		}
 	}
 	//printf("%d", parent.use_count());
 

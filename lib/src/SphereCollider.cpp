@@ -146,7 +146,7 @@ void SphereCollider::checkTrigger(std::vector<BoxCollider> colliders) {
 
         if (isCollision(&i, false).w == 1) {
 
-            i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i);
+            i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i, parent->tag);
 
         }
 
@@ -158,7 +158,7 @@ void SphereCollider::checkTrigger(BoxCollider* collided) {
 
     if (isCollision(collided, false).w == 1) {
 
-        collided->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*collided);
+        collided->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*collided, parent->tag);
 
     }
 

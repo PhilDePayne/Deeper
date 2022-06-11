@@ -398,6 +398,7 @@ int main(int, char**)
     gameObjectPtr lamp(new GameObject());
     gameObjectPtr pickaxe(new GameObject());
     gameObjectPtr larva(new GameObject());
+    larva->tag = Tag::LARVA;
 
     componentPtr caveModel(new Model("./res/models/Colliders/caveTestColliders.fbx", true));
     componentPtr lampModel(new Model("./res/models/Colliders/testLightColliders.fbx", true));
@@ -406,6 +407,7 @@ int main(int, char**)
     pickaxe->addComponent(pickaxeModel, pickaxe);
     pickaxe->addComponent<PickaxeAI>(pickaxe);
     pickaxe->addComponent<SphereCollider>(pickaxe);
+    pickaxe->tag = Tag::PICKAXE;
 
     componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
 
@@ -719,11 +721,11 @@ int main(int, char**)
                     player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
                     larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
                     larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-
+                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                    pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
                 }
 
-                printf("%d\n", larva.use_count());
-                //pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                //printf("%d\n", larva.use_count());
             }
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

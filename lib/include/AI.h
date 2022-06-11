@@ -21,7 +21,7 @@ public:
 	void test() override;
 
 	virtual void onCollisionEnter(BoxCollider collided);
-	virtual void onTriggerEnter(BoxCollider collided);
+	virtual void onTriggerEnter(BoxCollider collided, Tag colliderTag);
 	virtual void update(GLFWwindow* window, float deltaTime);
 
 	glm::vec3 moveTowards(glm::vec3 from, glm::vec3 to, float step);

@@ -6,7 +6,7 @@ void PickaxeAI::onCollisionEnter(BoxCollider collided) {
 
 };
 
-void PickaxeAI::onTriggerEnter(BoxCollider collided) {
+void PickaxeAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
 	//printf("TRIGGERED COLLISION\n");
 
@@ -35,11 +35,11 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 void PickaxeAI::pickaxeThrow(int dir, int orientation) {
 
 	if(orientation == 1)
-		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += orientation * dir * 2 * glm::sin(0.5 * (glfwGetTime() - throwTime));
+		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += orientation * dir * 2 * glm::sin(1 * (glfwGetTime() - throwTime));
 	else
-		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += orientation * dir * 2 * glm::sin(0.5 * (glfwGetTime() - throwTime));
+		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += orientation * dir * 2 * glm::sin(1 * (glfwGetTime() - throwTime));
 
-	parent->getComponent<Model>(ComponentType::MODEL)->transform.position.y += 2 * glm::cos(0.5*(glfwGetTime() - throwTime));
+	parent->getComponent<Model>(ComponentType::MODEL)->transform.position.y += 2 * glm::cos(1*(glfwGetTime() - throwTime));
 
 	parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
 

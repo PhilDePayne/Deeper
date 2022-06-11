@@ -3,6 +3,16 @@
 #include "Component.h"
 #include <vector>
 
+enum class Tag {
+
+	DEFAULT,
+	PLAYER,
+	PICKAXE,
+	LAMP,
+	LARVA
+
+};
+
 class GameObject {
 
 public:
@@ -36,6 +46,8 @@ public:
 	};
 
 	void test();
+
+	Tag tag = Tag::DEFAULT;
 
 private:
 	

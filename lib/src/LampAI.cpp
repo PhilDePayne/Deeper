@@ -14,16 +14,21 @@ void LampAI::onCollisionEnter(BoxCollider collided) {
 #endif
 }
 
-void LampAI::onTriggerEnter(BoxCollider collided) {
+void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
-	//printf("TRIGGERED COLLISION\n");
 	bool exists = false;
+	int index = 0;
 
 	for (auto i : *lights) {
 
-		if (i == collided.getCenter()) exists = true;
+		if (i == collided.getCenter()) { 
+			exists = true; 
+
+		}
 
 	}
+
+	if (colliderTag == Tag::LARVA) printf("Larva");
 
 	if (!exists) {
 

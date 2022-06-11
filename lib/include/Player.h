@@ -178,7 +178,7 @@ public:
 
             if (collider.isCollision(&i, false).w == 1) {
                 
-                i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i);
+                i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i, Tag::PLAYER);
 
             }
 
@@ -190,7 +190,7 @@ public:
 
             if (collider.isCollision(other, false).w == 1) {
 
-                other->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*other);
+                other->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*other, Tag::PLAYER);
 
             }
 

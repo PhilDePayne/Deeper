@@ -14,7 +14,7 @@ public:
 	~PickaxeAI() {};
 
 	void onCollisionEnter(BoxCollider collided) override;
-	void onTriggerEnter(BoxCollider collided) override;
+	void onTriggerEnter(BoxCollider collided, Tag colliderTag) override;
 	void update(GLFWwindow* window, float deltaTime) override; //TODO: override
 	void onKeyPressed(int key, int action); //TODO: override
 	
