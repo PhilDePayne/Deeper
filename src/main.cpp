@@ -465,11 +465,11 @@ int main(int, char**)
         //-------- PHYSICS COLLIDER --------//
         larvas[0]->addComponent<SphereCollider>(larvas[0]);
         larvas[0]->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(10.0f);
-        larvas[0]->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(larva->getComponent<Model>(ComponentType::MODEL)->transform.position);
+        larvas[0]->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(larvas[0]->getComponent<Model>(ComponentType::MODEL)->transform.position);
         //-------- TRIGGER COLLIDER --------//
         larvas[0]->addComponent<BoxCollider>(larvas[0]);
         larvas[0]->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(10.0f));
-        larvas[0]->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(larva->getComponent<Model>(ComponentType::MODEL)->transform.position);
+        larvas[0]->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(larvas[0]->getComponent<Model>(ComponentType::MODEL)->transform.position);
     }
 
     basicShader.use();
@@ -725,7 +725,7 @@ int main(int, char**)
                     pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
                 }
 
-                //printf("%d\n", larva.use_count());
+                printf("%d\n", larva.use_count());
             }
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

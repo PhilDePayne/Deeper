@@ -11,12 +11,10 @@ void LarvaAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 	if (colliderTag == Tag::PICKAXE) {
 		if (larvas->size() > 0) {
 
-			parent.~shared_ptr();
 			larvas->erase(larvas->begin());
-
+			parent->~GameObject();
 		}
 	}
-	//printf("%d", parent.use_count());
 
 }
 
