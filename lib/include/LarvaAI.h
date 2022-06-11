@@ -16,10 +16,12 @@ public:
 	void update(GLFWwindow* window, float deltaTime) override;
 
 	std::vector<glm::vec3>* lights;
+	std::vector<gameObjectPtr>* larvas;
 
 private:
 
 	bool active = false;
 	float speed = 30.0f;
+	
 
 };

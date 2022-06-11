@@ -67,7 +67,7 @@ int display_w, display_h;
 
 
 bool debugBox = 0;
-bool skybox = 1;
+bool skybox = 0;
 
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                                 float zNear, float zFar)
@@ -414,6 +414,11 @@ int main(int, char**)
     player.getBody()->transform.position = glm::vec3(581.374207f, 303.709045f, -250.4f);
     player.getBody()->transform.y_rotation_angle = 90.0f;
 
+    //-------- GAMEOBJECT VECTORS --------//
+
+    std::vector<gameObjectPtr> larvas;
+    larvas.push_back(larva);
+
     //OBJECT PARAMETERS
     {
         cube1->addGameObject(cube);
@@ -450,18 +455,19 @@ int main(int, char**)
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
-        larva->addComponent(larvaModel, larva);
-        larva->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(581.819336f, 303.709015f, -582.5f);
-        larva->addComponent<LarvaAI>(larva);
-        larva->getComponent<LarvaAI>(ComponentType::AI)->lights = &lightPositions;
+        larvas[0]->addComponent(larvaModel, larvas[0]);
+        larvas[0]->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(581.819336f, 303.709015f, -582.5f);
+        larvas[0]->addComponent<LarvaAI>(larvas[0]);
+        larvas[0]->getComponent<LarvaAI>(ComponentType::AI)->lights = &lightPositions;
+        larvas[0]->getComponent<LarvaAI>(ComponentType::AI)->larvas = &larvas;
         //-------- PHYSICS COLLIDER --------//
-        larva->addComponent<SphereCollider>(larva);
-        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(10.0f);
-        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(larva->getComponent<Model>(ComponentType::MODEL)->transform.position);
+        larvas[0]->addComponent<SphereCollider>(larvas[0]);
+        larvas[0]->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(10.0f);
+        larvas[0]->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(larva->getComponent<Model>(ComponentType::MODEL)->transform.position);
         //-------- TRIGGER COLLIDER --------//
-        larva->addComponent<BoxCollider>(larva);
-        larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(10.0f));
-        larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(larva->getComponent<Model>(ComponentType::MODEL)->transform.position);
+        larvas[0]->addComponent<BoxCollider>(larvas[0]);
+        larvas[0]->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(10.0f));
+        larvas[0]->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(larva->getComponent<Model>(ComponentType::MODEL)->transform.position);
     }
 
     basicShader.use();
@@ -545,13 +551,15 @@ int main(int, char**)
     //    Animation animation("./res/models/debug/simpleAnimAF.fbx", &simpleModel);
     //    Animator animator(&animation);
 
+    unsigned int cubemapTexture;
+    if (skybox) {
+        cubemapTexture = loadCubemap(faces);
+        reflShader.use();
+        reflShader.setInt("skybox", 0);
 
-    unsigned int cubemapTexture = loadCubemap(faces);
-    reflShader.use();
-    reflShader.setInt("skybox", 0);
-
-    skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
+        skyboxShader.use();
+        skyboxShader.setInt("skybox", 0);
+    }
 
     //DEBUG
     unsigned int cubeVAO, cubeVBO;
@@ -628,7 +636,7 @@ int main(int, char**)
             //              hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
             //              compass.Draw(hudShader, camera.getCameraDirection());
 
-                            //ImGui
+            //-------- ImGui --------//
             {
                 ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
@@ -668,7 +676,6 @@ int main(int, char**)
 
             //useDebugCamera(proj, view, window, scale);
             useOrthoCamera(proj, view, window, cameraY, scale, player);
-            //TODO: renderManager/meshComponent
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->update(window, deltaTime);
@@ -693,17 +700,11 @@ int main(int, char**)
                 glBindVertexArray(skyboxVAO);
                 glDrawArrays(GL_TRIANGLES, 0, 36);
             }
-
-            //rocks.Draw(PBRShader);
-            //lampMdl.Draw(PBRShader, camFrustum, proj, view);
-            //colliders.Draw(PBRShader);
-            //pickaxe.Draw(PBRShader);
-            //lightColliders.Draw(PBRShader);
-            
+                        
             //-------- PHYSICS --------//
             for (int i = 0; i < 1; i++)
             {
-                player.gravityOn(deltaTime);
+                //player.gravityOn(deltaTime);
                 //-------- COLLISIONS --------//
                 player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
                 player.checkCollision(FBcolliders.getColliders());
@@ -712,12 +713,17 @@ int main(int, char**)
                 //-------- TRIGGERS --------//
                 //player.detectCollision(lightColliders.getColliders());
                 player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
 
-                larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
-                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                for (auto larva : larvas) {
 
-                pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+
+                }
+
+                printf("%d\n", larva.use_count());
+                //pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
             }
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -745,13 +751,17 @@ int main(int, char**)
                 lamps.Draw(PBRShader);
                 //LRcolliders.Draw(PBRShader);
                 //FBcolliders.Draw(PBRShader);
-                cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                //cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
                 //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
                 //gen.update(camera.getCamPos().y);
                 //gen.DrawLevels(PBRShader);
 
-                larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                for (auto larva : larvas) {
+
+                    larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+
+                }
 
                 
                 player.render(PBRShader);
