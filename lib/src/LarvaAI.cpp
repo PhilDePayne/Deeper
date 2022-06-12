@@ -30,3 +30,28 @@ void LarvaAI::update(GLFWwindow* window, float deltaTime) {
 	}
 
 }
+
+void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, componentPtr model) {
+
+	gameObjectPtr larva(new GameObject());
+	larva->tag = Tag::LARVA;
+	larvas->push_back(larva);
+
+	//-------- MODEL --------//
+	larvas->back()->addComponent(model, larvas->back());
+	larvas->back()->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(581.819336f, 303.709015f, -582.5f);
+	//-------- AI --------//
+	larvas->back()->addComponent<LarvaAI>(larvas->back());
+	larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->lights = lightPositions;
+	larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->larvas = larvas;
+	//-------- PHYSICS COLLIDER --------//
+	larvas->back()->addComponent<SphereCollider>(larvas->back());
+	larvas->back()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(10.0f);
+	larvas->back()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(larvas->back()->getComponent<Model>(ComponentType::MODEL)->transform.position);
+	//-------- TRIGGER COLLIDER --------//
+	larvas->back()->addComponent<BoxCollider>(larvas->back());
+	larvas->back()->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(10.0f));
+	larvas->back()->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(larvas->back()->getComponent<Model>(ComponentType::MODEL)->transform.position);
+
+	larva.reset();
+}

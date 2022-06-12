@@ -397,12 +397,11 @@ int main(int, char**)
     gameObjectPtr cave(new GameObject());
     gameObjectPtr lamp(new GameObject());
     gameObjectPtr pickaxe(new GameObject());
-    gameObjectPtr larva(new GameObject());
-    larva->tag = Tag::LARVA;
 
     componentPtr caveModel(new Model("./res/models/Colliders/caveTestColliders.fbx", true));
     componentPtr lampModel(new Model("./res/models/Colliders/testLightColliders.fbx", true));
     componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
+
     //TODO: zmienic przypisanie kilofa do gracza
     pickaxe->addComponent(pickaxeModel, pickaxe);
     pickaxe->addComponent<PickaxeAI>(pickaxe);
@@ -419,7 +418,8 @@ int main(int, char**)
     //-------- GAMEOBJECT VECTORS --------//
 
     std::vector<gameObjectPtr> larvas;
-    larvas.push_back(larva);
+
+    //
 
     //OBJECT PARAMETERS
     {
@@ -457,19 +457,8 @@ int main(int, char**)
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
-        larvas[0]->addComponent(larvaModel, larvas[0]);
-        larvas[0]->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(581.819336f, 303.709015f, -582.5f);
-        larvas[0]->addComponent<LarvaAI>(larvas[0]);
-        larvas[0]->getComponent<LarvaAI>(ComponentType::AI)->lights = &lightPositions;
-        larvas[0]->getComponent<LarvaAI>(ComponentType::AI)->larvas = &larvas;
-        //-------- PHYSICS COLLIDER --------//
-        larvas[0]->addComponent<SphereCollider>(larvas[0]);
-        larvas[0]->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(10.0f);
-        larvas[0]->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(larvas[0]->getComponent<Model>(ComponentType::MODEL)->transform.position);
-        //-------- TRIGGER COLLIDER --------//
-        larvas[0]->addComponent<BoxCollider>(larvas[0]);
-        larvas[0]->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setSize(glm::vec3(10.0f));
-        larvas[0]->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(larvas[0]->getComponent<Model>(ComponentType::MODEL)->transform.position);
+        LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel);
+        
     }
 
     basicShader.use();
@@ -723,10 +712,13 @@ int main(int, char**)
                     larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
                     larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
                     pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    
                 }
 
-                printf("%d\n", larva.use_count());
+                
             }
+
+            printf("LARVAS: %d\n", larvas.size());
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

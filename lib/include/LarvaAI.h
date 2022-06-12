@@ -15,6 +15,8 @@ public:
 	void onTriggerEnter(BoxCollider collided, Tag colliderTag) override;
 	void update(GLFWwindow* window, float deltaTime) override;
 
+	static void instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, componentPtr model);
+
 	std::vector<glm::vec3>* lights;
 	std::vector<gameObjectPtr>* larvas;
 

@@ -43,6 +43,8 @@ public:
 
 		}
 
+		return nullptr;
+
 	};
 
 	void test();

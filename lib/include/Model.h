@@ -17,6 +17,7 @@
 #include "Transform.h"
 #include "BoxCollider.h"
 #include "Frustum.h"
+#include "GameObject.h"
 
 struct MapsSet
 {
