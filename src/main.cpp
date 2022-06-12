@@ -37,6 +37,7 @@
 #include "LevelGenerator.h"
 #include "PickaxeAI.h"
 #include "LarvaAI.h"
+#include "SpawnerAI.h"
 
 #include <stdio.h>
 #include <memory>
@@ -397,18 +398,20 @@ int main(int, char**)
     gameObjectPtr cave(new GameObject());
     gameObjectPtr lamp(new GameObject());
     gameObjectPtr pickaxe(new GameObject());
+    gameObjectPtr spawners(new GameObject());
 
     componentPtr caveModel(new Model("./res/models/Colliders/caveTestColliders.fbx", true));
     componentPtr lampModel(new Model("./res/models/Colliders/testLightColliders.fbx", true));
     componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
 
+    componentPtr spawnerColliders(new Model("./res/models/Colliders/spawnerColliders.fbx", true));
+    componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
+
     //TODO: zmienic przypisanie kilofa do gracza
     pickaxe->addComponent(pickaxeModel, pickaxe);
     pickaxe->addComponent<PickaxeAI>(pickaxe);
     pickaxe->addComponent<SphereCollider>(pickaxe);
-    pickaxe->tag = Tag::PICKAXE;
-
-    componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
+    pickaxe->tag = Tag::PICKAXE;    
 
     Player player("./res/models/Box/box.fbx", pickaxe);
     player.getBody()->transform.scale = glm::vec3(2.0f);
@@ -419,9 +422,7 @@ int main(int, char**)
 
     std::vector<gameObjectPtr> larvas;
 
-    //
-
-    //OBJECT PARAMETERS
+    //-------- OBJECT PARAMETERS --------//
     {
         cube1->addGameObject(cube);
         sphere1->addGameObject(sphere);
@@ -457,8 +458,15 @@ int main(int, char**)
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
-        LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel);
-        
+        LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel, glm::vec3(581.819336f, 303.709015f, -582.5f));
+
+        spawners->addComponent(spawnerColliders, spawners);
+        spawners->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
+        spawners->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
+        spawners->addComponent<SpawnerAI>(spawners);
+        spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvaModel = larvaModel;
+        spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvas = &larvas;
+        spawners->getComponent<SpawnerAI>(ComponentType::AI)->lights = &lightPositions;
     }
 
     basicShader.use();
@@ -704,6 +712,7 @@ int main(int, char**)
                 //-------- TRIGGERS --------//
                 //player.detectCollision(lightColliders.getColliders());
                 player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
 
                 for (auto larva : larvas) {
 
@@ -718,7 +727,7 @@ int main(int, char**)
                 
             }
 
-            printf("LARVAS: %d\n", larvas.size());
+            //printf("LARVAS: %d\n", larvas.size());
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -747,6 +756,7 @@ int main(int, char**)
                 //FBcolliders.Draw(PBRShader);
                 //cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
                 //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
                 //gen.update(camera.getCamPos().y);
                 //gen.DrawLevels(PBRShader);

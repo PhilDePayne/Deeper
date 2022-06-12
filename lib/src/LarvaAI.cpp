@@ -31,7 +31,7 @@ void LarvaAI::update(GLFWwindow* window, float deltaTime) {
 
 }
 
-void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, componentPtr model) {
+void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, componentPtr model, glm::vec3 pos) {
 
 	gameObjectPtr larva(new GameObject());
 	larva->tag = Tag::LARVA;
@@ -39,7 +39,7 @@ void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<g
 
 	//-------- MODEL --------//
 	larvas->back()->addComponent(model, larvas->back());
-	larvas->back()->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(581.819336f, 303.709015f, -582.5f);
+	larvas->back()->getComponent<Model>(ComponentType::MODEL)->transform.position = pos;
 	//-------- AI --------//
 	larvas->back()->addComponent<LarvaAI>(larvas->back());
 	larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->lights = lightPositions;
