@@ -80,16 +80,22 @@ public:
         totalDegrees = 0.0f;
         Yaw = YAW;
         Pitch = PITCH;
+        gameover = false;
     }
 
-    void ProcessMovement(float radius, float speed, int &move, float camY, float &depthPos, glm::vec3 pos) {
+    void ProcessMovement(float radius, float speed, int &move, float &camY, float &depthPos, glm::vec3 pos) {
 
         float centerX = -pos.x;
         float centerZ = -pos.z;
 
-        //cos dziwnie
-//        if(pos.y - 2.0f < camY)
-//            camY = pos.y - 2.0f;
+        //gracz popycha kamere w dol
+        if(camY >= pos.y + 100.0f) {
+            camY = pos.y + 100.0f;
+        }
+
+        if(camY + 250.0f < pos.y) {
+            gameover = true;
+        }
 
 
         if(move != 0) {
@@ -206,6 +212,10 @@ public:
         return camPos;
     }
 
+    bool isGameover() const {
+        return gameover;
+    }
+
 
     /*--------------------DEBUG--------------------*/
 
@@ -264,6 +274,8 @@ private:
     float angle = 0.0f;
     float totalDegrees = 0.0f;
     glm::vec3 camPos = glm::vec3(0.0f);
+
+    bool gameover = false;
 
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()

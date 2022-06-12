@@ -717,7 +717,7 @@ int main(int, char**)
             //lampMdl.Draw(PBRShader, camFrustum, proj, view);
             //colliders.Draw(PBRShader);
             //pickaxe.Draw(PBRShader);
-//            level.Draw(PBRShader);
+            level.Draw(PBRShader);
             lamps.Draw(PBRShader);
             //LRcolliders.Draw(PBRShader);
 //            FBcolliders.Draw(PBRShader);
@@ -766,6 +766,10 @@ int main(int, char**)
             hudShader.setMat4("proj", glm::ortho(-(display_w/2.0f), display_w/2.0f, -(display_h/2.0f), display_h/2.0f, -10.0f, 10.0f));
             compass.Draw(hudShader, camera.getAngle());
 
+            //game over jesli gracz wyjdzie poza gorna krawedz kamery
+//            if(camera.isGameover())
+//                state.setState(GAME_OVER);
+
             break;
         }
         case MAIN_MENU: {
@@ -807,6 +811,13 @@ int main(int, char**)
             break;
         }
         case GAME_OVER: {
+
+            {
+                ImGui::Begin("SCORE");
+                ImGui::Text("points: %i", points.getPoints());
+                ImGui::End();
+            }
+
             hudShader.use();
             hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
 
@@ -855,7 +866,7 @@ void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
 void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player) {
 
     scale = 100.0f;
-//    cameraY -= 0.2f;
+//    cameraY -= 0.05f;
 
     ///DEBUG
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
