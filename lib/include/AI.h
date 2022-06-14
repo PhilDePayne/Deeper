@@ -4,7 +4,10 @@
 #include "Shader.h"
 #include "GameObject.h"
 #include "Model.h"
+#include "SphereCollider.h"
 #include "typedefs.h"
+
+#include <GLFW/glfw3.h>
 
 class AI : public Component {
 
@@ -17,7 +20,10 @@ public:
 	bool isType(ComponentType t) override;
 	void test() override;
 
-	virtual void onCollisionEnter();
-	virtual void onTriggerEnter(BoxCollider collided);
+	virtual void onCollisionEnter(BoxCollider collided);
+	virtual void onTriggerEnter(BoxCollider collided, Tag colliderTag);
+	virtual void update(GLFWwindow* window, float deltaTime);
+
+	glm::vec3 moveTowards(glm::vec3 from, glm::vec3 to, float step);
 
 };

@@ -83,7 +83,19 @@ void Model::Draw(Shader shader)
             {
                 passMapsToShader(meshes[i].getTexturesSetId());
             }
-            meshes[i].Draw(shader, transform);
+
+            if (parent != nullptr) { //TODO: burdel straszny, wszystkie elementy gry w gameObject wsadziæ
+                if (parent->getComponent<Transform>(ComponentType::TRANSFORM) != nullptr) {
+                    Transform temp = *parent->getComponent<Transform>(ComponentType::TRANSFORM); //TODO: sprawdzic czy nie mozna szybciej
+                    meshes[i].Draw(shader, temp);
+                }    
+                else {
+                    meshes[i].Draw(shader, transform);
+                }
+            }
+            else {
+                meshes[i].Draw(shader, transform);
+            }
     }
 }
 
@@ -371,15 +383,25 @@ std::vector<BoxCollider> Model::getColliders()
 
     BoxCollider tmp;
 
+    Transform localTransform = transform;
+
+    if (parent != nullptr) {
+        if (parent->getComponent<Transform>(ComponentType::TRANSFORM) != nullptr) {
+
+            localTransform = *parent->getComponent<Transform>(ComponentType::TRANSFORM);
+
+        }
+    }
+
     tmp.setCenter(glm::vec3(0.0f));
     tmp.setSize(glm::vec3(0.0f));
 
     for(auto i : meshes){
     
         tmp.setSize(glm::vec3(i.boundingVolume.getSizeX(), i.boundingVolume.getSizeY(), i.boundingVolume.getSizeZ()) *
-            transform.scale);
+            localTransform.scale);
 
-        tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), transform.position) * glm::vec4(i.boundingVolume.getCenter() * transform.scale, 1.0f)));
+        tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), localTransform.position) * glm::vec4(i.boundingVolume.getCenter() * localTransform.scale, 1.0f)));
 
         tmp.x_rotation_angle = i.boundingVolume.x_rotation_angle;
         tmp.z_rotation_angle = i.boundingVolume.z_rotation_angle;

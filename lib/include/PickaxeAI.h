@@ -1,9 +1,10 @@
 #pragma once
 
 #include "AI.h"
+#include "Model.h"
 #include "typedefs.h"
 
-#include <GLFW/glfw3.h>
+
 
 class PickaxeAI : public AI {
 
@@ -12,9 +13,9 @@ public:
 	PickaxeAI(gameObjectPtr parent) : AI(parent) {};
 	~PickaxeAI() {};
 
-	void onCollisionEnter() override;
-	void onTriggerEnter(BoxCollider collided) override;
-	void update(GLFWwindow* window); //TODO: override
+	void onCollisionEnter(BoxCollider collided) override;
+	void onTriggerEnter(BoxCollider collided, Tag colliderTag) override;
+	void update(GLFWwindow* window, float deltaTime) override; //TODO: override
 	void onKeyPressed(int key, int action); //TODO: override
 	
 	glm::vec3 playerPos;
@@ -23,10 +24,12 @@ public:
 	int playerFacingDir;
 	int throwFacingDir;
 
+	bool isThrown = false;
+
 private:
 	
 	double throwTime;
-	bool isThrown = false;
+	
 
 	void pickaxeThrow(int dir, int orientation);
 	
