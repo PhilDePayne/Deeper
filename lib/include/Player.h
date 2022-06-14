@@ -34,8 +34,9 @@ public:
     }
 
     void newGame(float &depthPos) {
-        //body->transform.position = glm::vec3(350.0f * randNum(), 200.0f, 350.0f * randNum());
-        depthPos = -body->transform.position.z;
+        body->transform.position = glm::vec3(330.0f * randNum(), 100.0f, 330.0f * randNum());
+//        depthPos = -body->transform.position.z;
+        depthPos = 0.0f;
     }
 
     void move(GLFWwindow* window, Camera_Facing_Direction dir, float deltaTime, float &depthPos) {
@@ -77,23 +78,23 @@ public:
 
         //clamp velocities
         if(x != 0.0f) {
-            x += velocity * 10.0f * dirLR;
-            if(fabs(x) < 1.0f)
+            x += velocity * 5.0f * dirLR;
+            if(fabs(x) < 0.3f)
                 x = 0.0f;
-            if(x > 10.0f)
-                x = 10.0f;
-            else if(x < -10.0f)
-                x = -10.0f;
+            if(x > 4.0f)
+                x = 4.0f;
+            else if(x < -4.0f)
+                x = -4.0f;
         }
 
         if(z != 0.0f) {
-            z += velocity * 10.0f * dirLR;
-            if(fabs(z) < 1.0f)
+            z += velocity * 5.0f * dirLR;
+            if(fabs(z) < 0.3f)
                 z = 0.0f;
-            if(z > 10.0f)
-                z = 10.0f;
-            else if(z < -10.0f)
-                z = -10.0f;
+            if(z > 4.0f)
+                z = 4.0f;
+            else if(z < -4.0f)
+                z = -4.0f;
         }
 
         body->transform.position += glm::vec3(x, 0.0f, z);

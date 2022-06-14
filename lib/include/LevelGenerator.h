@@ -5,7 +5,7 @@
 #ifndef DEEPER_LEVELGENERATOR_H
 #define DEEPER_LEVELGENERATOR_H
 
-//TODO: instancjonowanie
+//TODO: skala
 class LevelGenerator {
 
 public:
@@ -15,7 +15,7 @@ public:
 
     void newGame(int height) {
         randomize();
-        initPos = (float)height * -1.0f - 200.0f;
+        initPos = (float)height * -1.0f - 300.0f;
 
         //gora
         caveModels[num[0]].transform.position = glm::vec3(0.0f, initPos + levelH, 0.0f);
