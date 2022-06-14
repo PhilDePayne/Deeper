@@ -15,6 +15,7 @@
 #include "SphereCollider.h"
 #include "AI.h"
 #include "PickaxeAI.h"
+#include "LampAI.h"
 
 
 class Player {
@@ -36,6 +37,7 @@ public:
     void newGame() {
 //        body->transform.position = glm::vec3(330.0f * randNum(), 100.0f, 330.0f * randNum());
         body->transform.position = glm::vec3(0.0f, 100.0f, 0.0f);
+        points = 0;
 
     }
 
@@ -150,7 +152,6 @@ public:
             if (collider.isCollision(&i, false).w == 1) {
                 
                 i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i);
-                //printf("trigger position: %f %f %f", i.getCenter().x, i.getCenter().y, i.getCenter().z);
 
             }
 
@@ -190,6 +191,10 @@ public:
         return body->transform.y_rotation_angle;
     }
 
+    int getPoints() const {
+        return points;
+    }
+
 private:
     Model* body;
 
@@ -198,6 +203,8 @@ private:
     float gravity = -30.0f;
     float x = 0.0f, z = 0.0f;
     int dirLR = 0;
+
+    int points = 0;
 
     int randNum() {
         std::random_device generator;

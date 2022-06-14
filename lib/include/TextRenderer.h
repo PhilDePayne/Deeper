@@ -2,6 +2,7 @@
 //#include FT_FREETYPE_H
 //
 //#include <map>
+#include <numeric>
 
 #ifndef DEEPER_TEXT_H
 #define DEEPER_TEXT_H
@@ -104,13 +105,13 @@ public:
 //
 //    }
 
-    void addPoints(int p){
+    void addPoints(int p) {
         points += p;
     }
 
-    void removePoints(int p){
+    void removePoints(int p) {
         points -= p;
-        if(points < 0){
+        if(points < 0) {
             points = 0;
         }
     }
@@ -123,8 +124,19 @@ public:
         TextRenderer::points = points;
     }
 
+    void checkPoints(std::vector<bool>* litLamps, int posY) {
+        int sumLit = std::accumulate(litLamps->begin(), litLamps->end(), 0);
+        int prevLit = std::accumulate(prevLamps.begin(), prevLamps.end(), 0);
+        if(sumLit > prevLit) {
+            addPoints(abs(posY)/10); //jak wieksze od 0 to jakos duzo
+            prevLamps = *litLamps;
+        }
+    }
+
 private:
     int points;
+    std::vector<bool> prevLamps = {0};
+//    std::vector<bool> prevLamps = new std::vector<bool>(5, 0);
 
 //    unsigned int tVAO, tVBO;
 //    FT_Library ft;

@@ -432,6 +432,7 @@ int main(int, char**)
         lamp->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
         lamp->addComponent<LampAI>(lamp);
         lamp->getComponent<LampAI>(ComponentType::AI)->lights = &lightPositions;
+        lamp->getComponent<LampAI>(ComponentType::AI)->lit = new std::vector<bool>(lightPositions.size(), 0);
 
         cave->addComponent(caveModel, cave);
         cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
@@ -671,14 +672,14 @@ int main(int, char**)
                 glDrawArrays(GL_TRIANGLES, 0, 36);
             }
 
-//                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f);
+                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 if (rotate == 0) {
                     player.move(window, camera.getCameraDirection(), deltaTime, depthPos); //obrot gracza
-                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 1.0f, clipWidth);
+//                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 1.0f, clipWidth);
                 }
                 else {
                     player.stop();
-                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
+//                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 }
 
             //TODO: czemu gracz sie obraca po zatrzymaniu
@@ -714,15 +715,15 @@ int main(int, char**)
             camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
             //rocks.Draw(PBRShader);
-            //lampMdl.Draw(PBRShader, camFrustum, proj, view);
+//            lampMdl.Draw(PBRShader, camFrustum, proj, view);
             //colliders.Draw(PBRShader);
             //pickaxe.Draw(PBRShader);
-            level.Draw(PBRShader);
-            lamps.Draw(PBRShader);
+//            level.Draw(PBRShader);
+//            lamps.Draw(PBRShader);
             //LRcolliders.Draw(PBRShader);
 //            FBcolliders.Draw(PBRShader);
 
-            //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+            lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
             //gen.update(camera.getCamPos().y);
             //gen.DrawLevels(PBRShader);
@@ -765,6 +766,8 @@ int main(int, char**)
             hudShader.use();
             hudShader.setMat4("proj", glm::ortho(-(display_w/2.0f), display_w/2.0f, -(display_h/2.0f), display_h/2.0f, -10.0f, 10.0f));
             compass.Draw(hudShader, camera.getAngle());
+
+            points.checkPoints(lamp->getComponent<LampAI>(ComponentType::AI)->lit, (int)player.getBody()->transform.position.y);
 
             //game over jesli gracz wyjdzie poza gorna krawedz kamery
 //            if(camera.isGameover())

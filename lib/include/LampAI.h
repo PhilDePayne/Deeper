@@ -15,4 +15,6 @@ public:
 
 	std::vector<glm::vec3>* lights;
 
+    std::vector<bool>* lit;
+
 };
