@@ -71,7 +71,7 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
     //printf("%f %f %f %f %f %f %f %f %f\n", other->getCenter().x, other->getCenter().y, other->getCenter().z,
         //other->getSizeX(), other->getSizeY(), other->getSizeZ(), other->x_rotation_angle, other->y_rotation_angle, other->z_rotation_angle);
 
-    if (distance < getRadius() && resolve) {
+    if (distance <= getRadius() && resolve) {
 
         //printf("COLLISION\n");
         //printf("%f %f %f %f %f %f %f\n", other->getCenter().x, other->getCenter().y, other->getCenter().z,
@@ -113,7 +113,7 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
 
     }
 
-    else if (distance < getRadius() && !resolve) {
+    else if (distance <= getRadius() && !resolve) {
         
         ret.w = 1;
 #ifdef COLLISION_RESOLVING_LOG

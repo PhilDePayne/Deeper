@@ -17,5 +17,6 @@ public:
 	std::vector<glm::vec3>* lights;
 
 	bool eaten = false;
+	std::vector<glm::vec3> eatenLamps;
 
 };

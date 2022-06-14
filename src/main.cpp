@@ -400,8 +400,8 @@ int main(int, char**)
     gameObjectPtr pickaxe(new GameObject());
     gameObjectPtr spawners(new GameObject());
 
-    componentPtr caveModel(new Model("./res/models/Colliders/caveTestColliders.fbx", true));
-    componentPtr lampModel(new Model("./res/models/Colliders/testLightColliders.fbx", true));
+    componentPtr caveModel(new Model("./res/models/Colliders/cave1floor.fbx", true));
+    componentPtr lampModel(new Model("./res/models/Colliders/cave1_lampColliders.fbx", true));
     componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
 
     componentPtr spawnerColliders(new Model("./res/models/Colliders/spawnerColliders.fbx", true));
@@ -412,10 +412,9 @@ int main(int, char**)
     pickaxe->addComponent<PickaxeAI>(pickaxe);
     pickaxe->addComponent<SphereCollider>(pickaxe);
     pickaxe->tag = Tag::PICKAXE;    
-
     Player player("./res/models/Box/box.fbx", pickaxe);
     player.getBody()->transform.scale = glm::vec3(2.0f);
-    player.getBody()->transform.position = glm::vec3(581.374207f, 303.709045f, -250.4f);
+    player.getBody()->transform.position = glm::vec3(577.066101f, 309.0f, -586.7f);
     player.getBody()->transform.y_rotation_angle = 90.0f;
 
     //-------- GAMEOBJECT VECTORS --------//
@@ -458,7 +457,7 @@ int main(int, char**)
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
-        LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel, glm::vec3(581.819336f, 303.709015f, -582.5f));
+        //LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel, glm::vec3(581.819336f, 303.709015f, -582.5f));
 
         spawners->addComponent(spawnerColliders, spawners);
         spawners->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
@@ -518,7 +517,7 @@ int main(int, char**)
     FBcolliders.transform.scale = glm::vec3(50.0f);
     FBcolliders.transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
 
-    Model lamps("./res/models/lampka/testLamps.fbx");
+    Model lamps("./res/models/lampka/cave1Lamps.fbx");
     lamps.transform.scale = glm::vec3(50.0f);
     lamps.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
 
@@ -591,6 +590,9 @@ int main(int, char**)
     TextRenderer points(camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
 
     state.setState(GAME_RUNNING);
+
+    printf("%f\n", player.getBody()->transform.position.y);
+    bool firstFrame = true;
 
     /// Main loop
     while (!glfwWindowShouldClose(window))
@@ -703,7 +705,7 @@ int main(int, char**)
             //-------- PHYSICS --------//
             for (int i = 0; i < 1; i++)
             {
-                //player.gravityOn(deltaTime);
+                if(!firstFrame) player.gravityOn(deltaTime);
                 //-------- COLLISIONS --------//
                 player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
                 player.checkCollision(FBcolliders.getColliders());
@@ -720,12 +722,16 @@ int main(int, char**)
                     larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
                     larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
                     larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                    pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
+                        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    }
                     
                 }
 
                 
             }
+
+            firstFrame = false;
 
             //printf("LARVAS: %d\n", larvas.size());
 
@@ -880,7 +886,7 @@ void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
 void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player) {
 
     scale = 100.0f;
-//    cameraY -= 0.2f;
+    cameraY -= 0.2f;
 
     ///DEBUG
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {

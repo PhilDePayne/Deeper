@@ -19,10 +19,11 @@ public:
 
 	std::vector<glm::vec3>* lights;
 	std::vector<gameObjectPtr>* larvas;
+	bool active = true;
 
 private:
 
-	bool active = false;
+	
 	float speed = 30.0f;
 	
 

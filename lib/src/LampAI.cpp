@@ -32,11 +32,11 @@ void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
 		lights->erase(std::remove(lights->begin(), lights->end(), collided.getCenter()), lights->end());
 		lights->push_back(glm::vec3(1000.0f)); //TODO: sprawdzic czy zawsze bedzie dzialalo
-		eaten = true;
+		//eaten = true;
 
 	}
 
-	else if (!exists && colliderTag != Tag::LARVA && !eaten) {
+	else if (!exists && colliderTag != Tag::LARVA) {
 
 		lights->erase(lights->begin());
 		lights->push_back(collided.getCenter());

@@ -25,4 +25,5 @@ public:
 private:
 
 	bool used = false;
+	std::vector<glm::vec3> usedSpawners;
 };

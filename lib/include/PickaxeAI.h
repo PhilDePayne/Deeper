@@ -24,10 +24,12 @@ public:
 	int playerFacingDir;
 	int throwFacingDir;
 
+	bool isThrown = false;
+
 private:
 	
 	double throwTime;
-	bool isThrown = false;
+	
 
 	void pickaxeThrow(int dir, int orientation);
 	

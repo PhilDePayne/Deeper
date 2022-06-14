@@ -22,7 +22,7 @@ public:
 
     Player(char *path, gameObjectPtr pickaxe) : pickaxe(pickaxe) {
         body = new Model(path);
-        collider.setRadius(20.0f);
+        collider.setRadius(25.0f);
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position = body->transform.position;
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
@@ -34,7 +34,7 @@ public:
     }
 
     void newGame(float &depthPos) {
-        body->transform.position = glm::vec3(350.0f * randNum(), 200.0f, 350.0f * randNum());
+        //body->transform.position = glm::vec3(350.0f * randNum(), 200.0f, 350.0f * randNum());
         depthPos = -body->transform.position.z;
     }
 
@@ -168,6 +168,8 @@ public:
 
             body->transform.position = glm::translate(glm::mat4(1.0f), glm::vec3(collider.isCollision(&i, true))) *
                 glm::vec4(body->transform.position,1.0f);
+
+            collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
 
         }
     }

@@ -11,6 +11,7 @@ void LarvaAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 	if (colliderTag == Tag::PICKAXE) {
 		if (larvas->size() > 0) {
 
+			printf("LARVA TRIGGER\n");
 			larvas->erase(larvas->begin());
 			parent->~GameObject();
 		}
@@ -26,7 +27,7 @@ void LarvaAI::update(GLFWwindow* window, float deltaTime) {
 		glm::vec3 deltaPos = moveTowards(currentPos, lights->at(0), speed * deltaTime);
 
 		parent->getComponent<Model>(ComponentType::MODEL)->transform.position = deltaPos;
-		parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(deltaPos);
+		parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
 	}
 
 }
