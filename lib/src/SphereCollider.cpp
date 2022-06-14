@@ -71,7 +71,7 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
     //printf("%f %f %f %f %f %f %f %f %f\n", other->getCenter().x, other->getCenter().y, other->getCenter().z,
         //other->getSizeX(), other->getSizeY(), other->getSizeZ(), other->x_rotation_angle, other->y_rotation_angle, other->z_rotation_angle);
 
-    if (distance < getRadius() && resolve) {
+    if (distance <= getRadius() && resolve) {
 
         //printf("COLLISION\n");
         //printf("%f %f %f %f %f %f %f\n", other->getCenter().x, other->getCenter().y, other->getCenter().z,
@@ -113,7 +113,7 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
 
     }
 
-    else if (distance < getRadius() && !resolve) {
+    else if (distance <= getRadius() && !resolve) {
         
         ret.w = 1;
 #ifdef COLLISION_RESOLVING_LOG
@@ -124,6 +124,43 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
     }
 
     else return ret;
+
+}
+
+void SphereCollider::separate(std::vector<BoxCollider> colliders) {
+
+    for (auto i : colliders) {
+
+        parent->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::translate(glm::mat4(1.0f), glm::vec3(isCollision(&i, true))) *
+            glm::vec4(parent->getComponent<Model>(ComponentType::MODEL)->transform.position, 1.0f);
+
+        setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
+
+    }
+
+}
+
+void SphereCollider::checkTrigger(std::vector<BoxCollider> colliders) {
+
+    for (auto i : colliders) {
+
+        if (isCollision(&i, false).w == 1) {
+
+            i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i, parent->tag);
+
+        }
+
+    }
+
+}
+
+void SphereCollider::checkTrigger(BoxCollider* collided) {
+
+    if (isCollision(collided, false).w == 1) {
+
+        collided->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*collided, parent->tag);
+
+    }
 
 }
 

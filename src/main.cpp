@@ -36,6 +36,8 @@
 #include "TextRenderer.h"
 #include "LevelGenerator.h"
 #include "PickaxeAI.h"
+#include "LarvaAI.h"
+#include "SpawnerAI.h"
 
 #include <stdio.h>
 #include <memory>
@@ -69,7 +71,7 @@ int display_w, display_h;
 
 
 bool debugBox = 0;
-bool skybox = 1;
+bool skybox = 0;
 
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                                 float zNear, float zFar)
@@ -173,8 +175,7 @@ bool restart = true;
 
 //camera var
 int rotate = 0;
-float clipZ = 720.0f;
-float clipWidth = 50.0f;
+float clipWidth = 40.0f;
 float depthPos = 0.0f;
 float rotationSpeed = 70.0f;
 
@@ -389,6 +390,9 @@ int main(int, char**)
 
     float lightStrength = 100.0f;
 
+    //-------- GAME OBJECTS --------//
+
+
     nodePtr root(new SceneGraphNode());
     nodePtr cube1(new SceneGraphNode());
     nodePtr sphere1(new SceneGraphNode());
@@ -399,12 +403,30 @@ int main(int, char**)
     gameObjectPtr cave(new GameObject());
     gameObjectPtr lamp(new GameObject());
     gameObjectPtr pickaxe(new GameObject());
+    gameObjectPtr spawners(new GameObject());
 
-    componentPtr caveModel(new Model("./res/models/Colliders/caveTestColliders.fbx", true));
-    componentPtr lampModel(new Model("./res/models/Colliders/testLightColliders.fbx", true));
-    componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof.fbx"));
+    componentPtr caveModel(new Model("./res/models/Colliders/cave1floor.fbx", true));
+    componentPtr lampModel(new Model("./res/models/Colliders/cave1_lampColliders.fbx", true));
+    componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
 
-    //OBJECT PARAMETERS
+    componentPtr spawnerColliders(new Model("./res/models/Colliders/spawnerColliders.fbx", true));
+    componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
+
+    //TODO: zmienic przypisanie kilofa do gracza
+    pickaxe->addComponent(pickaxeModel, pickaxe);
+    pickaxe->addComponent<PickaxeAI>(pickaxe);
+    pickaxe->addComponent<SphereCollider>(pickaxe);
+    pickaxe->tag = Tag::PICKAXE;
+    Player player("./res/models/Box/box.fbx", pickaxe);
+    player.getBody()->transform.scale = glm::vec3(2.0f);
+    player.getBody()->transform.position = glm::vec3(577.066101f, 309.0f, -586.7f);
+    player.getBody()->transform.y_rotation_angle = 90.0f;
+
+    //-------- GAMEOBJECT VECTORS --------//
+
+    std::vector<gameObjectPtr> larvas;
+
+    //-------- OBJECT PARAMETERS --------//
     {
         cube1->addGameObject(cube);
         sphere1->addGameObject(sphere);
@@ -436,10 +458,20 @@ int main(int, char**)
 
         cave->addComponent(caveModel, cave);
         cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
-        cave->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
+        cave->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
 
-        pickaxe->addComponent(pickaxeModel, pickaxe);
-        pickaxe->addComponent<PickaxeAI>(pickaxe);
+        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
+        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
+
+        //LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel, glm::vec3(581.819336f, 303.709015f, -582.5f));
+
+        spawners->addComponent(spawnerColliders, spawners);
+        spawners->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
+        spawners->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
+        spawners->addComponent<SpawnerAI>(spawners);
+        spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvaModel = larvaModel;
+        spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvas = &larvas;
+        spawners->getComponent<SpawnerAI>(ComponentType::AI)->lights = &lightPositions;
     }
 
     basicShader.use();
@@ -483,6 +515,7 @@ int main(int, char**)
     level.transform.scale = glm::vec3(50.0f);
     level.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
 
+
     Model LRcolliders("./res/models/Colliders/LRWalls.fbx", true);
     LRcolliders.transform.scale = glm::vec3(50.0f);
     LRcolliders.transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
@@ -491,7 +524,7 @@ int main(int, char**)
     FBcolliders.transform.scale = glm::vec3(50.0f);
     FBcolliders.transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
 
-    Model lamps("./res/models/lampka/testLamps.fbx");
+    Model lamps("./res/models/lampka/cave1Lamps.fbx");
     lamps.transform.scale = glm::vec3(50.0f);
     lamps.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
 
@@ -507,11 +540,6 @@ int main(int, char**)
     //LevelGenerator gen(cave1, cave2, cave1);
     //gen.newGame(SCR_HEIGHT);
 
-        ///PLAYER
-    Player player("./res/models/Box/box.fbx", pickaxe);
-    player.getBody()->transform.scale = glm::vec3(2.0f);
-    player.getBody()->transform.position = glm::vec3(-318.877960f, 100.421379f, -54.0f);
-//    player.getBody()->transform.y_rotation_angle = 90.0f;
 
     Frustum camFrustum = createFrustumFromCamera(camera,
         (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
@@ -531,13 +559,15 @@ int main(int, char**)
     //    Animation animation("./res/models/debug/simpleAnimAF.fbx", &simpleModel);
     //    Animator animator(&animation);
 
+    unsigned int cubemapTexture;
+    if (skybox) {
+        cubemapTexture = loadCubemap(faces);
+        reflShader.use();
+        reflShader.setInt("skybox", 0);
 
-    unsigned int cubemapTexture = loadCubemap(faces);
-    reflShader.use();
-    reflShader.setInt("skybox", 0);
-
-    skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
+        skyboxShader.use();
+        skyboxShader.setInt("skybox", 0);
+    }
 
     //DEBUG
     unsigned int cubeVAO, cubeVBO;
@@ -571,6 +601,8 @@ int main(int, char**)
 
     state.setState(GAME_RUNNING);
 
+    printf("%f\n", player.getBody()->transform.position.y);
+    bool firstFrame = true;
 
     /// Main loop
     while (!glfwWindowShouldClose(window))
@@ -617,7 +649,7 @@ int main(int, char**)
             //              animator.UpdateAnimation(deltaTime);
 
 
-             //ImGui
+            //-------- ImGui --------//
             {
                 ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
                 ImGui::Text("points: %i", points.getPoints());
@@ -646,10 +678,9 @@ int main(int, char**)
 
             //useDebugCamera(proj, view, window, scale);
             useOrthoCamera(proj, view, window, cameraY, scale, player);
-            //TODO: renderManager/meshComponent
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->update(window);
+            pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->update(window, deltaTime);
 
             lightPositions[0] = player.getBody()->transform.position;
 
@@ -672,6 +703,8 @@ int main(int, char**)
                 glDrawArrays(GL_TRIANGLES, 0, 36);
             }
 
+            //-------- PHYSICS --------//
+
                 camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 if (rotate == 0) {
                     player.move(window, camera.getCameraDirection(), deltaTime, depthPos); //obrot gracza
@@ -687,13 +720,35 @@ int main(int, char**)
 
             for (int i = 0; i < 1; i++)
             {
-                //player.gravityOn(deltaTime);
+                if(!firstFrame) player.gravityOn(deltaTime);
+                //-------- COLLISIONS --------//
                 player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
                 player.checkCollision(FBcolliders.getColliders());
-                //player.checkCollision(LRcolliders.getColliders());
+                player.checkCollision(LRcolliders.getColliders());
+
+                //-------- TRIGGERS --------//
                 //player.detectCollision(lightColliders.getColliders());
                 player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
+
+                for (auto larva : larvas) {
+
+                    player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                    if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
+                        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    }
+
+                }
+
+
             }
+
+            firstFrame = false;
+
+            //printf("LARVAS: %d\n", larvas.size());
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -714,24 +769,28 @@ int main(int, char**)
 
             camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
-            //rocks.Draw(PBRShader);
-//            lampMdl.Draw(PBRShader, camFrustum, proj, view);
-            //colliders.Draw(PBRShader);
-            //pickaxe.Draw(PBRShader);
-//            level.Draw(PBRShader);
-//            lamps.Draw(PBRShader);
-            //LRcolliders.Draw(PBRShader);
-//            FBcolliders.Draw(PBRShader);
+            //-------- DRAW --------//
+            {
+                level.Draw(PBRShader);
+                lamps.Draw(PBRShader);
+                //LRcolliders.Draw(PBRShader);
+                //FBcolliders.Draw(PBRShader);
+                //cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
-            lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                //gen.update(camera.getCamPos().y);
+                //gen.DrawLevels(PBRShader);
 
-            //gen.update(camera.getCamPos().y);
-            //gen.DrawLevels(PBRShader);
+                for (auto larva : larvas) {
 
-            //cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                    larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+
+                }
 
 
-            player.render(PBRShader);
+                player.render(PBRShader);
+            }
 
             // Animation model
 //            skeletonShader.use();

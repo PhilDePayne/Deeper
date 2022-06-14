@@ -15,7 +15,6 @@
 #include "SphereCollider.h"
 #include "AI.h"
 #include "PickaxeAI.h"
-#include "LampAI.h"
 
 
 class Player {
@@ -23,7 +22,7 @@ public:
 
     Player(char *path, gameObjectPtr pickaxe) : pickaxe(pickaxe) {
         body = new Model(path);
-        collider.setRadius(20.0f);
+        collider.setRadius(25.0f);
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position = body->transform.position;
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
@@ -142,6 +141,8 @@ public:
             body->transform.position = glm::translate(glm::mat4(1.0f), glm::vec3(collider.isCollision(&i, true))) *
                 glm::vec4(body->transform.position,1.0f);
 
+            collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
+
         }
     }
 
@@ -151,13 +152,21 @@ public:
 
             if (collider.isCollision(&i, false).w == 1) {
                 
-                i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i);
+                i.parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(i, Tag::PLAYER);
 
             }
 
         }
 
     }
+
+    void detectCollision(BoxCollider* other) {
+
+            if (collider.isCollision(other, false).w == 1) {
+
+                other->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*other, Tag::PLAYER);
+
+            }
 
     void rotate(float angle) {
         body->transform.y_rotation_angle = angle;
@@ -191,20 +200,14 @@ public:
         return body->transform.y_rotation_angle;
     }
 
-    int getPoints() const {
-        return points;
-    }
-
 private:
     Model* body;
 
     float speed = 200.0f;
     int front_or_left = 1;
-    float gravity = -30.0f;
+    float gravity = -100.0f;
     float x = 0.0f, z = 0.0f;
     int dirLR = 0;
-
-    int points = 0;
 
     int randNum() {
         std::random_device generator;

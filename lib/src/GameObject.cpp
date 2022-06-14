@@ -14,6 +14,12 @@ GameObject::~GameObject()
 #ifdef DESTRUCTOR_LOG
     printf("Deleting: GameObject\n");
 #endif
+
+	for (int i = 0; i < components.size(); i++) {
+
+		components.erase(components.begin());
+
+	}
 }
 
 void GameObject::test()

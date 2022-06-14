@@ -1,8 +1,13 @@
 #pragma once
 
 #include "Component.h"
+#include "GameObject.h"
+#include "Model.h"
+#include "AI.h"
 
 #include <glm/glm.hpp>
+
+#include <vector>
 
 class BoxCollider;
 
@@ -23,7 +28,9 @@ public:
 
 	glm::vec4 isCollision(BoxCollider* other, bool resolve);
 
-	glm::vec3 separate(BoxCollider* other, glm::vec3 tmpCenter, glm::vec3 maxDist);
+	void separate(std::vector<BoxCollider> colliders);
+	void checkTrigger(std::vector<BoxCollider> colliders);
+	void checkTrigger(BoxCollider* other);
 
 	bool isType(ComponentType t) override;
 	void test() override;

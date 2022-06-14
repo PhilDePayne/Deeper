@@ -1,7 +1,6 @@
 #include "LampAI.h"
 #include "LogMacros.h"
 
-
 #ifdef DEEPER_LAMPAI_CLASS_LOGS
 
 #define ON_COLLISION_ENTER_LOG
@@ -9,17 +8,16 @@
 #endif
 
 
-void LampAI::onCollisionEnter() {
+void LampAI::onCollisionEnter(BoxCollider collided) {
 #ifdef ON_COLLISION_ENTER_LOG
 	printf("ENTERED COLLISION\n");
 #endif
 }
 
-void LampAI::onTriggerEnter(BoxCollider collided) {
+void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
-	//printf("TRIGGERED COLLISION\n");
 	bool exists = false;
-	int l = 0;
+    int l = 0;
 
 	for (auto i : *lights) {
 
@@ -34,8 +32,15 @@ void LampAI::onTriggerEnter(BoxCollider collided) {
 
 	}
 
+	if (colliderTag == Tag::LARVA && exists) {
 
-	if (!exists) {
+		lights->erase(std::remove(lights->begin(), lights->end(), collided.getCenter()), lights->end());
+		lights->push_back(glm::vec3(1000.0f)); //TODO: sprawdzic czy zawsze bedzie dzialalo
+		//eaten = true;
+
+	}
+
+	else if (!exists && colliderTag != Tag::LARVA) {
 
 		lights->erase(lights->begin());
 		lights->push_back(collided.getCenter());
@@ -48,5 +53,9 @@ void LampAI::onTriggerEnter(BoxCollider collided) {
 		lit->push_back(true);
 
 	}
+
+}
+
+void LampAI::update(GLFWwindow* window, float deltaTime) {
 
 }
