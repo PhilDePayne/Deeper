@@ -330,6 +330,7 @@ int main(int, char**)
     // Initializing SoundSystem and loading sounds
 
     SoundSystem soundSystem;
+    Sound ambient("./res/sounds/ambient.wav");
     Sound lampSound("./res/sounds/lampTurnOn.wav");
     Sound pickaxeThrowSound("./res/sounds/pickaxeThrow.wav");
 
@@ -625,7 +626,7 @@ int main(int, char**)
 
         switch (state.getCurState()) {
         case GAME_RUNNING: {
-
+            ambient.continuePlaying();
             //TODO: reset kamery
             if (restart) {
                 //                    gen.newGame(SCR_HEIGHT);
@@ -835,7 +836,8 @@ int main(int, char**)
         }
         case PAUSE: {
             //w tle bedzie skybox
-
+            ambient.pause();
+            
             hudShader.use();
             hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
 

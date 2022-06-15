@@ -59,6 +59,11 @@ void Sound::pause()
     channel->setPaused(true);
 }
 
+void Sound::continuePlaying()
+{
+    channel->setPaused(false);
+}
+
 void Sound::stop()
 {
     channel->stop();

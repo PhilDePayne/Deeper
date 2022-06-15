@@ -19,6 +19,7 @@ private:
     FMOD::Sound *sound = nullptr;
     FMOD::Channel *channel = nullptr;
     float volume = SOUND_VOLUME_FULL;
+    bool wasPaused = false;
 
     void setupChannel();
 
@@ -30,6 +31,7 @@ public:
 
     void play();
     void pause();
+    void continuePlaying();
     void stop();
     void setVolume(float level);
     float getVolume();
