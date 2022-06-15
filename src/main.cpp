@@ -38,6 +38,8 @@
 #include "PickaxeAI.h"
 #include "LarvaAI.h"
 #include "SpawnerAI.h"
+#include "SoundSystem.h"
+#include "Sound.h"
 
 #include <stdio.h>
 #include <memory>
@@ -325,22 +327,10 @@ int main(int, char**)
         return 1;
     }
 
-    FMOD_RESULT result; //TODO: SoundManager
-    FMOD::System* ssystem = NULL;
+    // Initializing SoundSystem and loading sounds
 
-    result = FMOD::System_Create(&ssystem);      // Create the main system object.
-    if (result != FMOD_OK)
-    {
-        printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
-        return(-1);
-    }
-
-    result = ssystem->init(512, FMOD_INIT_NORMAL, 0);    // Initialize FMOD.
-    if (result != FMOD_OK)
-    {
-        printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
-        return(-1);
-    }
+    SoundSystem soundSystem;
+    Sound lampSound("./res/sounds/lamp2.mp3");
 
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
@@ -454,6 +444,7 @@ int main(int, char**)
         lamp->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
         lamp->addComponent<LampAI>(lamp);
         lamp->getComponent<LampAI>(ComponentType::AI)->lights = &lightPositions;
+        lamp->getComponent<LampAI>(ComponentType::AI)->setTurnOnSound(&lampSound);
 
         cave->addComponent(caveModel, cave);
         cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);

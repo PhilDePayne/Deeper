@@ -5,9 +5,11 @@
 #include "Sound.h"
 #include "LogMacros.h"
 
+#include <stdio.h>
+
 #ifdef DEEPER_SOUND_CLASS_LOGS
 
-
+#define CONSTRUCTOR_LOG
 
 #endif
 
@@ -21,9 +23,12 @@ void Sound::setSystem(FMOD::System *newSystem)
 Sound::Sound(const char *path)
 {
     FMOD_RESULT result;
-    result = system->createSound("./res/sounds/sound.mp3", FMOD_DEFAULT, nullptr, &sound);
+    result = system->createSound(path, FMOD_DEFAULT, nullptr, &sound);
     if (result != FMOD_OK)
     {
+#ifdef CONSTRUCTOR_LOG
+        printf("SoundClass::FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
+#endif
         //TODO: Jakieś info albo wyjatek, że chuj z tego
     }
     setupChannel();
@@ -36,6 +41,16 @@ Sound::~Sound()
 
 void Sound::play()
 {
+    bool isPlaying;
+    channel->isPlaying(&isPlaying);
+    if (isPlaying)
+    {
+        stop();
+    }
+    else
+    {
+        setupChannel();
+    }
     channel->setPaused(false);
 }
 
@@ -52,17 +67,17 @@ void Sound::stop()
 
 void Sound::setVolume(float level)
 {
+    volume = level;
     channel->setVolume(level);
 }
 
 float Sound::getVolume()
 {
-    float volume;
-    channel->getVolume(&volume);
     return volume;
 }
 
 void Sound::setupChannel()
 {
     system->playSound(sound, nullptr, true, &channel);
+    channel->setVolume(volume);
 }

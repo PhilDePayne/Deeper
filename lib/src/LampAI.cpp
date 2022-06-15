@@ -1,9 +1,11 @@
 #include "LampAI.h"
+#include "Sound.h"
 #include "LogMacros.h"
 
 #ifdef DEEPER_LAMPAI_CLASS_LOGS
 
 #define ON_COLLISION_ENTER_LOG
+#define SOUND_LOG
 
 #endif
 
@@ -40,11 +42,28 @@ void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
 		lights->erase(lights->begin());
 		lights->push_back(collided.getCenter());
-
+        if (turnOnSound != nullptr)
+        {
+#ifdef SOUND_LOG
+            printf("TurnLamp sound played!");
+#endif
+            turnOnSound->play();
+        }
+#ifdef SOUND_LOG
+        else
+        {
+            printf("TurnLamp sound NOT played!");
+        }
+#endif
 	}
 
 }
 
 void LampAI::update(GLFWwindow* window, float deltaTime) {
 
+}
+
+void LampAI::setTurnOnSound(Sound *newTurnOnSound)
+{
+    turnOnSound = newTurnOnSound;
 }

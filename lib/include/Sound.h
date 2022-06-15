@@ -18,6 +18,7 @@ private:
     static FMOD::System *system;
     FMOD::Sound *sound = nullptr;
     FMOD::Channel *channel = nullptr;
+    float volume = SOUND_VOLUME_FULL;
 
     void setupChannel();
 
