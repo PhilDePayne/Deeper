@@ -64,14 +64,11 @@
 const unsigned int SCR_WIDTH = 1920;
 const unsigned int SCR_HEIGHT = 1080;
 
-//const unsigned int SCR_WIDTH = 1280;
-//const unsigned int SCR_HEIGHT = 720;
-
 int display_w, display_h;
 
 
 bool debugBox = 0;
-bool skybox = 0;
+bool skybox = 1;
 
 Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
                                 float zNear, float zFar)
@@ -175,7 +172,7 @@ bool restart = true;
 
 //camera var
 int rotate = 0;
-float clipWidth = 40.0f;
+float clipWidth = 100.0f;
 float depthPos = 0.0f;
 float rotationSpeed = 70.0f;
 
@@ -419,7 +416,8 @@ int main(int, char**)
     pickaxe->tag = Tag::PICKAXE;
     Player player("./res/models/Box/box.fbx", pickaxe);
     player.getBody()->transform.scale = glm::vec3(2.0f);
-    player.getBody()->transform.position = glm::vec3(577.066101f, 309.0f, -586.7f);
+//    player.getBody()->transform.position = glm::vec3(577.066101f, 309.0f, -586.7f);
+    player.getBody()->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
     player.getBody()->transform.y_rotation_angle = 90.0f;
 
     //-------- GAMEOBJECT VECTORS --------//
@@ -510,11 +508,9 @@ int main(int, char**)
     skeletonShader.setInt("aoMap", 4);
     skeletonShader.setInt("emissiveMap", 5);
 
-    //level
     Model level("./res/models/cave1/cave1_nr_mdl.fbx");
     level.transform.scale = glm::vec3(50.0f);
     level.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
-
 
     Model LRcolliders("./res/models/Colliders/LRWalls.fbx", true);
     LRcolliders.transform.scale = glm::vec3(50.0f);
@@ -528,17 +524,14 @@ int main(int, char**)
     lamps.transform.scale = glm::vec3(50.0f);
     lamps.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
 
-    //TODO: cave3
+
     ///LEVEL GENERATION
+//    gameObjectPtr caveGO[3] = {cave, cave, cave};
+//    gameObjectPtr spawnerGO[3] = {spawners, spawners, spawners};
+    std::vector<Model> caveModels = {level, level, level};
 
-    Model cave1("./res/models/cave1/cave1_mdl.fbx");
-    cave1.transform.scale = glm::vec3(11.0f);
-
-    //Model cave2("./res/models/cave2/cave2_mdl.fbx");
-    //cave2.transform.scale = glm::vec3(11.0f);
-
-    //LevelGenerator gen(cave1, cave2, cave1);
-    //gen.newGame(SCR_HEIGHT);
+    LevelGenerator gen(caveModels);
+    gen.newGame(SCR_HEIGHT);
 
 
     Frustum camFrustum = createFrustumFromCamera(camera,
@@ -604,6 +597,7 @@ int main(int, char**)
     printf("%f\n", player.getBody()->transform.position.y);
     bool firstFrame = true;
 
+
     /// Main loop
     while (!glfwWindowShouldClose(window))
     {
@@ -642,6 +636,7 @@ int main(int, char**)
                 depthPos = 0.0f;
                 camera.newGame();
                 restart = false;
+                points.newGame();
             }
 
 
@@ -649,9 +644,10 @@ int main(int, char**)
             //              animator.UpdateAnimation(deltaTime);
 
 
+
             //-------- ImGui --------//
             {
-                ImGui::Begin("Debug");                          // Create a window called "Hello, world!" and append into it.
+                ImGui::Begin("Debug");
                 ImGui::Text("points: %i", points.getPoints());
                 ImGui::NewLine();
 
@@ -660,6 +656,8 @@ int main(int, char**)
 
                 ImGui::Text("player's position x: %f  | y: %f | z: %f", player.getBody()->transform.position.x,
                                 player.getBody()->transform.position.y, player.getBody()->transform.position.z);
+                ImGui::Text("pickaxe's position x: %f  | y: %f | z: %f", pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.x,
+                            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.y, pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.z);
                 ImGui::Text("depthPos: %f   clipWidth: %f", depthPos, clipWidth);
                 ImGui::Text("x velocity: %f | z velocity: %f", player.getVelX(), player.getVelZ());
                 ImGui::Text("player's angle: %f | camera's angle: %f", player.getAngle(), camera.getAngle());
@@ -669,15 +667,22 @@ int main(int, char**)
                                 camera.getCamPos().y, camera.getCamPos().z);
                 ImGui::NewLine();
                 ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
-
                 ImGui::NewLine();
 
                 ImGui::End();
                 }
 
 
+
             //useDebugCamera(proj, view, window, scale);
             useOrthoCamera(proj, view, window, cameraY, scale, player);
+
+            //liczenie punktow
+            points.checkPoints(lamp->getComponent<LampAI>(ComponentType::AI)->lit, (int)player.getBody()->transform.position.y);
+
+            //game over jesli gracz wyjdzie poza gorna krawedz kamery
+//            if(camera.isGameover())
+//                state.setState(GAME_OVER);
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->update(window, deltaTime);
@@ -707,20 +712,20 @@ int main(int, char**)
 
                 camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 if (rotate == 0) {
-                    player.move(window, camera.getCameraDirection(), deltaTime, depthPos); //obrot gracza
-//                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 1.0f, clipWidth);
+                    player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+//                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 0.0f, clipWidth);
                 }
                 else {
-                    player.stop();
+                    player.stop(); //gracz zatrzymywany przy obrocie kamery
 //                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 }
 
-            //TODO: czemu gracz sie obraca po zatrzymaniu
+            //gracz obrocony jedna strona do kamery
             player.rotate(-camera.getAngle());
 
             for (int i = 0; i < 1; i++)
             {
-                if(!firstFrame) player.gravityOn(deltaTime);
+                if(!firstFrame) //player.gravityOn(deltaTime);
                 //-------- COLLISIONS --------//
                 player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
                 player.checkCollision(FBcolliders.getColliders());
@@ -769,9 +774,11 @@ int main(int, char**)
 
             camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
+
+
             //-------- DRAW --------//
             {
-                level.Draw(PBRShader);
+//                level.Draw(PBRShader);
                 lamps.Draw(PBRShader);
                 //LRcolliders.Draw(PBRShader);
                 //FBcolliders.Draw(PBRShader);
@@ -779,8 +786,8 @@ int main(int, char**)
                 //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
                 spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
-                //gen.update(camera.getCamPos().y);
-                //gen.DrawLevels(PBRShader);
+                gen.update(camera.getCamPos().y);
+                gen.DrawLevels(PBRShader);
 
                 for (auto larva : larvas) {
 
@@ -788,9 +795,10 @@ int main(int, char**)
 
                 }
 
-
                 player.render(PBRShader);
             }
+
+
 
             // Animation model
 //            skeletonShader.use();
@@ -822,15 +830,10 @@ int main(int, char**)
                 glDepthFunc(GL_LESS); // set depth function back to default
             }
 
+            //kompas (dziala tylko jak przed jest renderowany skybox XD)
             hudShader.use();
             hudShader.setMat4("proj", glm::ortho(-(display_w/2.0f), display_w/2.0f, -(display_h/2.0f), display_h/2.0f, -10.0f, 10.0f));
             compass.Draw(hudShader, camera.getAngle());
-
-            points.checkPoints(lamp->getComponent<LampAI>(ComponentType::AI)->lit, (int)player.getBody()->transform.position.y);
-
-            //game over jesli gracz wyjdzie poza gorna krawedz kamery
-//            if(camera.isGameover())
-//                state.setState(GAME_OVER);
 
             break;
         }
@@ -845,17 +848,19 @@ int main(int, char**)
             break;
         }
         case PAUSE: {
-            glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-            skyboxShader.use();
-            skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
-            skyboxShader.setMat4("projection", proj);
-            // skybox cube
-            glBindVertexArray(skyboxVAO);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glBindVertexArray(0);
-            glDepthFunc(GL_LESS); // set depth function back to default
+            if(skybox) {
+                glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+                skyboxShader.use();
+                skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
+                skyboxShader.setMat4("projection", proj);
+                // skybox cube
+                glBindVertexArray(skyboxVAO);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glBindVertexArray(0);
+                glDepthFunc(GL_LESS); // set depth function back to default
+            }
 
             hudShader.use();
             hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));

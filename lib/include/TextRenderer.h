@@ -133,10 +133,14 @@ public:
         }
     }
 
+    void newGame() {
+        points = 0;
+        prevLamps = {0};
+    }
+
 private:
     int points;
     std::vector<bool> prevLamps = {0};
-//    std::vector<bool> prevLamps = new std::vector<bool>(5, 0);
 
 //    unsigned int tVAO, tVBO;
 //    FT_Library ft;

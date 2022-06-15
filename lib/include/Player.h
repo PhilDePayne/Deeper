@@ -24,6 +24,7 @@ public:
         body = new Model(path);
         collider.setRadius(25.0f);
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position = body->transform.position;
+//        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.y += 100.0f;
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
     }
@@ -34,9 +35,8 @@ public:
     }
 
     void newGame() {
-//        body->transform.position = glm::vec3(330.0f * randNum(), 100.0f, 330.0f * randNum());
-        body->transform.position = glm::vec3(0.0f, 100.0f, 0.0f);
-        points = 0;
+        body->transform.position = glm::vec3(600.0f * randNum(), 0.0f, 600.0f * randNum());
+//        body->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
 
     }
 
@@ -118,7 +118,7 @@ public:
 //        correctAngle((int)dir);
 
         collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
-        //pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position = body->transform.position;
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.y = body->transform.position.y + 30.0f;
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerDir = dirLR;
         int facingDir = 0;
@@ -162,14 +162,17 @@ public:
 
     void detectCollision(BoxCollider* other) {
 
-            if (collider.isCollision(other, false).w == 1) {
+        if (collider.isCollision(other, false).w == 1) {
 
-                other->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*other, Tag::PLAYER);
+            other->parent->getComponent<AI>(ComponentType::AI)->onTriggerEnter(*other, Tag::PLAYER);
 
-            }
+        }
+    }
 
     void rotate(float angle) {
-        body->transform.y_rotation_angle = angle;
+        body->transform.y_rotation_angle = angle + 90.0f;
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = angle;
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.y = body->transform.position.y + 30.0f;
     }
 
     Model *getBody() const {
