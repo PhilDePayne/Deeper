@@ -1,4 +1,5 @@
 #include "PickaxeAI.h"
+#include "Sound.h"
 
 void PickaxeAI::onCollisionEnter(BoxCollider collided) {
 
@@ -21,7 +22,10 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 		isThrown = true;
 		throwDir = playerDir;
 		throwFacingDir = playerFacingDir;
-
+        if (throwSound != nullptr)
+        {
+            throwSound->play();
+        }
 	}
 
 	else if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS && isThrown) isThrown = false;
@@ -46,4 +50,9 @@ void PickaxeAI::pickaxeThrow(int dir, int orientation) {
 
 	parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
+}
+
+void PickaxeAI::setThrowSound(Sound *newThrowSound)
+{
+    throwSound = newThrowSound;
 }

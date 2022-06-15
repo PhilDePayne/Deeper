@@ -330,7 +330,8 @@ int main(int, char**)
     // Initializing SoundSystem and loading sounds
 
     SoundSystem soundSystem;
-    Sound lampSound("./res/sounds/lamp2.mp3");
+    Sound lampSound("./res/sounds/lampTurnOn.wav");
+    Sound pickaxeThrowSound("./res/sounds/pickaxeThrow.wav");
 
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
@@ -452,7 +453,7 @@ int main(int, char**)
 
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
-
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->setThrowSound(&pickaxeThrowSound);
         //LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel, glm::vec3(581.819336f, 303.709015f, -582.5f));
 
         spawners->addComponent(spawnerColliders, spawners);

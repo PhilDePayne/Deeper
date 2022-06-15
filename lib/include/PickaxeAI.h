@@ -4,7 +4,7 @@
 #include "Model.h"
 #include "typedefs.h"
 
-
+class Sound;
 
 class PickaxeAI : public AI {
 
@@ -17,7 +17,8 @@ public:
 	void onTriggerEnter(BoxCollider collided, Tag colliderTag) override;
 	void update(GLFWwindow* window, float deltaTime) override; //TODO: override
 	void onKeyPressed(int key, int action); //TODO: override
-	
+	void setThrowSound(Sound *newThrowSound);
+
 	glm::vec3 playerPos;
 	int playerDir;
 	int throwDir;
@@ -29,7 +30,7 @@ public:
 private:
 	
 	double throwTime;
-	
+	Sound *throwSound = nullptr;
 
 	void pickaxeThrow(int dir, int orientation);
 	
