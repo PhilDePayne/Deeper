@@ -99,7 +99,7 @@ int main(int, char**)
 #endif
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Deeper", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1920, 1080, "Deeper", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
@@ -461,13 +461,13 @@ int main(int, char**)
                 yPos += separate.y;
                 zPos += separate.z;
 
-                cubeCollider = leftCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
-                cubeCollider->z_rotation_angle = 0.0f;
-                separate = sphereCollider->isCollision(cubeCollider, true);
+                //cubeCollider = leftCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
+                //cubeCollider->z_rotation_angle = 0.0f;
+                //separate = sphereCollider->isCollision(cubeCollider, true);
 
-                xPos += separate.x;
-                yPos += separate.y;
-                zPos += separate.z;
+                //xPos += separate.x;
+                //yPos += separate.y;
+                //zPos += separate.z;
             }
 
             cubeCollider = rightCube->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER);
@@ -514,7 +514,7 @@ int main(int, char**)
         basicShader.setMat4("view", view);
 
         //cube1parent->render(basicShader);
-        cube4->render(basicShader);
+        //cube4->render(basicShader);
         cube1->render(basicShader);
         cube2->render(basicShader);
         cube3->render(basicShader);
