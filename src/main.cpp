@@ -429,8 +429,8 @@ int main(int, char**)
         //DEBUG
         if (move) {
             root->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(testScale, testScale, testScale);
-            sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
-            sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
+            //sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
+            //sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
             root->updateTransform();
             root->update(nullptr, false);
             //cube2->updateTransform();
@@ -481,7 +481,12 @@ int main(int, char**)
             move = true;
                
         }
+
+        sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::vec3(xPos, yPos, zPos);
+        sphere1->getGameObject()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position);
         
+        printf("%f %f %f\n", sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position.x, sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position.y, sphere1->getGameObject()->getComponent<Transform>(ComponentType::TRANSFORM)->position.z);
+
         int display_w, display_h;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glfwMakeContextCurrent(window);
