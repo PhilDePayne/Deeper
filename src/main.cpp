@@ -760,7 +760,7 @@ int main(int, char**)
                 lamps.Draw(PBRShader);
                 //LRcolliders.Draw(PBRShader);
                 //FBcolliders.Draw(PBRShader);
-                //cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
                 //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
                 spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
