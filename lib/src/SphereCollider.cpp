@@ -109,6 +109,14 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
 
         ret.w = 1;
 
+        tmpMat = (glm::rotate(glm::mat4(1.0f), glm::radians(-other->x_rotation_angle), glm::vec3(-1, 0, 0)) *
+            glm::rotate(glm::mat4(1.0f), glm::radians(other->y_rotation_angle), glm::vec3(0, -1, 0)) *
+            glm::rotate(glm::mat4(1.0f), glm::radians(other->z_rotation_angle), glm::vec3(0, 0, -1)));
+
+        ret = tmpMat * ret;
+
+        ret.w = 1;
+
         return ret;
 
     }
@@ -117,7 +125,7 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
         
         ret.w = 1;
 #ifdef COLLISION_RESOLVING_LOG
-        printf("NOT RESOLVING\n");
+        //printf("NOT RESOLVING\n");
 #endif
         return ret;
 

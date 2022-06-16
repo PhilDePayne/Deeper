@@ -723,8 +723,8 @@ int main(int, char**)
                 if(!firstFrame) player.gravityOn(deltaTime);
                 //-------- COLLISIONS --------//
                 player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                player.checkCollision(FBcolliders.getColliders());
-                player.checkCollision(LRcolliders.getColliders());
+                //player.checkCollision(FBcolliders.getColliders());
+                //player.checkCollision(LRcolliders.getColliders());
                  
                 //-------- TRIGGERS --------//
                 //player.detectCollision(lightColliders.getColliders());
@@ -775,7 +775,7 @@ int main(int, char**)
                 lamps.Draw(PBRShader);
                 //LRcolliders.Draw(PBRShader);
                 //FBcolliders.Draw(PBRShader);
-                //cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
                 //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
                 spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
@@ -902,7 +902,7 @@ void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
 void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player) {
 
     scale = 100.0f;
-    cameraY -= 0.2f;
+    //cameraY -= 0.2f;
 
     ///DEBUG
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
