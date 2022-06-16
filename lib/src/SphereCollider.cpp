@@ -125,7 +125,7 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
         
         ret.w = 1;
 #ifdef COLLISION_RESOLVING_LOG
-        printf("NOT RESOLVING\n");
+        //printf("NOT RESOLVING\n");
 #endif
         return ret;
 
