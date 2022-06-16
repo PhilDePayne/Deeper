@@ -508,6 +508,8 @@ int main(int, char**)
     skeletonShader.setInt("aoMap", 4);
     skeletonShader.setInt("emissiveMap", 5);
 
+    //-------- LEVEL RESOURCES --------//
+
     Model level("./res/models/cave1/cave1_nr_mdl.fbx");
     level.transform.scale = glm::vec3(50.0f);
     level.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
@@ -520,18 +522,22 @@ int main(int, char**)
     FBcolliders.transform.scale = glm::vec3(50.0f);
     FBcolliders.transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
 
+    Model floor1("./res/models/Colliders/cave1floor.fbx", true);
+    floor1.transform.scale = glm::vec3(50.0f);
+    floor1.transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
+
     Model lamps("./res/models/lampka/cave1Lamps.fbx");
     lamps.transform.scale = glm::vec3(50.0f);
     lamps.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
 
 
-    ///LEVEL GENERATION
-//    gameObjectPtr caveGO[3] = {cave, cave, cave};
-//    gameObjectPtr spawnerGO[3] = {spawners, spawners, spawners};
+    //-------- LEVEL GENERATOR SET UP --------//
     std::vector<Model> caveModels = {level, level, level};
+    std::vector<std::vector<Model>> walls = {{LRcolliders, FBcolliders}, {LRcolliders, FBcolliders}, {LRcolliders, FBcolliders}};
+    std::vector<Model> floors = {floor1, floor1, floor1};
 
-    LevelGenerator gen(caveModels);
-    gen.newGame(SCR_HEIGHT);
+    LevelGenerator gen(caveModels, walls, floors);
+//    gen.newGame(SCR_HEIGHT);
 
 
     Frustum camFrustum = createFrustumFromCamera(camera,
@@ -583,7 +589,7 @@ int main(int, char**)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-    ///HUD RESOURCES
+    //-------- HUD RESOURCES --------//
     int old_w, old_h;
     Shader hudShader("./res/shaders/basicTexture.vert", "./res/shaders/basicTexture.frag");
     hudShader.use();
@@ -598,7 +604,7 @@ int main(int, char**)
     bool firstFrame = true;
 
 
-    /// Main loop
+    //-------- MAIN LOOP --------//
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
@@ -630,7 +636,7 @@ int main(int, char**)
         case GAME_RUNNING: {
 
             if (restart) {
-                //gen.newGame(SCR_HEIGHT);
+                gen.newGame(SCR_HEIGHT);
                 player.newGame();
                 cameraY = 0.0f;
                 depthPos = 0.0f;
@@ -668,6 +674,10 @@ int main(int, char**)
                 ImGui::NewLine();
                 ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
                 ImGui::NewLine();
+                ImGui::Text("which cave %i", gen.whereAmI(player.getBody()->transform.position.y));
+                if(ImGui::Button("New game")) {
+                    restart = true;
+                }
 
                 ImGui::End();
                 }
@@ -710,14 +720,14 @@ int main(int, char**)
 
             //-------- PHYSICS --------//
 
-                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
+//                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 if (rotate == 0) {
                     player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-//                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 0.0f, clipWidth);
+                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 0.0f, clipWidth);
                 }
                 else {
                     player.stop(); //gracz zatrzymywany przy obrocie kamery
-//                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
+                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 }
 
             //gracz obrocony jedna strona do kamery
@@ -725,28 +735,31 @@ int main(int, char**)
 
             for (int i = 0; i < 1; i++)
             {
-                if(!firstFrame) //player.gravityOn(deltaTime);
+                if(!firstFrame) player.gravityOn(deltaTime);
                 //-------- COLLISIONS --------//
-                player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                player.checkCollision(FBcolliders.getColliders());
-                player.checkCollision(LRcolliders.getColliders());
+//                player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+//                player.checkCollision(FBcolliders.getColliders());
+//                player.checkCollision(LRcolliders.getColliders());
+//                    player.checkCollision(floor1.getColliders());
+
+                gen.collisions(&player);
 
                 //-------- TRIGGERS --------//
                 //player.detectCollision(lightColliders.getColliders());
-                player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
+//                player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+//                player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
 
-                for (auto larva : larvas) {
-
-                    player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
-                    larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
-                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                    if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
-                        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
-                    }
-
-                }
+//                for (auto larva : larvas) {
+//
+//                    player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+//                    larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+//                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+//                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+//                    if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
+//                        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+//                    }
+//
+//                }
 
 
             }
@@ -779,12 +792,14 @@ int main(int, char**)
             //-------- DRAW --------//
             {
 //                level.Draw(PBRShader);
-                lamps.Draw(PBRShader);
+//                lamps.Draw(PBRShader);
                 //LRcolliders.Draw(PBRShader);
                 //FBcolliders.Draw(PBRShader);
-                //cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+//                cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
                 //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
-                spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+//                spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+
+//                floor1.Draw(PBRShader);
 
                 gen.update(camera.getCamPos().y);
                 gen.DrawLevels(PBRShader);

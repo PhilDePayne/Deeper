@@ -35,7 +35,8 @@ public:
     }
 
     void newGame() {
-        body->transform.position = glm::vec3(600.0f * randNum(), 0.0f, 600.0f * randNum());
+//        body->transform.position = glm::vec3(600.0f * randNum(), 0.0f, 600.0f * randNum());
+        body->transform.position = glm::vec3(600.0f, 0.0f, 600.0f);
 //        body->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
 
     }
