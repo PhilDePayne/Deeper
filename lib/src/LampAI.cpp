@@ -17,19 +17,17 @@ void LampAI::onCollisionEnter(BoxCollider collided) {
 void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
 	bool exists = false;
-    int l = 0;
+	int l = 0;
 
 	for (auto i : *lights) {
 
 		if (i == collided.getCenter()) {
 		    exists = true;
 
-		    if(!lit->at(l)) {
+		    if(!lit->at(l))
 		        lit->at(l) = true;
-		    }
 		}
-		l++;
-
+        l++;
 	}
 
 	if (colliderTag == Tag::LARVA && exists) {
@@ -37,6 +35,7 @@ void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 		lights->erase(std::remove(lights->begin(), lights->end(), collided.getCenter()), lights->end());
 		lights->push_back(glm::vec3(1000.0f)); //TODO: sprawdzic czy zawsze bedzie dzialalo
 		//eaten = true;
+		lit->pop_back(); //do sprawdzenia
 
 	}
 
@@ -49,7 +48,7 @@ void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
         std::cout << "DOESN'T EXIST\n";
 #endif
 
-		lit->erase(lit->begin());
+		//idk
 		lit->push_back(true);
 
 	}

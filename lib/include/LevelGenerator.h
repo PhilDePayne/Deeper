@@ -12,68 +12,42 @@ class LevelGenerator {
 
 public:
     LevelGenerator(std::vector<Model> _caveModels, std::vector<std::vector<Model>> _walls, std::vector<Model> _floors,
-                   std::vector<Model> _lampModels, std::vector<gameObjectPtr> _lampObjects, std::vector<Model> _lampColliders) {
+                   std::vector<Model> _lampModels, std::vector<Model> _lampColliders) {
         caveModels = std::move(_caveModels);
         walls = std::move(_walls);
         floors = std::move(_floors);
         lampModels = std::move(_lampModels);
-        lampObjects = std::move(_lampObjects);
         lampColliders = std::move(_lampColliders);
     }
 
     void newGame(int height) {
         randomize();
         initPos = (float)height * -1.0f - 800.0f;
+        float pos[3] = {initPos + levelH, initPos, initPos - levelH}; //gora - srodek - dol (gracz zaczyna na gorze srodka)
 
-        //gora
-        int r = randNum();
-        caveModels[num[0]].transform.position = glm::vec3(0.0f, initPos + levelH - 10.0f, 0.0f);
-//        caveModels[num[0]].transform.y_rotation_angle = 90.0f * r;
+        //positions
+        for(int i = 0; i < 3; i++) {
+            caveModels[num[i]].transform.position = glm::vec3(0.0f, pos[i] - 10.0f, 0.0f);
 
-        walls[num[0]][0].transform.position = glm::vec3(0.0f, initPos + levelH, 0.0f);
-//        walls[num[0]][0].transform.y_rotation_angle = 90.0f * r;
-        walls[num[0]][1].transform.position = glm::vec3(0.0f, initPos + levelH, 0.0f);
-//        walls[num[0]][1].transform.y_rotation_angle = 90.0f * r;
+            walls[num[i]][0].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
+            walls[num[i]][1].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
 
-        floors[num[0]].transform.position = glm::vec3(0.0f, initPos + levelH, 0.0f);
-//        floors[num[0]].transform.y_rotation_angle = 90.0f * r;
+            floors[num[i]].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
 
-        lampModels[num[0]].transform.position = glm::vec3(0.0f, initPos + levelH - 10.0f, 0.0f);
-        lampObjects[num[0]]->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, initPos + levelH, 0.0f);
+            lampModels[num[i]].transform.position = glm::vec3(0.0f, pos[i] - 10.0f, 0.0f);
+            lampColliders[num[i]].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
+        }
 
-        //srodek
-        r = randNum();
-        caveModels[num[1]].transform.position = glm::vec3(0.0f, initPos - 10.0f, 0.0f);
-//        caveModels[num[1]].transform.y_rotation_angle = 90.0f * r;
-
-        walls[num[1]][0].transform.position = glm::vec3(0.0f, initPos, 0.0f);
-//        walls[num[1]][0].transform.y_rotation_angle = 90.0f * r;
-        walls[num[1]][1].transform.position = glm::vec3(0.0f, initPos, 0.0f);
-//        walls[num[1]][1].transform.y_rotation_angle = 90.0f * r;
-
-        floors[num[1]].transform.position = glm::vec3(0.0f, initPos, 0.0f);
-//        floors[num[1]].transform.y_rotation_angle = 90.0f * r;
-
-        lampModels[num[1]].transform.position = glm::vec3(0.0f, initPos - 10.0f, 0.0f);
-        lampObjects[num[1]]->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, initPos, 0.0f);
-
-        lampColliders[num[1]].transform.position = glm::vec3(0.0f, initPos, 0.0f);
-
-        //dol
-        r = randNum();
-        caveModels[num[2]].transform.position = glm::vec3(0.0f, initPos - levelH - 10.0f, 0.0f);
-//        caveModels[num[2]].transform.y_rotation_angle = 90.0f * r;
-
-        walls[num[2]][0].transform.position = glm::vec3(0.0f, initPos - levelH, 0.0f);
-//        walls[num[2]][0].transform.y_rotation_angle = 90.0f * r;
-        walls[num[2]][1].transform.position = glm::vec3(0.0f, initPos - levelH, 0.0f);
-//        walls[num[2]][1].transform.y_rotation_angle = 90.0f * r;
-
-        floors[num[2]].transform.position = glm::vec3(0.0f, initPos - levelH, 0.0f);
-//        floors[num[2]].transform.y_rotation_angle = 90.0f * r;
-
-        lampModels[num[2]].transform.position = glm::vec3(0.0f, initPos - levelH - 10.0f, 0.0f);
-        lampObjects[num[2]]->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, initPos - levelH, 0.0f);
+        //rotation
+//        for(int i : num) {
+//            int r = randNum();
+//            caveModels[i].transform.y_rotation_angle = 90.0f * r;
+//            walls[i][0].transform.y_rotation_angle = 90.0f * r;
+//            walls[i][1].transform.y_rotation_angle = 90.0f * r;
+//            floors[i].transform.y_rotation_angle = 90.0f * r;
+//            lampModels[i].transform.y_rotation_angle = 90.0f * r;
+//            lampColliders[i].transform.y_rotation_angle = 90.0f * r;
+//        }
 
         cur = num[1];
 
@@ -91,8 +65,6 @@ public:
             caveModels[i].Draw(shader);
             lampModels[i].Draw(shader);
         }
-
-        lampObjects[cur]->getComponent<Model>(ComponentType::MODEL)->Draw(shader);
 
     }
 
@@ -117,7 +89,8 @@ public:
 //            floors[num[iter % 3]].transform.y_rotation_angle = 90.0f * r;
 
             lampModels[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos - 10.0f, 0.0f);
-            lampObjects[num[iter % 3]]->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, newPos - 10.0f, 0.0f);
+            lampColliders[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos, 0.0f);
+
 
             std::cout << "\nnew " << num[iter % 3];
 
@@ -154,12 +127,11 @@ private:
     std::vector<Model> floors;
     std::vector<std::vector<Model>> walls;
     std::vector<Model> lampModels;
-    std::vector<gameObjectPtr> lampObjects;
     std::vector<Model> lampColliders;
 
     float initPos;
     int num[3] = {0, 1, 2};
-    float levelH = 1900.0f;
+    float levelH = 1850.0f;
     int iter = 0;
     int cur;
 

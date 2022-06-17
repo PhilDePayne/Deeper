@@ -534,11 +534,10 @@ int main(int, char**)
     std::vector<Model> caveModels = {level, level, level};
     std::vector<std::vector<Model>> walls = {{LRcolliders, FBcolliders}, {LRcolliders, FBcolliders}, {LRcolliders, FBcolliders}};
     std::vector<Model> floors = {floor1, floor1, floor1};
-    std::vector<gameObjectPtr> lampObjects = {lamp, lamp, lamp};
     std::vector<Model> lampModels = {lamps, lamps, lamps};
     std::vector<Model> lampColliders = {*lamp->getComponent<Model>(ComponentType::MODEL), *lamp->getComponent<Model>(ComponentType::MODEL), *lamp->getComponent<Model>(ComponentType::MODEL)};
 
-    LevelGenerator gen(caveModels, walls, floors, lampModels, lampObjects, lampColliders);
+    LevelGenerator gen(caveModels, walls, floors, lampModels, lampColliders);
 //    gen.newGame(SCR_HEIGHT);
 
 
