@@ -12,12 +12,13 @@ class LevelGenerator {
 
 public:
     LevelGenerator(std::vector<Model> _caveModels, std::vector<std::vector<Model>> _walls, std::vector<Model> _floors,
-                   std::vector<Model> _lampModels, std::vector<Model> _lampColliders) {
+                   std::vector<Model> _lampModels, std::vector<Model> _lampColliders, std::vector<Model> _spawnerColliders) {
         caveModels = std::move(_caveModels);
         walls = std::move(_walls);
         floors = std::move(_floors);
         lampModels = std::move(_lampModels);
         lampColliders = std::move(_lampColliders);
+        spawnerColliders = std::move(_spawnerColliders);
     }
 
     void newGame(int height) {
@@ -36,6 +37,8 @@ public:
 
             lampModels[num[i]].transform.position = glm::vec3(0.0f, pos[i] - 10.0f, 0.0f);
             lampColliders[num[i]].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
+
+            spawnerColliders[num[i]].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
         }
 
         //rotation
@@ -47,29 +50,28 @@ public:
 //            floors[i].transform.y_rotation_angle = 90.0f * r;
 //            lampModels[i].transform.y_rotation_angle = 90.0f * r;
 //            lampColliders[i].transform.y_rotation_angle = 90.0f * r;
+//            spawnerColliders[i].transform.y_rotation_angle = 90.0f * r;
 //        }
 
         cur = num[1];
 
 #ifdef DEEPER_LEVELGENERATOR_LOGS
-        std::cout << "\n" << num[0] << " " << num[1] << " " << num[2] << "\ncur " << cur;
+        std::cout << "\n" << num[0] << " " << num[1] << " " << num[2] << "\ncur " << cur << "\n";
 #endif
     }
 
     void DrawLevels(Shader shader) {
-//        for(auto& cave : caveModels) {
-//            cave.Draw(shader);
-//        }
-
-        for(int i = 0; i < 3; i++) {
-            caveModels[i].Draw(shader);
-            lampModels[i].Draw(shader);
+        for(auto& cave : caveModels) {
+            cave.Draw(shader);
         }
 
-    }
+//        for(int i = 0; i < 3; i++) {
+//            caveModels[i].Draw(shader);
+//            lampModels[i].Draw(shader);
+//        }
 
-    void move(float pos) {
-        caveModels[num[1]].transform.position = glm::vec3(0.0f, pos, 0.0f);
+        lampModels[cur].Draw(shader);
+
     }
 
     void update(float camY) {
@@ -91,23 +93,21 @@ public:
             lampModels[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos - 10.0f, 0.0f);
             lampColliders[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos, 0.0f);
 
+            spawnerColliders[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos, 0.0f);
 
-            std::cout << "\nnew " << num[iter % 3];
+#ifdef DEEPER_LEVELGENERATOR_LOGS
+            std::cout << "\nnew cave: " << num[iter % 3];
+#endif
 
             iter++;
         }
     }
 
-    const int *getNum() const {
-        return num;
-    }
 
-    //TODO: void w main loop
-    int whereAmI(float posY) {
+    void whereAmI(float posY) {
         if(posY < -levelH  * iter) {
             cur = num[(iter + 1) % 3];
         }
-        return cur;
     }
 
     void collisions(Player* player) {
@@ -117,8 +117,20 @@ public:
     }
 
     void triggers(Player* player) {
-//        player->detectCollision(lampObjects[cur]->getComponent<Model>(ComponentType::MODEL)->getColliders());
         player->detectCollision(lampColliders[cur].getColliders());
+        player->detectCollision(spawnerColliders[cur].getColliders());
+    }
+
+    Model* getCurrentFloor() {
+        return &floors[cur];
+    }
+
+    Model* getCurrentLamps() {
+        return &lampColliders[cur];
+    }
+
+    int getCur() {
+        return cur;
     }
 
 
@@ -128,6 +140,7 @@ private:
     std::vector<std::vector<Model>> walls;
     std::vector<Model> lampModels;
     std::vector<Model> lampColliders;
+    std::vector<Model> spawnerColliders;
 
     float initPos;
     int num[3] = {0, 1, 2};

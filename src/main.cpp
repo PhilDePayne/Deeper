@@ -536,8 +536,10 @@ int main(int, char**)
     std::vector<Model> floors = {floor1, floor1, floor1};
     std::vector<Model> lampModels = {lamps, lamps, lamps};
     std::vector<Model> lampColliders = {*lamp->getComponent<Model>(ComponentType::MODEL), *lamp->getComponent<Model>(ComponentType::MODEL), *lamp->getComponent<Model>(ComponentType::MODEL)};
+    std::vector<Model> spawnerCollidersGen = {*spawners->getComponent<Model>(ComponentType::MODEL), *spawners->getComponent<Model>(ComponentType::MODEL), *spawners->getComponent<Model>(ComponentType::MODEL)};
 
-    LevelGenerator gen(caveModels, walls, floors, lampModels, lampColliders);
+
+    LevelGenerator gen(caveModels, walls, floors, lampModels, lampColliders, spawnerCollidersGen);
 //    gen.newGame(SCR_HEIGHT);
 
 
@@ -675,7 +677,7 @@ int main(int, char**)
                 ImGui::NewLine();
                 ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
                 ImGui::NewLine();
-                ImGui::Text("which cave %i", gen.whereAmI(player.getBody()->transform.position.y));
+                ImGui::Text("which cave %i", gen.getCur());
                 if(ImGui::Button("New game")) {
                     restart = true;
                 }
@@ -721,15 +723,18 @@ int main(int, char**)
 
             //-------- PHYSICS --------//
 
+            gen.update(camera.getCamPos().y);
+            gen.whereAmI(player.getBody()->transform.position.y);
+
 //                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
-                if (rotate == 0) {
-                    player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 0.0f, clipWidth);
-                }
-                else {
-                    player.stop(); //gracz zatrzymywany przy obrocie kamery
-                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
-                }
+            if (rotate == 0) {
+                player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 0.0f, clipWidth);
+            }
+            else {
+                player.stop(); //gracz zatrzymywany przy obrocie kamery
+                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
+            }
 
             //gracz obrocony jedna strona do kamery
             player.rotate(-camera.getAngle());
@@ -747,17 +752,19 @@ int main(int, char**)
 //                player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
                 gen.triggers(&player);
 
-//                for (auto larva : larvas) {
-//
-//                    player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
-//                    larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+                for (auto larva : larvas) {
+
+                    player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
 //                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
 //                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-//                    if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
-//                        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
-//                    }
-//
-//                }
+                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(gen.getCurrentLamps()->getColliders());
+                    if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
+                        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    }
+
+                }
 
 
             }
@@ -799,7 +806,6 @@ int main(int, char**)
 
 //                floor1.Draw(PBRShader);
 
-                gen.update(camera.getCamPos().y);
                 gen.DrawLevels(PBRShader);
 
                 for (auto larva : larvas) {
