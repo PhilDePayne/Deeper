@@ -541,7 +541,6 @@ int main(int, char**)
 
 
     LevelGenerator gen(caveModels, walls, floors, lampModels, lampColliders, spawnerCollidersGen);
-//    gen.newGame(SCR_HEIGHT);
 
 
     Frustum camFrustum = createFrustumFromCamera(camera,
@@ -681,11 +680,15 @@ int main(int, char**)
                 ImGui::NewLine();
                 ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
                 ImGui::NewLine();
+<<<<<<< HEAD
                 ImGui::SliderFloat("cartSize", &cartSize, 0.1f, 1.0f);
                 ImGui::NewLine();
                 ImGui::SliderFloat("cartHeight", &cartYoffset, -50.0f, 50.0f);
                 ImGui::NewLine();
                 ImGui::Text("which cave %i", gen.getCur());
+=======
+                ImGui::Text("current cave: %i at rotation %f", gen.getCur(), gen.getCurrentFloor()->transform.y_rotation_angle);
+>>>>>>> 84b5f5a6802b91be596f707e6b819ef491628158
                 if(ImGui::Button("New game")) {
                     restart = true;
                 }
@@ -747,6 +750,7 @@ int main(int, char**)
             //gracz obrocony jedna strona do kamery
             player.rotate(-camera.getAngle());
 
+<<<<<<< HEAD
             if(!firstFrame) player.gravityOn(deltaTime);
             //-------- COLLISIONS --------//
 //            player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
@@ -757,6 +761,16 @@ int main(int, char**)
 //            player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
 //            player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
             gen.triggers(&player);
+=======
+            for (int i = 0; i < 1; i++)
+            {
+                if(!firstFrame) player.gravityOn(deltaTime);
+                //-------- COLLISIONS --------//
+                gen.collisions(&player);
+
+                //-------- TRIGGERS --------//
+                gen.triggers(&player);
+>>>>>>> 84b5f5a6802b91be596f707e6b819ef491628158
 
             for (auto larva : larvas) {
 
@@ -798,6 +812,7 @@ int main(int, char**)
 
             //-------- DRAW --------//
             {
+<<<<<<< HEAD
 //                level.Draw(PBRShader);
 //                lamps.Draw(PBRShader);
                 //LRcolliders.Draw(PBRShader);
@@ -813,6 +828,8 @@ int main(int, char**)
                 cart->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
 
+=======
+>>>>>>> 84b5f5a6802b91be596f707e6b819ef491628158
                 gen.DrawLevels(PBRShader);
 
                 for (auto larva : larvas) {
@@ -820,10 +837,8 @@ int main(int, char**)
                     larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
                 }
-
                 player.render(PBRShader);
             }
-
 
 
             // Animation model

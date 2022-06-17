@@ -21,6 +21,7 @@ public:
         spawnerColliders = std::move(_spawnerColliders);
     }
 
+    //TODO: blad w jednym miejscu
     void newGame(int height) {
         randomize();
         initPos = (float)height * -1.0f - 800.0f;
@@ -42,16 +43,16 @@ public:
         }
 
         //rotation
-//        for(int i : num) {
-//            int r = randNum();
-//            caveModels[i].transform.y_rotation_angle = 90.0f * r;
-//            walls[i][0].transform.y_rotation_angle = 90.0f * r;
-//            walls[i][1].transform.y_rotation_angle = 90.0f * r;
-//            floors[i].transform.y_rotation_angle = 90.0f * r;
-//            lampModels[i].transform.y_rotation_angle = 90.0f * r;
-//            lampColliders[i].transform.y_rotation_angle = 90.0f * r;
-//            spawnerColliders[i].transform.y_rotation_angle = 90.0f * r;
-//        }
+        for(int i : num) {
+            int r = randNum();
+            caveModels[i].transform.y_rotation_angle = 90.0f * r;
+            walls[i][0].transform.y_rotation_angle = 90.0f * r;
+            walls[i][1].transform.y_rotation_angle = 90.0f * r;
+            floors[i].transform.y_rotation_angle = 90.0f * r;
+            lampModels[i].transform.y_rotation_angle = 90.0f * r;
+            lampColliders[i].transform.y_rotation_angle = 90.0f * r;
+            spawnerColliders[i].transform.y_rotation_angle = 90.0f * r;
+        }
 
         cur = num[1];
 
@@ -71,6 +72,7 @@ public:
 //        }
 
         lampModels[cur].Draw(shader);
+        floors[cur].Draw(shader);
 
     }
 
@@ -80,20 +82,23 @@ public:
             float newPos = initPos - levelH * (float)(iter + 2);
 
             caveModels[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos - 10.0f, 0.0f);
-//            caveModels[num[iter % 3]].transform.y_rotation_angle = 90.0f * r;
+            caveModels[num[iter % 3]].transform.y_rotation_angle = 90.0f * r;
 
             walls[num[iter % 3]][0].transform.position = glm::vec3(0.0f, newPos, 0.0f);
-//            walls[num[iter % 3]][0].transform.y_rotation_angle = 90.0f * r;
+            walls[num[iter % 3]][0].transform.y_rotation_angle = 90.0f * r;
             walls[num[iter % 3]][1].transform.position = glm::vec3(0.0f, newPos, 0.0f);
-//            walls[num[iter % 3]][1].transform.y_rotation_angle = 90.0f * r;
+            walls[num[iter % 3]][1].transform.y_rotation_angle = 90.0f * r;
 
             floors[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos, 0.0f);
-//            floors[num[iter % 3]].transform.y_rotation_angle = 90.0f * r;
+            floors[num[iter % 3]].transform.y_rotation_angle = 90.0f * r;
 
             lampModels[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos - 10.0f, 0.0f);
+            lampModels[num[iter % 3]].transform.y_rotation_angle = 90.0f * r;
             lampColliders[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos, 0.0f);
+            lampColliders[num[iter % 3]].transform.y_rotation_angle = 90.0f * r;
 
             spawnerColliders[num[iter % 3]].transform.position = glm::vec3(0.0f, newPos, 0.0f);
+            spawnerColliders[num[iter % 3]].transform.y_rotation_angle = 90.0f * r;
 
 #ifdef DEEPER_LEVELGENERATOR_LOGS
             std::cout << "\nnew cave: " << num[iter % 3];
