@@ -397,19 +397,31 @@ std::vector<BoxCollider> Model::getColliders()
     tmp.setSize(glm::vec3(0.0f));
 
     for(auto i : meshes){
-    
-        tmp.setSize(glm::vec3(i.boundingVolume.getSizeX(), i.boundingVolume.getSizeY(), i.boundingVolume.getSizeZ()) *
-            localTransform.scale);
 
-        tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), localTransform.position) * glm::vec4(i.boundingVolume.getCenter() * localTransform.scale, 1.0f)));
+        tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), localTransform.position) * 
+                                (glm::translate(glm::mat4(1.0f), glm::vec3(-localTransform.position.x, -localTransform.position.y, -localTransform.position.z)) *
+                                    glm::rotate(glm::mat4(1.0f), glm::radians(-localTransform.y_rotation_angle), glm::vec3(0, 1, 0)) * //nwm dlaczego -
+                                 glm::translate(glm::mat4(1.0f), glm::vec3(localTransform.position.x, localTransform.position.y, localTransform.position.z))) *
+                                glm::vec4(i.boundingVolume.getCenter() * localTransform.scale, 1.0f)));
 
-        tmp.x_rotation_angle = i.boundingVolume.x_rotation_angle;
-        tmp.z_rotation_angle = i.boundingVolume.z_rotation_angle;
+        if (localTransform.y_rotation_angle == 90 || localTransform.y_rotation_angle == 270){
+            tmp.x_rotation_angle = glm::sin(glm::radians(localTransform.y_rotation_angle)) * i.boundingVolume.z_rotation_angle;
+            tmp.z_rotation_angle = glm::sin(glm::radians(localTransform.y_rotation_angle)) * i.boundingVolume.x_rotation_angle;
+            tmp.setSize(glm::vec3(i.boundingVolume.getSizeZ(), i.boundingVolume.getSizeY(), i.boundingVolume.getSizeX()) *
+                localTransform.scale);
+        }
+
+        else {
+            tmp.x_rotation_angle = glm::cos(glm::radians(localTransform.y_rotation_angle)) * i.boundingVolume.x_rotation_angle;
+            tmp.z_rotation_angle = glm::cos(glm::radians(localTransform.y_rotation_angle)) * i.boundingVolume.z_rotation_angle;
+            tmp.setSize(glm::vec3(i.boundingVolume.getSizeX(), i.boundingVolume.getSizeY(), i.boundingVolume.getSizeZ()) *
+                localTransform.scale);
+        }
 
         tmp.parent = this->parent;
 
 #ifdef COLLIDER_COORD_LOG
-        printf("%f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ());
+        printf("%f %f %f %f %f %f %f %f %f\n", tmp.getCenter().x, tmp.getCenter().y, tmp.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ(), tmp.x_rotation_angle, tmp.y_rotation_angle, tmp.z_rotation_angle);
 #endif
 
         ret.push_back(tmp);

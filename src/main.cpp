@@ -38,6 +38,8 @@
 #include "PickaxeAI.h"
 #include "LarvaAI.h"
 #include "SpawnerAI.h"
+#include "SoundSystem.h"
+#include "Sound.h"
 
 #include <stdio.h>
 #include <memory>
@@ -322,22 +324,12 @@ int main(int, char**)
         return 1;
     }
 
-    FMOD_RESULT result; //TODO: SoundManager
-    FMOD::System* ssystem = NULL;
+    // Initializing SoundSystem and loading sounds
 
-    result = FMOD::System_Create(&ssystem);      // Create the main system object.
-    if (result != FMOD_OK)
-    {
-        printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
-        return(-1);
-    }
-
-    result = ssystem->init(512, FMOD_INIT_NORMAL, 0);    // Initialize FMOD.
-    if (result != FMOD_OK)
-    {
-        printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
-        return(-1);
-    }
+    SoundSystem soundSystem;
+    Sound ambient("./res/sounds/ambient.wav");
+    Sound lampSound("./res/sounds/lampTurnOn.wav");
+    Sound pickaxeThrowSound("./res/sounds/pickaxeThrow.wav");
 
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
@@ -453,6 +445,7 @@ int main(int, char**)
         lamp->addComponent<LampAI>(lamp);
         lamp->getComponent<LampAI>(ComponentType::AI)->lights = &lightPositions;
         lamp->getComponent<LampAI>(ComponentType::AI)->lit = new std::vector<bool>(lightPositions.size(), 0);
+        lamp->getComponent<LampAI>(ComponentType::AI)->setTurnOnSound(&lampSound);
 
 //        cave->addComponent(caveModel, cave);
 //        cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
@@ -460,7 +453,7 @@ int main(int, char**)
 
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
-
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->setThrowSound(&pickaxeThrowSound);
         //LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel, glm::vec3(581.819336f, 303.709015f, -582.5f));
 
         spawners->addComponent(spawnerColliders, spawners);
@@ -637,7 +630,8 @@ int main(int, char**)
 
         switch (state.getCurState()) {
         case GAME_RUNNING: {
-
+            ambient.continuePlaying();
+            //TODO: reset kamery
             if (restart) {
                 gen.newGame(SCR_HEIGHT);
                 player.newGame();
@@ -652,7 +646,9 @@ int main(int, char**)
             state.gameRunning(window);
             //              animator.UpdateAnimation(deltaTime);
 
-
+//              hudShader.use();
+//              hudShader.setMat4("proj", glm::ortho(-(display_w/2.0f), display_w/2.0f, -(display_h/2.0f), display_h/2.0f, -10.0f, 10.0f));
+//              compass.Draw(hudShader, camera.getCameraDirection());
 
             //-------- ImGui --------//
             {
@@ -720,7 +716,7 @@ int main(int, char**)
                 glBindVertexArray(skyboxVAO);
                 glDrawArrays(GL_TRIANGLES, 0, 36);
             }
-
+                        
             //-------- PHYSICS --------//
 
             gen.update(camera.getCamPos().y);
@@ -763,10 +759,10 @@ int main(int, char**)
                     if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
                         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
                     }
-
+                    
                 }
 
-
+                
             }
 
             firstFrame = false;
@@ -791,8 +787,6 @@ int main(int, char**)
             }
 
             camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
-
-
 
             //-------- DRAW --------//
             {
@@ -880,6 +874,8 @@ int main(int, char**)
                 glBindVertexArray(0);
                 glDepthFunc(GL_LESS); // set depth function back to default
             }
+
+            ambient.pause();
 
             hudShader.use();
             hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));

@@ -28,6 +28,7 @@ void LarvaAI::update(GLFWwindow* window, float deltaTime) {
 
 		parent->getComponent<Model>(ComponentType::MODEL)->transform.position = deltaPos;
 		parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
+		parent->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
 	}
 
 }

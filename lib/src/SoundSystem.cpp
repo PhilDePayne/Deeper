@@ -22,7 +22,7 @@ SoundSystem::SoundSystem()
     {
 
 #ifdef CONSTRUCTOR_LOGS
-        printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
+        printf("SoundSystemClass::FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
 #endif
         //TODO: Dodać wyjątek który wypierdala program
     }
@@ -32,7 +32,7 @@ SoundSystem::SoundSystem()
     {
 
 #ifdef CONSTRUCTOR_LOGS
-        printf("FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
+        printf("SoundSystemClass::FMOD error! (%d) %s\n", result, FMOD_ErrorString(result));
 #endif
         //TODO: Dodać wyjątek który wypierdala program
     }
