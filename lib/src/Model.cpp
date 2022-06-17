@@ -406,7 +406,7 @@ std::vector<BoxCollider> Model::getColliders()
 
         if (localTransform.y_rotation_angle == 90 || localTransform.y_rotation_angle == 270){
             tmp.x_rotation_angle = glm::sin(glm::radians(localTransform.y_rotation_angle)) * i.boundingVolume.z_rotation_angle;
-            tmp.z_rotation_angle = glm::sin(glm::radians(localTransform.y_rotation_angle)) * i.boundingVolume.x_rotation_angle;
+            tmp.z_rotation_angle = -glm::sin(glm::radians(localTransform.y_rotation_angle)) * i.boundingVolume.x_rotation_angle;
             tmp.setSize(glm::vec3(i.boundingVolume.getSizeZ(), i.boundingVolume.getSizeY(), i.boundingVolume.getSizeX()) *
                 localTransform.scale);
         }
