@@ -23,6 +23,8 @@ public:
 	int throwDir;
 	int playerFacingDir;
 	int throwFacingDir;
+	int reverse;
+	int throwReverse;
 
 	bool isThrown = false;
 
@@ -31,6 +33,6 @@ private:
 	double throwTime;
 	
 
-	void pickaxeThrow(int dir, int orientation);
+	void pickaxeThrow(int dir, int orientation, int reverse);
 	
 };
