@@ -112,7 +112,7 @@ public:
     void removePoints(int p) {
         points -= p;
         if(points < 0) {
-            points = 0;
+            gameOver = true;
         }
     }
 
@@ -127,20 +127,33 @@ public:
     void checkPoints(std::vector<bool>* litLamps, int posY) {
         int sumLit = std::accumulate(litLamps->begin(), litLamps->end(), 0);
         int prevLit = std::accumulate(prevLamps.begin(), prevLamps.end(), 0);
+
         if(sumLit > prevLit) {
-            addPoints(abs(posY)/10); //jak wieksze od 0 to jakos duzo
+            addPoints(abs(posY)/20);
+            prevLamps = *litLamps;
+        }
+
+        if(sumLit < prevLit) {
+            removePoints(abs(posY)/10);
             prevLamps = *litLamps;
         }
     }
 
+
     void newGame() {
         points = 0;
         prevLamps = {0};
+        gameOver = false;
+    }
+
+    bool isGameOver() const {
+        return gameOver;
     }
 
 private:
     int points;
     std::vector<bool> prevLamps = {0};
+    bool gameOver = false;
 
 //    unsigned int tVAO, tVBO;
 //    FT_Library ft;

@@ -645,9 +645,6 @@ int main(int, char**)
             state.gameRunning(window);
             //              animator.UpdateAnimation(deltaTime);
 
-//              hudShader.use();
-//              hudShader.setMat4("proj", glm::ortho(-(display_w/2.0f), display_w/2.0f, -(display_h/2.0f), display_h/2.0f, -10.0f, 10.0f));
-//              compass.Draw(hudShader, camera.getCameraDirection());
 
             //-------- ImGui --------//
             {
@@ -688,8 +685,10 @@ int main(int, char**)
             //liczenie punktow
             points.checkPoints(lamp->getComponent<LampAI>(ComponentType::AI)->lit, (int)player.getBody()->transform.position.y);
 
-            //game over jesli gracz wyjdzie poza gorna krawedz kamery
+            //game over jesli gracz wyjdzie poza gorna krawedz kamery lub points < 0 <- do sprawdzenia czy dziala
 //            if(camera.isGameover())
+//                state.setState(GAME_OVER);
+//            if(points.isGameOver())
 //                state.setState(GAME_OVER);
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
