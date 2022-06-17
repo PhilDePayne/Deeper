@@ -172,6 +172,9 @@ float lastFrame = 0.0f;
 
 bool restart = true;
 
+float cartSize = 0.266f;
+float cartYoffset = -22.667f;
+
 //camera var
 int rotate = 0;
 float clipWidth = 80.0f;
@@ -390,6 +393,7 @@ int main(int, char**)
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
 //    gameObjectPtr cave(new GameObject());
+    gameObjectPtr cart(new GameObject());
     gameObjectPtr lamp(new GameObject());
     gameObjectPtr pickaxe(new GameObject());
     gameObjectPtr spawners(new GameObject());
@@ -397,6 +401,7 @@ int main(int, char**)
 //    componentPtr caveModel(new Model("./res/models/Colliders/cave1floor.fbx", true));
     componentPtr lampModel(new Model("./res/models/Colliders/cave1_lampColliders.fbx", true));
     componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
+    componentPtr cartModel(new Model("./res/models/cart/cart_mdl2.fbx", true));
 
     componentPtr spawnerColliders(new Model("./res/models/Colliders/spawnerColliders.fbx", true));
     componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
@@ -438,6 +443,9 @@ int main(int, char**)
         sphere->addComponent<LightSource>(sphere);
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
+
+        cart->addComponent(cartModel, cart);
+        cart->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(0.5f);
 
         lamp->addComponent(lampModel, lamp);
         lamp->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
@@ -673,6 +681,10 @@ int main(int, char**)
                 ImGui::NewLine();
                 ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
                 ImGui::NewLine();
+                ImGui::SliderFloat("cartSize", &cartSize, 0.1f, 1.0f);
+                ImGui::NewLine();
+                ImGui::SliderFloat("cartHeight", &cartYoffset, -50.0f, 50.0f);
+                ImGui::NewLine();
                 ImGui::Text("which cave %i", gen.getCur());
                 if(ImGui::Button("New game")) {
                     restart = true;
@@ -735,35 +747,31 @@ int main(int, char**)
             //gracz obrocony jedna strona do kamery
             player.rotate(-camera.getAngle());
 
-            for (int i = 0; i < 1; i++)
-            {
-                if(!firstFrame) player.gravityOn(deltaTime);
-                //-------- COLLISIONS --------//
-//                player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+            if(!firstFrame) player.gravityOn(deltaTime);
+            //-------- COLLISIONS --------//
+//            player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
 
-                gen.collisions(&player);
+            gen.collisions(&player);
 
-                //-------- TRIGGERS --------//
-//                player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-//                player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                gen.triggers(&player);
+            //-------- TRIGGERS --------//
+//            player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+//            player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
+            gen.triggers(&player);
 
-                for (auto larva : larvas) {
+            for (auto larva : larvas) {
 
-                    player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
-                    larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
-//                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
-//                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(gen.getCurrentLamps()->getColliders());
-                    if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
-                        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
-                    }
-                    
+                player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+//                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
+//                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(gen.getCurrentLamps()->getColliders());
+                if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
+                    pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
                 }
 
-                
             }
+
 
             firstFrame = false;
 
@@ -799,6 +807,11 @@ int main(int, char**)
 //                spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
 //                floor1.Draw(PBRShader);
+                cart->getComponent<Model>(ComponentType::MODEL)->transform.position = player.getBody()->transform.position + glm::vec3(0.0f, cartYoffset, 0.0f);
+                cart->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(cartSize);
+                cart->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = player.getBody()->transform.y_rotation_angle;
+                cart->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+
 
                 gen.DrawLevels(PBRShader);
 
