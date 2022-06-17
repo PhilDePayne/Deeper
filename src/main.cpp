@@ -172,7 +172,7 @@ bool restart = true;
 
 //camera var
 int rotate = 0;
-float clipWidth = 100.0f;
+float clipWidth = 80.0f;
 float depthPos = 0.0f;
 float rotationSpeed = 70.0f;
 
@@ -397,12 +397,12 @@ int main(int, char**)
 
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
-    gameObjectPtr cave(new GameObject());
+//    gameObjectPtr cave(new GameObject());
     gameObjectPtr lamp(new GameObject());
     gameObjectPtr pickaxe(new GameObject());
     gameObjectPtr spawners(new GameObject());
 
-    componentPtr caveModel(new Model("./res/models/Colliders/cave1floor.fbx", true));
+//    componentPtr caveModel(new Model("./res/models/Colliders/cave1floor.fbx", true));
     componentPtr lampModel(new Model("./res/models/Colliders/cave1_lampColliders.fbx", true));
     componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
 
@@ -454,9 +454,9 @@ int main(int, char**)
         lamp->getComponent<LampAI>(ComponentType::AI)->lights = &lightPositions;
         lamp->getComponent<LampAI>(ComponentType::AI)->lit = new std::vector<bool>(lightPositions.size(), 0);
 
-        cave->addComponent(caveModel, cave);
-        cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
-        cave->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
+//        cave->addComponent(caveModel, cave);
+//        cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
+//        cave->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
 
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
@@ -484,7 +484,6 @@ int main(int, char**)
 
     glm::mat4 proj = glm::mat4(1.0f);
     glm::mat4 view = glm::mat4(1.0f);
-//    camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, -SCR_WIDTH, SCR_WIDTH);
     camera.SetProjMatrix(SCR_WIDTH, SCR_HEIGHT, -SCR_WIDTH, SCR_WIDTH);
 
     float cameraY = 0.0f;
@@ -535,8 +534,11 @@ int main(int, char**)
     std::vector<Model> caveModels = {level, level, level};
     std::vector<std::vector<Model>> walls = {{LRcolliders, FBcolliders}, {LRcolliders, FBcolliders}, {LRcolliders, FBcolliders}};
     std::vector<Model> floors = {floor1, floor1, floor1};
+    std::vector<gameObjectPtr> lampObjects = {lamp, lamp, lamp};
+    std::vector<Model> lampModels = {lamps, lamps, lamps};
+    std::vector<Model> lampColliders = {*lamp->getComponent<Model>(ComponentType::MODEL), *lamp->getComponent<Model>(ComponentType::MODEL), *lamp->getComponent<Model>(ComponentType::MODEL)};
 
-    LevelGenerator gen(caveModels, walls, floors);
+    LevelGenerator gen(caveModels, walls, floors, lampModels, lampObjects, lampColliders);
 //    gen.newGame(SCR_HEIGHT);
 
 
@@ -738,16 +740,13 @@ int main(int, char**)
                 if(!firstFrame) player.gravityOn(deltaTime);
                 //-------- COLLISIONS --------//
 //                player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-//                player.checkCollision(FBcolliders.getColliders());
-//                player.checkCollision(LRcolliders.getColliders());
-//                    player.checkCollision(floor1.getColliders());
 
                 gen.collisions(&player);
 
                 //-------- TRIGGERS --------//
-                //player.detectCollision(lightColliders.getColliders());
 //                player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
 //                player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                gen.triggers(&player);
 
 //                for (auto larva : larvas) {
 //
