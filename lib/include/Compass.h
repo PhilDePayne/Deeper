@@ -13,15 +13,15 @@ public:
 
     void init(int display_w, int display_h, Shader shader) {
 
-        compass = new hudRect(216.0f, 216.0f, -216.0f/2.0f, -216.0f/2.0f,
+        compass = new hudRect(300.0f, 300.0f, -300.0f/2.0f, -300.0f/2.0f,
                               "./res/hud/compass1.png", shader);
-        arrow = new hudRect(47.0f, 28.0f, -47.0f/2.0f, -compass->h/2.0f,
+        arrow = new hudRect(65.0f, 39.0f, -65.0f/2.0f, -compass->h/2.0f,
                             "./res/hud/arrow.png", shader);
 
-        compass->model = glm::translate(compass->model, glm::vec3(-display_w/2.0f + 216.0f/2.0f + 50.0f,
-                                                                  -display_h/2.0f + 216.0f/2.0f + 50.0f, 0.0f));
-        arrow->model = glm::translate(arrow->model, glm::vec3(-display_w/2.0f + 216.0f/2.0f + 50.0f,
-                                                              -display_h/2.0f + 216.0f/2.0f + 50.0f + 150.0f, 0.0f));
+        compass->model = glm::translate(compass->model, glm::vec3(-display_w/2.0f + 300.0f/2.0f + 50.0f,
+                                                                  -display_h/2.0f + 300.0f/2.0f + 50.0f, 0.0f));
+        arrow->model = glm::translate(arrow->model, glm::vec3(-display_w/2.0f + 300.0f/2.0f + 50.0f,
+                                                              -display_h/2.0f + 300.0f/2.0f + 50.0f + 213.0f, 0.0f));
 
         oldModel = compass->model;
         oldModelArrow = arrow->model;

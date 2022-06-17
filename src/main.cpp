@@ -533,7 +533,6 @@ int main(int, char**)
 
 
     LevelGenerator gen(caveModels, walls, floors, lampModels, lampColliders, spawnerCollidersGen);
-//    gen.newGame(SCR_HEIGHT);
 
 
     Frustum camFrustum = createFrustumFromCamera(camera,
@@ -673,7 +672,7 @@ int main(int, char**)
                 ImGui::NewLine();
                 ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
                 ImGui::NewLine();
-                ImGui::Text("which cave %i", gen.getCur());
+                ImGui::Text("current cave: %i at rotation %f", gen.getCur(), gen.getCurrentFloor()->transform.y_rotation_angle);
                 if(ImGui::Button("New game")) {
                     restart = true;
                 }
@@ -739,13 +738,9 @@ int main(int, char**)
             {
                 if(!firstFrame) player.gravityOn(deltaTime);
                 //-------- COLLISIONS --------//
-//                player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-
                 gen.collisions(&player);
 
                 //-------- TRIGGERS --------//
-//                player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-//                player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
                 gen.triggers(&player);
 
                 for (auto larva : larvas) {
@@ -790,16 +785,6 @@ int main(int, char**)
 
             //-------- DRAW --------//
             {
-//                level.Draw(PBRShader);
-//                lamps.Draw(PBRShader);
-                //LRcolliders.Draw(PBRShader);
-                //FBcolliders.Draw(PBRShader);
-//                cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
-                //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
-//                spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
-
-//                floor1.Draw(PBRShader);
-
                 gen.DrawLevels(PBRShader);
 
                 for (auto larva : larvas) {
@@ -807,10 +792,8 @@ int main(int, char**)
                     larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
                 }
-
                 player.render(PBRShader);
             }
-
 
 
             // Animation model
