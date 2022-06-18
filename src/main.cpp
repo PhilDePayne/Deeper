@@ -71,31 +71,6 @@ int display_w, display_h;
 bool debugBox = 0;
 bool skybox = 1;
 
-Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
-                                float zNear, float zFar)
-{
-    Frustum     frustum;
-    const float halfVSide = zFar * tanf(fovY * .5f);
-    const float halfHSide = halfVSide * aspect;
-    const glm::vec3 frontMultFar = zFar * cam.Front;
-    //printf("Cam position Y: %f\n", cam.Position.y);
-
-    frustum.nearFace = { glm::vec3(0.0f, 0.0f, 1.0f),
-                         glm::vec3(0.0f, 0.0f, -1.0f) };
-    frustum.farFace = { glm::vec3(0.0f, 0.0f, -1.0f),
-                         glm::vec3(0.0f, 0.0f, 1.0f) };
-    frustum.rightFace = { glm::vec3(1.0f, 0.0f, 0.0f),
-                         glm::vec3(-1.0f, 0.0f, 0.0f) };
-    frustum.leftFace = { glm::vec3(-1.0f, 0.0f, 0.0f),
-                         glm::vec3(1.0f, 0.0f, 0.0f)};
-    frustum.topFace = { glm::vec3(0.0f, 1, 0.0f),
-                            glm::vec3(0, -1, 0)};
-    frustum.bottomFace = { glm::vec3(0.0f, -1, 0.0f),
-                            glm::vec3(0, 1, 0)};
-
-    return frustum;
-}
-
 unsigned int loadCubemap(std::vector<std::string> faces)
 {
     unsigned int textureID;
@@ -545,10 +520,6 @@ int main(int, char**)
 
     LevelGenerator gen(caveModels, walls, floors, lampModels, lampColliders, spawnerCollidersGen);
 
-
-    Frustum camFrustum = createFrustumFromCamera(camera,
-        (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
-
     //    Model zombieAnimTestModel("./res/models/zombie/zombieAnimTest.fbx");
     //    zombieAnimTestModel.transform.scale = glm::vec3(2.5f);
     //    zombieAnimTestModel.transform.position = glm::vec3(0.0f, -200.0f, 0.0f);
@@ -821,8 +792,6 @@ int main(int, char**)
 //          for (int i = 0; i < transforms.size(); ++i)
 //          skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
             }
-
-            camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
             //-------- DRAW --------//
             {
