@@ -127,6 +127,10 @@ public:
         else facingDir = -1;
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerFacingDir = facingDir;
 
+        if (dir == FRONT_DIR || dir == RIGHT_DIR) facingDir = 1;
+        else facingDir = -1;
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->reverse = facingDir;
+
 
     }
 
