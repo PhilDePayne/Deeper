@@ -171,8 +171,11 @@ float lastFrame = 0.0f;
 
 bool restart = true;
 
+// Player and cart params
 float cartSize = 0.266f;
 float cartYoffset = -22.667f;
+float characterSize = 0.168f;
+
 
 //camera var
 int rotate = 0;
@@ -401,7 +404,7 @@ int main(int, char**)
 //    componentPtr caveModel(new Model("./res/models/Colliders/cave1floor.fbx", true));
     componentPtr lampModel(new Model("./res/models/Colliders/cave1_lampColliders.fbx", true));
     componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
-    componentPtr cartModel(new Model("./res/models/cart/cart_mdl2.fbx", true));
+    componentPtr cartModel(new Model("./res/models/cart/cart_mdl3.fbx", true));
 
     componentPtr spawnerColliders(new Model("./res/models/Colliders/spawnerColliders.fbx", true));
     componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
@@ -411,8 +414,8 @@ int main(int, char**)
     pickaxe->addComponent<PickaxeAI>(pickaxe);
     pickaxe->addComponent<SphereCollider>(pickaxe);
     pickaxe->tag = Tag::PICKAXE;
-    Player player("./res/models/Box/box.fbx", pickaxe);
-    player.getBody()->transform.scale = glm::vec3(2.0f);
+    Player player("./res/models/miner/character2.fbx", pickaxe);
+    player.getBody()->transform.scale = glm::vec3(characterSize);
 //    player.getBody()->transform.position = glm::vec3(577.066101f, 309.0f, -586.7f);
     player.getBody()->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
     player.getBody()->transform.y_rotation_angle = 90.0f;
@@ -639,7 +642,8 @@ int main(int, char**)
         case GAME_RUNNING: {
             ambient.continuePlaying();
             //TODO: reset kamery
-            if (restart) {
+            if (restart)
+            {
                 gen.newGame(SCR_HEIGHT);
                 player.newGame();
                 cameraY = 0.0f;
@@ -680,13 +684,9 @@ int main(int, char**)
                 ImGui::NewLine();
                 ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
                 ImGui::NewLine();
-
-                ImGui::SliderFloat("cartSize", &cartSize, 0.1f, 1.0f);
-                ImGui::NewLine();
-                ImGui::SliderFloat("cartHeight", &cartYoffset, -50.0f, 50.0f);
-                ImGui::NewLine();
-//                ImGui::SliderFloat("nearPlane", &nearPlane, -25.0f, 25.0f);
+//                ImGui::SliderFloat("characterSize", &characterSize, 0.001f, 1.0f);
 //                ImGui::NewLine();
+
                 ImGui::Text("which cave %i", gen.getCur());
                 ImGui::NewLine();
                 ImGui::Text("current cave: %i at rotation %f", gen.getCur(), gen.getCurrentFloor()->transform.y_rotation_angle);
@@ -696,7 +696,7 @@ int main(int, char**)
                 }
 
                 ImGui::End();
-                }
+            }
 
 
 
@@ -735,25 +735,30 @@ int main(int, char**)
             }
                         
             //-------- PHYSICS --------//
-
-            gen.update(camera.getCamPos().y);
-            gen.whereAmI(player.getBody()->transform.position.y);
+            {
+                gen.update(camera.getCamPos().y);
+                gen.whereAmI(player.getBody()->transform.position.y);
 
 //                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
-            if (rotate == 0) {
-                player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 15.00f, clipWidth);
+                if (rotate == 0) {
+                    player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 15.00f, clipWidth);
+                }
+                else {
+                    player.stop(); //gracz zatrzymywany przy obrocie kamery
+                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
+                }
+
+                //gracz obrocony jedna strona do kamery
+                player.rotate(-camera.getAngle());
+
+                if(!firstFrame) player.gravityOn(deltaTime);
+
+                cart->getComponent<Model>(ComponentType::MODEL)->transform.position = player.getBody()->transform.position + glm::vec3(0.0f, cartYoffset, 0.0f);
+                cart->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(cartSize);
+                cart->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = player.getBody()->transform.y_rotation_angle;
             }
-            else {
-                player.stop(); //gracz zatrzymywany przy obrocie kamery
-                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
-            }
 
-            //gracz obrocony jedna strona do kamery
-            player.rotate(-camera.getAngle());
-
-
-            if(!firstFrame) player.gravityOn(deltaTime);
             //-------- COLLISIONS --------//
 //            player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
 
@@ -786,25 +791,42 @@ int main(int, char**)
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            PBRShader.use();
-            PBRShader.setMat4("projection", proj);
-            PBRShader.setMat4("view", view);
-            PBRShader.setVec3("camPos", camera.Position);
-            PBRShader.setFloat("scale", scale);
-            PBRShader.setFloat("lightStrength", lightStrength);
-
-            for (unsigned int i = 0; i < lightPositions.size(); ++i)
+            // PBR shader setup
             {
-                glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-                newPos = lightPositions[i];
-                PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-                PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+                PBRShader.use();
+                PBRShader.setMat4("projection", proj);
+                PBRShader.setMat4("view", view);
+                PBRShader.setVec3("camPos", camera.Position);
+                PBRShader.setFloat("scale", scale);
+                PBRShader.setFloat("lightStrength", lightStrength);
+
+                for (unsigned int i = 0; i < lightPositions.size(); ++i)
+                {
+                    glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+                    newPos = lightPositions[i];
+                    PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+                    PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+                }
+            }
+
+            // PBRSkeleton shader setup
+            {
+                skeletonShader.use();
+                skeletonShader.setMat4("projection", proj);
+                skeletonShader.setMat4("view", view);
+                skeletonShader.setVec3("camPos", camera.Position);
+                skeletonShader.setFloat("scale", scale);
+
+//          auto transforms = animator.GetFinalBoneMatrices();
+//          for (int i = 0; i < transforms.size(); ++i)
+//          skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
             }
 
             camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
 
             //-------- DRAW --------//
             {
+                player.getBody()->transform.scale = glm::vec3(characterSize);
 
 //                level.Draw(PBRShader);
 //                lamps.Draw(PBRShader);
@@ -815,34 +837,19 @@ int main(int, char**)
 //                spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
 //                floor1.Draw(PBRShader);
-                cart->getComponent<Model>(ComponentType::MODEL)->transform.position = player.getBody()->transform.position + glm::vec3(0.0f, cartYoffset, 0.0f);
-                cart->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(cartSize);
-                cart->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = player.getBody()->transform.y_rotation_angle;
+
                 cart->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
                 gen.DrawLevels(PBRShader);
 
-                for (auto larva : larvas) {
-
+                for (auto larva : larvas)
+                {
                     larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
-
                 }
+
                 player.render(PBRShader);
+                //simpleModel.Draw(skeletonShader);
             }
-
-
-            // Animation model
-//            skeletonShader.use();
-//            skeletonShader.setMat4("projection", proj);
-//            skeletonShader.setMat4("view", view);
-//            skeletonShader.setVec3("camPos", camera.Position);
-//            skeletonShader.setFloat("scale", scale);
-
-//            auto transforms = animator.GetFinalBoneMatrices();
-//            for (int i = 0; i < transforms.size(); ++i)
-//                skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
-
-            //simpleModel.Draw(skeletonShader);
 
             //SKYBOX
             if (skybox)
