@@ -766,7 +766,6 @@ int main(int, char**)
 
             for (auto larva : larvas) {
 
-                player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
                 larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
                 larva->getComponent<LarvaAI>(ComponentType::AI)->setKillSound(&wormKillSound);
 //                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
