@@ -44,7 +44,7 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 void PickaxeAI::pickaxeThrow(int dir, int orientation, int reverse) {
 
 	if(orientation == 1)
-		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += reverse * -dir * glm::sin(1 * (glfwGetTime() - throwTime));
+		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += reverse * dir * glm::sin(1 * (glfwGetTime() - throwTime));
 	else
 		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += reverse * -dir * glm::sin(1 * (glfwGetTime() - throwTime));
 
