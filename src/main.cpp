@@ -332,6 +332,7 @@ int main(int, char**)
     Sound ambient("./res/sounds/ambient.wav");
     Sound lampSound("./res/sounds/lampTurnOn.wav");
     Sound pickaxeThrowSound("./res/sounds/pickaxeThrow.wav");
+    Sound wormKillSound("./res/sounds/wormKill.wav");
 
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
@@ -767,6 +768,7 @@ int main(int, char**)
 
                 player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
                 larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+                larva->getComponent<LarvaAI>(ComponentType::AI)->setKillSound(&wormKillSound);
 //                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
                 larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
 //                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());

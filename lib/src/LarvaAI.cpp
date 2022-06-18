@@ -1,4 +1,5 @@
 #include "LarvaAI.h"
+#include "Sound.h"
 
 void LarvaAI::onCollisionEnter(BoxCollider collided) {
 
@@ -10,7 +11,10 @@ void LarvaAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
 	if (colliderTag == Tag::PICKAXE) {
 		if (larvas->size() > 0) {
-
+            if (killSound != nullptr)
+            {
+                killSound->play();
+            }
 			printf("LARVA TRIGGER\n");
 			larvas->erase(larvas->begin());
 			parent->~GameObject();
@@ -56,4 +60,9 @@ void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<g
 	larvas->back()->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(larvas->back()->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
 	larva.reset();
+}
+
+void LarvaAI::setKillSound(Sound *newKillSound)
+{
+    killSound = newKillSound;
 }
