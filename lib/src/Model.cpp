@@ -100,6 +100,20 @@ void Model::Draw(Shader shader)
     }
 }
 
+void Model::Draw(Shader shader, Transform customTransform)
+{
+    for (unsigned int i = 0; i < meshes.size(); i++)
+    {
+        if (meshes[i].getTexturesSetId() != loadedSet)
+        {
+            passMapsToShader(meshes[i].getTexturesSetId());
+        }
+
+        meshes[i].Draw(shader, customTransform);
+        
+    }
+}
+
 void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &view)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
@@ -397,7 +411,9 @@ std::vector<BoxCollider> Model::getColliders()
     tmp.setCenter(glm::vec3(0.0f));
     tmp.setSize(glm::vec3(0.0f));
 
-    for(auto i : meshes){
+    for(auto &i : meshes){
+
+        //printf("%f %f %f %f %f %f %f %f %f\n", i.boundingVolume.getCenter().x, i.boundingVolume.getCenter().y, i.boundingVolume.getCenter().z, tmp.getSizeX(), tmp.getSizeY(), tmp.getSizeZ(), tmp.x_rotation_angle, tmp.y_rotation_angle, tmp.z_rotation_angle);
 
         tmp.setCenter(glm::vec3(glm::translate(glm::mat4(1.0f), localTransform.position) * 
                                 (glm::translate(glm::mat4(1.0f), glm::vec3(-localTransform.position.x, -localTransform.position.y, -localTransform.position.z)) *

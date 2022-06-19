@@ -26,7 +26,7 @@ Mesh::Mesh(std::vector<Vertex> &vertices, std::vector<GLuint> &indices, glm::mat
     setupMesh();
 
     if (bound) {
-        for (auto i : vertices) {
+        for (auto &i : vertices) {
 
             if (i.Position.x > maxX) maxX = i.Position.x;
             if (i.Position.x < minX) minX = i.Position.x;

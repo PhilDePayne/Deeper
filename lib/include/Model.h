@@ -41,9 +41,11 @@ class Model : public Component
 {
 public:
 
-    Model(char *path, bool bound = 0);
+    Model(char *path, bool = false);
 
     void Draw(Shader shader);
+
+    void Draw(Shader shader, Transform transform);
 
     void Draw(Shader shader, Frustum& frustum, glm::mat4& proj, glm::mat4& view);
 
@@ -63,7 +65,7 @@ private:
 
     std::vector<Mesh> meshes;
     std::string directory;
-    bool boundMeshes;
+    bool boundMeshes = true;
     GLuint totalNodes = 0;
 
     std::map<std::string, BoneInfo> BoneInfoMap;
