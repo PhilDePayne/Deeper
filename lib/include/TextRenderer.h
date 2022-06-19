@@ -129,7 +129,7 @@ public:
         int prevLit = std::accumulate(prevLamps.begin(), prevLamps.end(), 0);
 
         if(sumLit > prevLit) {
-            addPoints(abs(posY)/20);
+            addPoints(abs(posY)/12);
             prevLamps = *litLamps;
         }
 

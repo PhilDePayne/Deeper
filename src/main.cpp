@@ -488,32 +488,46 @@ int main(int, char**)
 
     //-------- LEVEL RESOURCES --------//
 
-    Model level("./res/models/cave1/cave1_nr_mdl.fbx");
-    level.transform.scale = glm::vec3(50.0f);
-    level.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
+    //cave models
+    Model cave1("./res/models/cave1/cave1_nr_mdl.fbx");
+    cave1.transform.scale = glm::vec3(50.0f);
+//    Model cave2("./res/models/cave2/cave2_nr_mdl.fbx");
+//    cave2.transform.scale = glm::vec3(50.0f);
+//    Model cave3("./res/models/cave3/cave3_nr_mdl.fbx");
+//    cave3.transform.scale = glm::vec3(50.0f);
 
-    Model LRcolliders("./res/models/Colliders/LRWalls.fbx", true);
-    LRcolliders.transform.scale = glm::vec3(50.0f);
-    LRcolliders.transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
+    //walls
+    Model Xcoll1("./res/models/Colliders/cave1CollX.fbx", true);
+    Xcoll1.transform.scale = glm::vec3(50.0f);
+    Model Ycoll1("./res/models/Colliders/cave1CollY.fbx", true);
+    Ycoll1.transform.scale = glm::vec3(50.0f);
+//    Model Xcoll2("./res/models/Colliders/cave2CollX.fbx", true);
+//    Xcoll2.transform.scale = glm::vec3(50.0f);
+//    Model Ycoll2("./res/models/Colliders/cave2CollY.fbx", true);
+//    Ycoll2.transform.scale = glm::vec3(50.0f);
+//    Model Xcoll3("./res/models/Colliders/cave3CollX.fbx", true);
+//    Xcoll3.transform.scale = glm::vec3(50.0f);
+//    Model Ycoll3("./res/models/Colliders/cave3CollY.fbx", true);
+//    Ycoll3.transform.scale = glm::vec3(50.0f);
 
-    Model FBcolliders("./res/models/Colliders/FBWalls.fbx", true);
-    FBcolliders.transform.scale = glm::vec3(50.0f);
-    FBcolliders.transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
-
+    //floors
     Model floor1("./res/models/Colliders/cave1floor.fbx", true);
     floor1.transform.scale = glm::vec3(50.0f);
-    floor1.transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
+//    Model floor2("./res/models/Colliders/cave2floor.fbx");
+//    floor2.transform.scale = glm::vec3(50.0f);
+//    Model floor3("./res/models/Colliders/cave3floor.fbx");
+//    floor3.transform.scale = glm::vec3(50.0f);
 
-    Model lamps("./res/models/lampka/cave1Lamps.fbx");
-    lamps.transform.scale = glm::vec3(50.0f);
-    lamps.transform.position = glm::vec3(0.0f, -1460.0f, 0.0f);
+    //lamps
+    Model lamps1("./res/models/lampka/cave1Lamps.fbx");
+    lamps1.transform.scale = glm::vec3(50.0f);
 
 
     //-------- LEVEL GENERATOR SET UP --------//
-    std::vector<Model> caveModels = {level, level, level};
-    std::vector<std::vector<Model>> walls = {{LRcolliders, FBcolliders}, {LRcolliders, FBcolliders}, {LRcolliders, FBcolliders}};
+    std::vector<Model> caveModels = {cave1, cave1, cave1};
+    std::vector<std::vector<Model>> walls = {{Xcoll1, Ycoll1}, {Xcoll1, Ycoll1}, {Xcoll1, Ycoll1}};
     std::vector<Model> floors = {floor1, floor1, floor1};
-    std::vector<Model> lampModels = {lamps, lamps, lamps};
+    std::vector<Model> lampModels = {lamps1, lamps1, lamps1};
     std::vector<Model> lampColliders = {*lamp->getComponent<Model>(ComponentType::MODEL), *lamp->getComponent<Model>(ComponentType::MODEL), *lamp->getComponent<Model>(ComponentType::MODEL)};
     std::vector<Model> spawnerCollidersGen = {*spawners->getComponent<Model>(ComponentType::MODEL), *spawners->getComponent<Model>(ComponentType::MODEL), *spawners->getComponent<Model>(ComponentType::MODEL)};
 

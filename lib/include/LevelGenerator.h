@@ -21,7 +21,6 @@ public:
         spawnerColliders = std::move(_spawnerColliders);
     }
 
-    //TODO: blad w jednym miejscu
     void newGame(int height) {
         randomize();
         initPos = (float)height * -1.0f - 800.0f;
@@ -72,7 +71,7 @@ public:
 //        }
 
         lampModels[cur].Draw(shader);
-        floors[cur].Draw(shader);
+//        floors[cur].Draw(shader);
 
     }
 
