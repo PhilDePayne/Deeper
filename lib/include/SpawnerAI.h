@@ -20,7 +20,6 @@ public:
 
 	std::vector<glm::vec3>* lights;
 	std::vector<gameObjectPtr>* larvas;
-	componentPtr larvaModel;
 
 private:
 

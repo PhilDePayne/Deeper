@@ -45,6 +45,8 @@ public:
 
     void Draw(Shader shader);
 
+    void Draw(Shader shader, Transform transform);
+
     void Draw(Shader shader, Frustum& frustum, glm::mat4& proj, glm::mat4& view);
 
     std::vector<BoxCollider> getColliders();

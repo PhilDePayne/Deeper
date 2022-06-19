@@ -382,7 +382,8 @@ int main(int, char**)
     componentPtr cartModel(new Model("./res/models/cart/cart_mdl3.fbx", true));
 
     componentPtr spawnerColliders(new Model("./res/models/Colliders/spawnerColliders.fbx", true));
-    componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
+    //componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
+    Model larvaMdl("./res/models/Box/box.fbx");
 
     //TODO: zmienic przypisanie kilofa do gracza
     pickaxe->addComponent(pickaxeModel, pickaxe);
@@ -446,7 +447,6 @@ int main(int, char**)
         spawners->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
         spawners->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
         spawners->addComponent<SpawnerAI>(spawners);
-        spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvaModel = larvaModel;
         spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvas = &larvas;
         spawners->getComponent<SpawnerAI>(ComponentType::AI)->lights = &lightPositions;
     }
@@ -741,15 +741,13 @@ int main(int, char**)
             gen.triggers(&player);
 
             for (auto larva : larvas) {
-
-                larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
-                larva->getComponent<LarvaAI>(ComponentType::AI)->setKillSound(&wormKillSound);
-//                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
-//                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(gen.getCurrentLamps()->getColliders());
-                if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
-                    pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    if (larva != nullptr) {
+                        larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+                        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                        if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
+                            pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                        }
                 }
 
             }
@@ -809,10 +807,9 @@ int main(int, char**)
                 cart->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
                 gen.DrawLevels(PBRShader);
-
-                for (auto larva : larvas)
-                {
-                    larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                    if (larva != nullptr) {
+                        //larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                        larvaMdl.Draw(PBRShader, *larva->getComponent<Transform>(ComponentType::TRANSFORM));
                 }
 
                 player.render(PBRShader);

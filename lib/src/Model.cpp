@@ -100,6 +100,20 @@ void Model::Draw(Shader shader)
     }
 }
 
+void Model::Draw(Shader shader, Transform customTransform)
+{
+    for (unsigned int i = 0; i < meshes.size(); i++)
+    {
+        if (meshes[i].getTexturesSetId() != loadedSet)
+        {
+            passMapsToShader(meshes[i].getTexturesSetId());
+        }
+
+        meshes[i].Draw(shader, customTransform);
+        
+    }
+}
+
 void Model::Draw(Shader shader, Frustum& frustum, glm::mat4 &proj, glm::mat4 &view)
 {
     for(unsigned int i = 0; i < meshes.size(); i++)
