@@ -14,7 +14,7 @@ void SpawnerAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 	if (colliderTag == Tag::PLAYER && !used) {
 
 		printf("INSTANTIATE LARVA\n");
-		LarvaAI::instantiateLarva(larvas, lights, larvaModel, collided.getCenter());
+		LarvaAI::instantiateLarva(larvas, lights, collided.getCenter());
 		usedSpawners.push_back(collided.getCenter());
 
 	}

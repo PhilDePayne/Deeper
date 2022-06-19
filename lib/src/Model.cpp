@@ -12,12 +12,12 @@
 // Log macros to disable/enable certain logs in model class
 #ifdef DEEPER_MODEL_CLASS_LOGS
 
-#define DRAW_NODE_TREE_LOG
+//#define DRAW_NODE_TREE_LOG
 #define TEXTURE_LOAD_LOG
-#define PROCESS_MESH_LOG
+//#define PROCESS_MESH_LOG
 //#define COLLIDER_COORD_LOG
-#define MODEL_GENERAL_INFO_LOG
-#define TEST_LOG
+//#define MODEL_GENERAL_INFO_LOG
+//#define TEST_LOG
 
 #endif
 
@@ -77,6 +77,7 @@ bool isOnOrForwardPlan(BoxCollider b, Plan p, glm::mat4 proj, glm::mat4 view) {
 
 void Model::Draw(Shader shader)
 {
+    shader.use();
     for (unsigned int i = 0; i < meshes.size(); i++)
     {
             if (meshes[i].getTexturesSetId() != loadedSet)
@@ -84,7 +85,7 @@ void Model::Draw(Shader shader)
                 passMapsToShader(meshes[i].getTexturesSetId());
             }
 
-            if (parent != nullptr) { //TODO: burdel straszny, wszystkie elementy gry w gameObject wsadziæ
+            if (parent != nullptr) { //TODO: burdel straszny, wszystkie elementy gry w gameObject wsadziï¿½
                 if (parent->getComponent<Transform>(ComponentType::TRANSFORM) != nullptr) {
                     Transform temp = *parent->getComponent<Transform>(ComponentType::TRANSFORM); //TODO: sprawdzic czy nie mozna szybciej
                     meshes[i].Draw(shader, temp);
@@ -96,6 +97,20 @@ void Model::Draw(Shader shader)
             else {
                 meshes[i].Draw(shader, transform);
             }
+    }
+}
+
+void Model::Draw(Shader shader, Transform customTransform)
+{
+    for (unsigned int i = 0; i < meshes.size(); i++)
+    {
+        if (meshes[i].getTexturesSetId() != loadedSet)
+        {
+            passMapsToShader(meshes[i].getTexturesSetId());
+        }
+
+        meshes[i].Draw(shader, customTransform);
+        
     }
 }
 

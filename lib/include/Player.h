@@ -120,12 +120,26 @@ public:
 
         collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.y = body->transform.position.y + 30.0f;
+        if (dirLR == 1)
+        {
+            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = -180.0f;
+            body->transform.y_rotation_angle = -180.0f;
+        }
+        else
+        {
+            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = 0.0f;
+            body->transform.y_rotation_angle = 0.0f;
+        }
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerDir = dirLR;
         int facingDir = 0;
         if (dir == FRONT_DIR || dir == BACK_DIR) facingDir = 1;
         else facingDir = -1;
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerFacingDir = facingDir;
+
+        if (dir == FRONT_DIR || dir == RIGHT_DIR) facingDir = 1;
+        else facingDir = -1;
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->reverse = facingDir;
 
 
     }
@@ -171,8 +185,13 @@ public:
     }
 
     void rotate(float angle) {
-        body->transform.y_rotation_angle = angle + 90.0f;
-        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = angle;
+        float lookingRotation = 0.0f;
+        if (dirLR != -1)
+        {
+            lookingRotation = 180.0f;
+        }
+        body->transform.y_rotation_angle = angle + 90.0f + lookingRotation;
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = angle + lookingRotation;
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.y = body->transform.position.y + 30.0f;
     }
 

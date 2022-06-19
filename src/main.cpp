@@ -68,34 +68,8 @@ const unsigned int SCR_HEIGHT = 1080;
 
 int display_w, display_h;
 
-
 bool debugBox = 0;
 bool skybox = 1;
-
-Frustum createFrustumFromCamera(const Camera& cam, float aspect, float fovY,
-                                float zNear, float zFar)
-{
-    Frustum     frustum;
-    const float halfVSide = zFar * tanf(fovY * .5f);
-    const float halfHSide = halfVSide * aspect;
-    const glm::vec3 frontMultFar = zFar * cam.Front;
-    //printf("Cam position Y: %f\n", cam.Position.y);
-
-    frustum.nearFace = { glm::vec3(0.0f, 0.0f, 1.0f),
-                         glm::vec3(0.0f, 0.0f, -1.0f) };
-    frustum.farFace = { glm::vec3(0.0f, 0.0f, -1.0f),
-                         glm::vec3(0.0f, 0.0f, 1.0f) };
-    frustum.rightFace = { glm::vec3(1.0f, 0.0f, 0.0f),
-                         glm::vec3(-1.0f, 0.0f, 0.0f) };
-    frustum.leftFace = { glm::vec3(-1.0f, 0.0f, 0.0f),
-                         glm::vec3(1.0f, 0.0f, 0.0f)};
-    frustum.topFace = { glm::vec3(0.0f, 1, 0.0f),
-                            glm::vec3(0, -1, 0)};
-    frustum.bottomFace = { glm::vec3(0.0f, -1, 0.0f),
-                            glm::vec3(0, 1, 0)};
-
-    return frustum;
-}
 
 unsigned int loadCubemap(std::vector<std::string> faces)
 {
@@ -171,6 +145,12 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool restart = true;
+
+// Player and cart params
+float cartSize = 0.266f;
+float cartYoffset = -22.667f;
+float characterSize = 0.168f;
+
 
 //camera var
 int rotate = 0;
@@ -330,6 +310,7 @@ int main(int, char**)
     Sound ambient("./res/sounds/ambient.wav");
     Sound lampSound("./res/sounds/lampTurnOn.wav");
     Sound pickaxeThrowSound("./res/sounds/pickaxeThrow.wav");
+    Sound wormKillSound("./res/sounds/wormKill.wav");
 
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
@@ -390,6 +371,7 @@ int main(int, char**)
     gameObjectPtr cube(new GameObject());
     gameObjectPtr sphere(new GameObject());
 //    gameObjectPtr cave(new GameObject());
+    gameObjectPtr cart(new GameObject());
     gameObjectPtr lamp(new GameObject());
     gameObjectPtr pickaxe(new GameObject());
     gameObjectPtr spawners(new GameObject());
@@ -397,17 +379,19 @@ int main(int, char**)
 //    componentPtr caveModel(new Model("./res/models/Colliders/cave1floor.fbx", true));
     componentPtr lampModel(new Model("./res/models/Colliders/cave1_lampColliders.fbx", true));
     componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
+    componentPtr cartModel(new Model("./res/models/cart/cart_mdl3.fbx", true));
 
     componentPtr spawnerColliders(new Model("./res/models/Colliders/spawnerColliders.fbx", true));
-    componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
+    //componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
+    Model larvaMdl("./res/models/Box/box.fbx");
 
     //TODO: zmienic przypisanie kilofa do gracza
     pickaxe->addComponent(pickaxeModel, pickaxe);
     pickaxe->addComponent<PickaxeAI>(pickaxe);
     pickaxe->addComponent<SphereCollider>(pickaxe);
     pickaxe->tag = Tag::PICKAXE;
-    Player player("./res/models/Box/box.fbx", pickaxe);
-    player.getBody()->transform.scale = glm::vec3(2.0f);
+    Player player("./res/models/miner/character2.fbx", pickaxe);
+    player.getBody()->transform.scale = glm::vec3(characterSize);
 //    player.getBody()->transform.position = glm::vec3(577.066101f, 309.0f, -586.7f);
     player.getBody()->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
     player.getBody()->transform.y_rotation_angle = 90.0f;
@@ -439,6 +423,9 @@ int main(int, char**)
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(glm::vec3(1.0f));
         sphere->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(1.0f);
 
+        cart->addComponent(cartModel, cart);
+        cart->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(0.5f);
+
         lamp->addComponent(lampModel, lamp);
         lamp->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
         lamp->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
@@ -460,7 +447,6 @@ int main(int, char**)
         spawners->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
         spawners->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
         spawners->addComponent<SpawnerAI>(spawners);
-        spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvaModel = larvaModel;
         spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvas = &larvas;
         spawners->getComponent<SpawnerAI>(ComponentType::AI)->lights = &lightPositions;
     }
@@ -533,10 +519,6 @@ int main(int, char**)
 
 
     LevelGenerator gen(caveModels, walls, floors, lampModels, lampColliders, spawnerCollidersGen);
-
-
-    Frustum camFrustum = createFrustumFromCamera(camera,
-        (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, 0.1f, 100.0f);
 
     //    Model zombieAnimTestModel("./res/models/zombie/zombieAnimTest.fbx");
     //    zombieAnimTestModel.transform.scale = glm::vec3(2.5f);
@@ -631,7 +613,8 @@ int main(int, char**)
         case GAME_RUNNING: {
             ambient.continuePlaying();
             //TODO: reset kamery
-            if (restart) {
+            if (restart)
+            {
                 gen.newGame(SCR_HEIGHT);
                 player.newGame();
                 cameraY = 0.0f;
@@ -669,13 +652,19 @@ int main(int, char**)
                 ImGui::NewLine();
                 ImGui::SliderFloat("zoom", &r, 0.1f, 1.0f);
                 ImGui::NewLine();
+//                ImGui::SliderFloat("characterSize", &characterSize, 0.001f, 1.0f);
+//                ImGui::NewLine();
+
+                ImGui::Text("which cave %i", gen.getCur());
+                ImGui::NewLine();
                 ImGui::Text("current cave: %i at rotation %f", gen.getCur(), gen.getCurrentFloor()->transform.y_rotation_angle);
+
                 if(ImGui::Button("New game")) {
                     restart = true;
                 }
 
                 ImGui::End();
-                }
+            }
 
 
 
@@ -716,48 +705,52 @@ int main(int, char**)
             }
                         
             //-------- PHYSICS --------//
-
-            gen.update(camera.getCamPos().y);
-            gen.whereAmI(player.getBody()->transform.position.y);
+            {
+                gen.update(camera.getCamPos().y);
+                gen.whereAmI(player.getBody()->transform.position.y);
 
 //                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
-            if (rotate == 0) {
-                player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
-                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 0.0f, clipWidth);
-            }
-            else {
-                player.stop(); //gracz zatrzymywany przy obrocie kamery
-                camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
-            }
-
-            //gracz obrocony jedna strona do kamery
-            player.rotate(-camera.getAngle());
-
-            for (int i = 0; i < 1; i++)
-            {
-                if(!firstFrame) player.gravityOn(deltaTime);
-                //-------- COLLISIONS --------//
-                gen.collisions(&player);
-
-                //-------- TRIGGERS --------//
-                gen.triggers(&player);
-
-                for (auto larva : larvas) {
-
-                    player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
-                    larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
-//                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
-//                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(gen.getCurrentLamps()->getColliders());
-                    if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
-                        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
-                    }
-                    
+                if (rotate == 0) {
+                    player.move(window, camera.getCameraDirection(), deltaTime, depthPos);
+                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 15.00f, clipWidth);
+                }
+                else {
+                    player.stop(); //gracz zatrzymywany przy obrocie kamery
+                    camera.AdjustPlanes(SCR_WIDTH * r, SCR_HEIGHT * r, depthPos, 5000.0f, 5000.0f);
                 }
 
-                
+                //gracz obrocony jedna strona do kamery
+                player.rotate(-camera.getAngle());
+
+                if(!firstFrame) player.gravityOn(deltaTime);
+
+                cart->getComponent<Model>(ComponentType::MODEL)->transform.position = player.getBody()->transform.position + glm::vec3(0.0f, cartYoffset, 0.0f);
+                cart->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(cartSize);
+                cart->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = player.getBody()->transform.y_rotation_angle;
             }
+
+            //-------- COLLISIONS --------//
+//            player.checkCollision(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+
+            gen.collisions(&player);
+
+            //-------- TRIGGERS --------//
+//            player.detectCollision(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+//            player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
+            gen.triggers(&player);
+
+            for (auto larva : larvas) {
+                    if (larva != nullptr) {
+                        larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+                        //larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                        if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
+                            pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                        }
+                }
+
+            }
+
 
             firstFrame = false;
 
@@ -765,48 +758,64 @@ int main(int, char**)
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            PBRShader.use();
-            PBRShader.setMat4("projection", proj);
-            PBRShader.setMat4("view", view);
-            PBRShader.setVec3("camPos", camera.Position);
-            PBRShader.setFloat("scale", scale);
-            PBRShader.setFloat("lightStrength", lightStrength);
-
-            for (unsigned int i = 0; i < lightPositions.size(); ++i)
+            // PBR shader setup
             {
-                glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-                newPos = lightPositions[i];
-                PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-                PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+                PBRShader.use();
+                PBRShader.setMat4("projection", proj);
+                PBRShader.setMat4("view", view);
+                PBRShader.setVec3("camPos", camera.Position);
+                PBRShader.setFloat("scale", scale);
+                PBRShader.setFloat("lightStrength", lightStrength);
+
+                for (unsigned int i = 0; i < lightPositions.size(); ++i)
+                {
+                    glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+                    newPos = lightPositions[i];
+                    PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+                    PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+                }
             }
 
-            camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
+            // PBRSkeleton shader setup
+            {
+                skeletonShader.use();
+                skeletonShader.setMat4("projection", proj);
+                skeletonShader.setMat4("view", view);
+                skeletonShader.setVec3("camPos", camera.Position);
+                skeletonShader.setFloat("scale", scale);
+
+//          auto transforms = animator.GetFinalBoneMatrices();
+//          for (int i = 0; i < transforms.size(); ++i)
+//          skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
+            }
 
             //-------- DRAW --------//
             {
+                player.getBody()->transform.scale = glm::vec3(characterSize);
+
+//                level.Draw(PBRShader);
+//                lamps.Draw(PBRShader);
+                //LRcolliders.Draw(PBRShader);
+                //FBcolliders.Draw(PBRShader);
+//                cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+//                spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+
+//                floor1.Draw(PBRShader);
+
+                cart->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+
                 gen.DrawLevels(PBRShader);
-
                 for (auto larva : larvas) {
-
-                    larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
-
+                    if (larva != nullptr) {
+                        //larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                        larvaMdl.Draw(PBRShader, *larva->getComponent<Transform>(ComponentType::TRANSFORM));
+                    }
                 }
+
                 player.render(PBRShader);
+                //simpleModel.Draw(skeletonShader);
             }
-
-
-            // Animation model
-//            skeletonShader.use();
-//            skeletonShader.setMat4("projection", proj);
-//            skeletonShader.setMat4("view", view);
-//            skeletonShader.setVec3("camPos", camera.Position);
-//            skeletonShader.setFloat("scale", scale);
-
-//            auto transforms = animator.GetFinalBoneMatrices();
-//            for (int i = 0; i < transforms.size(); ++i)
-//                skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
-
-            //simpleModel.Draw(skeletonShader);
 
             //SKYBOX
             if (skybox)
