@@ -21,11 +21,10 @@ class Player {
 public:
 
     Player(char *path, gameObjectPtr pickaxe) : pickaxe(pickaxe) {
-        body = new Model(path);
+        body = new Model(path, true);
         collider.setRadius(25.0f);
         pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position = body->transform.position;
-//        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.y += 100.0f;
-        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(25.0f);
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
     }
 
@@ -118,20 +117,6 @@ public:
 //        rotateLeftRight((int) dir);
 //        correctAngle((int)dir);
 
-        collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
-        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.y = body->transform.position.y + 30.0f;
-        if (dirLR == 1)
-        {
-            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = -180.0f;
-            body->transform.y_rotation_angle = -180.0f;
-        }
-        else
-        {
-            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = 0.0f;
-            body->transform.y_rotation_angle = 0.0f;
-        }
-        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
-        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerDir = dirLR;
         int facingDir = 0;
         if (dir == FRONT_DIR || dir == BACK_DIR) facingDir = 1;
         else facingDir = -1;
@@ -140,6 +125,24 @@ public:
         if (dir == FRONT_DIR || dir == RIGHT_DIR) facingDir = 1;
         else facingDir = -1;
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->reverse = facingDir;
+
+        collider.setCenter(glm::vec3(body->transform.position.x, body->transform.position.y, body->transform.position.z));
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position.y = body->transform.position.y + 30.0f;
+        if (dirLR == 1)
+        {
+            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = -180.0f;
+            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.z_rotation_angle = -20.0f;
+            body->transform.y_rotation_angle = -180.0f;
+        }
+        else
+        {
+            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = 0.0f;
+            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.x_rotation_angle = -20.0f;
+            body->transform.y_rotation_angle = 0.0f;
+        }
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerDir = dirLR;
+        
 
 
     }

@@ -51,6 +51,8 @@ public:
 
     std::vector<BoxCollider> getColliders();
 
+    std::vector<Mesh> meshes;
+
     Transform transform;
 
     bool isType(ComponentType t) override;
@@ -63,7 +65,7 @@ private:
     GLuint loadedSet = 0; // current mapsSet in shader. Count from 1
     std::vector<MapsSet> mapsSets_loaded; // already loaded mapsSets from files
 
-    std::vector<Mesh> meshes;
+    
     std::string directory;
     bool boundMeshes = true;
     GLuint totalNodes = 0;
