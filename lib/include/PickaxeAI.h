@@ -36,6 +36,7 @@ private:
 	double throwTime;
 	Sound *throwSound = nullptr;
     Animator *throwAnimator = nullptr;
+	bool firstTravel = true;
 
     void pickaxeThrow(int dir, int orientation, int reverse);
 };

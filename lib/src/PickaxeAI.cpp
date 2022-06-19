@@ -43,6 +43,16 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 
 	else {
 		parent->getComponent<Model>(ComponentType::MODEL)->transform.position = playerPos;
+
+		if (playerFacingDir == 1) {
+			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += reverse * playerDir * 10.0f;
+			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += reverse * playerDir * 10.0f;
+		}
+		else {
+			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z -= reverse * playerDir * 10.0f;
+			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += reverse * playerDir * 10.0f;
+		}
+
 		parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
 	}
 
@@ -50,10 +60,22 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 
 void PickaxeAI::pickaxeThrow(int dir, int orientation, int reverse) {
 
-	if(orientation == 1)
-		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += reverse * dir * glm::sin(1 * (glfwGetTime() - throwTime));
-	else
-		parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += reverse * -dir * glm::sin(1 * (glfwGetTime() - throwTime));
+	float distance = glm::sin(1 * (glfwGetTime() - throwTime));
+
+	if (distance > 0 || firstTravel) {
+		if (orientation == 1)
+			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += reverse * dir * glm::sin(1 * (glfwGetTime() - throwTime));
+		else
+			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += reverse * -dir * glm::sin(1 * (glfwGetTime() - throwTime));
+
+		firstTravel = false;
+	}
+
+	else {
+		isThrown = false;
+		firstTravel = true;
+	}
+
 
 	//parent->getComponent<Model>(ComponentType::MODEL)->transform.position.y += glm::cos(1*(glfwGetTime() - throwTime));
 
