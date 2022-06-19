@@ -46,6 +46,7 @@ void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<g
 	//-------- MODEL --------//
 	larvas->back()->addComponent<Transform>(larvas->back());
 	larvas->back()->getComponent<Transform>(ComponentType::TRANSFORM)->position = pos;
+    larvas->back()->getComponent<Transform>(ComponentType::TRANSFORM)->scale = glm::vec3(0.2f);
 	//-------- AI --------//
 	larvas->back()->addComponent<LarvaAI>(larvas->back());
 	larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->lights = lightPositions;
@@ -62,7 +63,41 @@ void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<g
 	larva.reset();
 }
 
+
 void LarvaAI::setKillSound(Sound *newKillSound)
 {
     killSound = newKillSound;
+}
+
+float LarvaAI::rotateTowardsTarget(glm::vec3 pos, int cam_dir) {
+    if(cam_dir == 0) {
+        if(pos.x > parent->getComponent<Transform>(ComponentType::TRANSFORM)->position.x) {
+            return 0.0f;
+        }
+        else
+            return 1.0f;
+    }
+    else if(cam_dir == 1) {
+        if(pos.z < parent->getComponent<Transform>(ComponentType::TRANSFORM)->position.z) {
+            return 0.0f;
+        }
+        else
+            return 1.0f;
+    }
+    else if(cam_dir == 2) {
+        if(pos.x < parent->getComponent<Transform>(ComponentType::TRANSFORM)->position.x) {
+            return 0.0f;
+        }
+        else
+            return 1.0f;
+    }
+    else {
+        if(pos.z > parent->getComponent<Transform>(ComponentType::TRANSFORM)->position.z) {
+            return 0.0f;
+        }
+        else
+            return 1.0f;
+    }
+
+    return 0;
 }

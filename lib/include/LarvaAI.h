@@ -17,17 +17,19 @@ public:
 	void onTriggerEnter(BoxCollider collided, Tag colliderTag) override;
 	void update(GLFWwindow* window, float deltaTime) override;
     void setKillSound(Sound *newKillSound);
+    float rotateTowardsTarget(glm::vec3 pos, int dir);
 
 	static void instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, glm::vec3 pos);
 
 	std::vector<glm::vec3>* lights;
 	std::vector<gameObjectPtr>* larvas;
-	bool active = 0;
+	bool active = 1;
 
 private:
 
 	
 	float speed = 30.0f;
 	Sound *killSound = nullptr;
+	int dir = 1;
 
 };
