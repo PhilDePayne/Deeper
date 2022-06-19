@@ -384,7 +384,7 @@ int main(int, char**)
 
     componentPtr spawnerColliders(new Model("./res/models/Colliders/spawnerColliders.fbx", true));
     //componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
-    Model larvaMdl("./res/models/Box/box.fbx");
+    Model larvaMdl("./res/models/larva/alienAnim_mdl.fbx");
 
     //TODO: zmienic przypisanie kilofa do gracza
     pickaxe->addComponent(pickaxeModel, pickaxe);
@@ -830,6 +830,7 @@ int main(int, char**)
                 gen.DrawLevels(PBRShader);
                 for (auto larva : larvas) {
                     if (larva != nullptr) {
+                        larva->getComponent<Transform>(ComponentType::TRANSFORM)->y_rotation_angle = -camera.getAngle();
                         //larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
                         larvaMdl.Draw(PBRShader, *larva->getComponent<Transform>(ComponentType::TRANSFORM));
                     }
