@@ -1,5 +1,6 @@
 #include "PickaxeAI.h"
 #include "Sound.h"
+#include "Animator.h"
 
 void PickaxeAI::onCollisionEnter(BoxCollider collided) {
 
@@ -28,6 +29,12 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
         {
             throwSound->play();
         }
+
+        if (throwAnimator != nullptr)
+        {
+            throwAnimator->play();
+        }
+
 	}
 
 	else if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS && isThrown) isThrown = false;
@@ -57,4 +64,9 @@ void PickaxeAI::pickaxeThrow(int dir, int orientation, int reverse) {
 void PickaxeAI::setThrowSound(Sound *newThrowSound)
 {
     throwSound = newThrowSound;
+}
+
+void PickaxeAI::setThrowAnimator(Animator *newThrowAnimator)
+{
+    throwAnimator = newThrowAnimator;
 }

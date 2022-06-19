@@ -29,9 +29,9 @@ public:
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
     }
 
-    void render(Shader shader) {
-        body->Draw(shader);
-        pickaxe->getComponent<Model>(ComponentType::MODEL)->Draw(shader);
+    void render(Shader bodyShader, Shader pickaxeShader) {
+        body->Draw(bodyShader);
+        pickaxe->getComponent<Model>(ComponentType::MODEL)->Draw(pickaxeShader);
     }
 
     void newGame() {

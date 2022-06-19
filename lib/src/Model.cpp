@@ -12,11 +12,11 @@
 // Log macros to disable/enable certain logs in model class
 #ifdef DEEPER_MODEL_CLASS_LOGS
 
-//#define DRAW_NODE_TREE_LOG
-#define TEXTURE_LOAD_LOG
+#define DRAW_NODE_TREE_LOG
+//#define TEXTURE_LOAD_LOG
 //#define PROCESS_MESH_LOG
 //#define COLLIDER_COORD_LOG
-//#define MODEL_GENERAL_INFO_LOG
+#define MODEL_GENERAL_INFO_LOG
 //#define TEST_LOG
 
 #endif

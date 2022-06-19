@@ -150,6 +150,7 @@ bool restart = true;
 float cartSize = 0.266f;
 float cartYoffset = -22.667f;
 float characterSize = 0.168f;
+float characterRotation = 0.0f;
 
 
 //camera var
@@ -390,11 +391,14 @@ int main(int, char**)
     pickaxe->addComponent<PickaxeAI>(pickaxe);
     pickaxe->addComponent<SphereCollider>(pickaxe);
     pickaxe->tag = Tag::PICKAXE;
-    Player player("./res/models/miner/character2.fbx", pickaxe);
+    Player player("./res/models/miner/character_mdl.fbx", pickaxe);
     player.getBody()->transform.scale = glm::vec3(characterSize);
 //    player.getBody()->transform.position = glm::vec3(577.066101f, 309.0f, -586.7f);
     player.getBody()->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
     player.getBody()->transform.y_rotation_angle = 90.0f;
+
+    Animation throwingPickaxe("./res/models/miner/character_mdl.fbx", player.getBody());
+    Animator animator(&throwingPickaxe);
 
     //-------- GAMEOBJECT VECTORS --------//
 
@@ -441,6 +445,7 @@ int main(int, char**)
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->setThrowSound(&pickaxeThrowSound);
+        pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->setThrowAnimator(&animator);
         //LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel, glm::vec3(581.819336f, 303.709015f, -582.5f));
 
         spawners->addComponent(spawnerColliders, spawners);
@@ -534,21 +539,6 @@ int main(int, char**)
 
     LevelGenerator gen(caveModels, walls, floors, lampModels, lampColliders, spawnerCollidersGen);
 
-    //    Model zombieAnimTestModel("./res/models/zombie/zombieAnimTest.fbx");
-    //    zombieAnimTestModel.transform.scale = glm::vec3(2.5f);
-    //    zombieAnimTestModel.transform.position = glm::vec3(0.0f, -200.0f, 0.0f);
-
-    //    Model simpleModel("./res/models/zombie/zombieCorrect.fbx");
-    //    simpleModel.transform.scale = glm::vec3(1.5f);
-    //    simpleModel.transform.position = glm::vec3(0.0f, -200.0f, 20.0f);
-    //    Animation animation("./res/models/zombie/zombieCorrect.fbx", &simpleModel);
-    //    Model simpleModel("./res/models/debug/simpleAnimAF.fbx");
-    //    simpleModel.transform.scale = glm::vec3(3.5f);
-    //    simpleModel.transform.position = glm::vec3(0.0f, 000.0f, 0.0f);
-    //    simpleModel.transform.x_rotation_angle = 90.0f;
-    //    Animation animation("./res/models/debug/simpleAnimAF.fbx", &simpleModel);
-    //    Animator animator(&animation);
-
     unsigned int cubemapTexture;
     if (skybox) {
         cubemapTexture = loadCubemap(faces);
@@ -594,7 +584,7 @@ int main(int, char**)
     printf("%f\n", player.getBody()->transform.position.y);
     bool firstFrame = true;
 
-
+    float shaderChoice = -1.0f;
     //-------- MAIN LOOP --------//
     while (!glfwWindowShouldClose(window))
     {
@@ -640,7 +630,7 @@ int main(int, char**)
 
 
             state.gameRunning(window);
-            //              animator.UpdateAnimation(deltaTime);
+
 
 
             //-------- ImGui --------//
@@ -668,6 +658,12 @@ int main(int, char**)
                 ImGui::NewLine();
 //                ImGui::SliderFloat("characterSize", &characterSize, 0.001f, 1.0f);
 //                ImGui::NewLine();
+                ImGui::SliderFloat("characterRotation", &characterRotation, 0.0f, 360.0f);
+                ImGui::NewLine();
+                ImGui::SliderFloat("shaderChoice", &shaderChoice, -1.0f, 1.0f);
+                ImGui::NewLine();
+                ImGui::SliderFloat("lightStrength", &lightStrength, 0.0f, 150.0f);
+                ImGui::NewLine();
 
                 ImGui::Text("which cave %i", gen.getCur());
                 ImGui::NewLine();
@@ -797,10 +793,22 @@ int main(int, char**)
                 skeletonShader.setMat4("view", view);
                 skeletonShader.setVec3("camPos", camera.Position);
                 skeletonShader.setFloat("scale", scale);
+                skeletonShader.setFloat("lightStrength", lightStrength);
 
-//          auto transforms = animator.GetFinalBoneMatrices();
-//          for (int i = 0; i < transforms.size(); ++i)
-//          skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
+                animator.UpdateAnimation(deltaTime);
+                auto transforms = animator.GetFinalBoneMatrices();
+                for (int i = 0; i < transforms.size(); ++i)
+                {
+                    skeletonShader.setMat4("bones[" + std::to_string(i) + "]", transforms[i]);
+                }
+
+                for (unsigned int i = 0; i < lightPositions.size(); ++i)
+                {
+                    glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+                    newPos = lightPositions[i];
+                    skeletonShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
+                    skeletonShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+                }
             }
 
             //-------- DRAW --------//
@@ -827,8 +835,7 @@ int main(int, char**)
                     }
                 }
 
-                player.render(PBRShader);
-                //simpleModel.Draw(skeletonShader);
+                player.render(skeletonShader, PBRShader);
             }
 
             //SKYBOX

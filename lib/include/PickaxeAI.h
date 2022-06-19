@@ -5,6 +5,7 @@
 #include "typedefs.h"
 
 class Sound;
+class Animator;
 
 class PickaxeAI : public AI {
 
@@ -18,6 +19,7 @@ public:
 	void update(GLFWwindow* window, float deltaTime) override; //TODO: override
 	void onKeyPressed(int key, int action); //TODO: override
 	void setThrowSound(Sound *newThrowSound);
+    void setThrowAnimator(Animator *newThrowAnimator);
 
 	glm::vec3 playerPos;
 	int playerDir;
@@ -33,7 +35,7 @@ private:
 	
 	double throwTime;
 	Sound *throwSound = nullptr;
+    Animator *throwAnimator = nullptr;
 
-	void pickaxeThrow(int dir, int orientation, int reverse);
-	
+    void pickaxeThrow(int dir, int orientation, int reverse);
 };
