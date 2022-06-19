@@ -139,10 +139,10 @@ void SphereCollider::separate(std::vector<BoxCollider> colliders) {
 
     for (auto i : colliders) {
 
-        parent->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::translate(glm::mat4(1.0f), glm::vec3(isCollision(&i, true))) *
-            glm::vec4(parent->getComponent<Model>(ComponentType::MODEL)->transform.position, 1.0f);
+        parent->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::translate(glm::mat4(1.0f), glm::vec3(isCollision(&i, true))) *
+            glm::vec4(parent->getComponent<Transform>(ComponentType::TRANSFORM)->position, 1.0f);
 
-        setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
+        setCenter(parent->getComponent<Transform>(ComponentType::TRANSFORM)->position);
 
     }
 

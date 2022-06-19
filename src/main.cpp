@@ -405,7 +405,8 @@ int main(int, char**)
     componentPtr pickaxeModel(new Model("./res/models/Kilof/kilof2.fbx"));
 
     componentPtr spawnerColliders(new Model("./res/models/Colliders/spawnerColliders.fbx", true));
-    componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
+    //componentPtr larvaModel(new Model("./res/models/Box/box.fbx"));
+    Model larvaMdl("./res/models/Box/box.fbx");
 
     //TODO: zmienic przypisanie kilofa do gracza
     pickaxe->addComponent(pickaxeModel, pickaxe);
@@ -457,13 +458,13 @@ int main(int, char**)
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(50.0f);
         pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.position);
 
-        //LarvaAI::instantiateLarva(&larvas, &lightPositions, larvaModel, glm::vec3(581.819336f, 303.709015f, -582.5f));
+        LarvaAI::instantiateLarva(&larvas, &lightPositions, glm::vec3(451.819336f, 303.709015f, -582.5f));
+        LarvaAI::instantiateLarva(&larvas, &lightPositions, glm::vec3(451.819336f, 323.709015f, -582.5f));
 
         spawners->addComponent(spawnerColliders, spawners);
         spawners->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
         spawners->getComponent<Model>(ComponentType::MODEL)->transform.position = glm::vec3(0.0f, -1450.0f, 0.0f);
         spawners->addComponent<SpawnerAI>(spawners);
-        spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvaModel = larvaModel;
         spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvas = &larvas;
         spawners->getComponent<SpawnerAI>(ComponentType::AI)->lights = &lightPositions;
     }
@@ -718,12 +719,13 @@ int main(int, char**)
 
                 for (auto larva : larvas) {
 
-                    player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
-                    larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
-                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                    larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
-                    if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
-                        pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                    if (larva != nullptr) {
+                        larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+                        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                        if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
+                            pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
+                        }
                     }
                     
                 }
@@ -753,7 +755,7 @@ int main(int, char**)
             }
 
             camFrustum = createFrustumFromCamera(camera, (float)SCR_WIDTH / (float)SCR_HEIGHT, 180, -100.0f, 100.0f);
-
+            //printf("%d\n", larvaModel.use_count());
             //-------- DRAW --------//
             {
                 level.Draw(PBRShader);
@@ -769,7 +771,10 @@ int main(int, char**)
 
                 for (auto larva : larvas) {
 
-                    larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                    if (larva != nullptr) {
+                        //larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
+                        larvaMdl.Draw(PBRShader, *larva->getComponent<Transform>(ComponentType::TRANSFORM));
+                    }
 
                 }
 
