@@ -72,7 +72,7 @@ public:
 //        }
 
         lampModels[cur].Draw(shader);
-        floors[cur].Draw(shader);
+//        floors[cur].Draw(shader);
 
     }
 
