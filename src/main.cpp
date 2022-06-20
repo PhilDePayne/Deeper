@@ -494,8 +494,8 @@ int main(int, char**)
     //-------- LEVEL RESOURCES --------//
 
     //cave models
-    Model cave1("./res/models/cave1/cave1_nr_mdl.fbx");
-    cave1.transform.scale = glm::vec3(50.0f);
+    Model cave1("./res/models/cave1/cave1_mdl.fbx");
+    cave1.transform.scale = glm::vec3(50.0f * 0.39f);
 //    Model cave2("./res/models/cave2/cave2_nr_mdl.fbx");
 //    cave2.transform.scale = glm::vec3(50.0f);
 //    Model cave3("./res/models/cave3/cave3_nr_mdl.fbx");
