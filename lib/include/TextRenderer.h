@@ -108,7 +108,7 @@ public:
 
         float scale = display_w/1920.0f * 1.5f;
 
-        RenderText(shader, array, display_w/2.0f - 15.0f * digits * scale, display_h - 100.0f, scale, glm::vec3(0.831f, 0.796f, 0.768f));
+        RenderText(shader, array, display_w/2.0f - 15.0f * digits * scale, display_h - 100.0f, scale, glm::vec3(0.964f, 0.549f, 0.278f));
 #endif
     }
 

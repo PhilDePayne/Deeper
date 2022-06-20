@@ -33,13 +33,8 @@ public:
 
         compass->model = glm::rotate(oldModel, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        glClear(GL_DEPTH_BUFFER_BIT);
-        glDepthMask(GL_FALSE);
-
         compass->Draw(shader);
         arrow->Draw(shader);
-
-        glDepthMask(GL_TRUE);
 
     }
 

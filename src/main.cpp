@@ -494,11 +494,15 @@ int main(int, char**)
     skeletonShader.setInt("aoMap", 4);
     skeletonShader.setInt("emissiveMap", 5);
 
+    Shader textShader("./res/shaders/text.vert", "./res/shaders/text.frag");
+
     //-------- LEVEL RESOURCES --------//
 
     //cave models
-    Model cave1("./res/models/cave1/cave1_mdl.fbx");
-    cave1.transform.scale = glm::vec3(50.0f * 0.39f);
+//    Model cave1("./res/models/cave1/cave1_mdl.fbx");
+//    cave1.transform.scale = glm::vec3(50.0f * 0.39f);
+    Model cave1("./res/models/cave1/cave1_nr_mdl.fbx");
+    cave1.transform.scale = glm::vec3(50.0f);
 //    Model cave2("./res/models/cave2/cave2_nr_mdl.fbx");
 //    cave2.transform.scale = glm::vec3(50.0f);
 //    Model cave3("./res/models/cave3/cave3_nr_mdl.fbx");
@@ -619,7 +623,7 @@ int main(int, char**)
         switch (state.getCurState()) {
         case GAME_RUNNING: {
             ambient.continuePlaying();
-            //TODO: reset kamery
+
             if (restart)
             {
                 gen.newGame(SCR_HEIGHT);
@@ -687,11 +691,14 @@ int main(int, char**)
             //liczenie punktow
             points.checkPoints(lamp->getComponent<LampAI>(ComponentType::AI)->lit, (int)player.getBody()->transform.position.y);
 
+
+#ifdef GAME_OVER_ENABLED
             //game over jesli gracz wyjdzie poza gorna krawedz kamery lub points < 0 <- do sprawdzenia czy dziala
-//            if(camera.isGameover())
-//                state.setState(GAME_OVER);
-//            if(points.isGameOver())
-//                state.setState(GAME_OVER);
+            if(camera.isGameover())
+                state.setState(GAME_OVER);
+            if(points.isGameOver())
+                state.setState(GAME_OVER);
+#endif
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->update(window, deltaTime);
@@ -818,16 +825,6 @@ int main(int, char**)
             {
                 player.getBody()->transform.scale = glm::vec3(characterSize);
 
-//                level.Draw(PBRShader);
-//                lamps.Draw(PBRShader);
-                //LRcolliders.Draw(PBRShader);
-                //FBcolliders.Draw(PBRShader);
-//                cave->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
-                //lamp->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
-//                spawners->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
-
-//                floor1.Draw(PBRShader);
-
                 cart->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);
 
                 gen.DrawLevels(PBRShader);
@@ -860,10 +857,20 @@ int main(int, char**)
                 glDepthFunc(GL_LESS); // set depth function back to default
             }
 
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glDepthMask(GL_FALSE);
+
             //kompas (dziala tylko jak przed jest renderowany skybox XD)
             hudShader.use();
             hudShader.setMat4("proj", glm::ortho(-(display_w/2.0f), display_w/2.0f, -(display_h/2.0f), display_h/2.0f, -10.0f, 10.0f));
             compass.Draw(hudShader, camera.getAngle());
+
+#ifdef FREETYPE_ENABLED
+            points.renderPoints(camera.GetHudProjMatrix(display_w, display_h), textShader, display_w, display_h);
+#endif
+
+            glDepthMask(GL_TRUE);
+
 
             break;
         }
@@ -911,14 +918,18 @@ int main(int, char**)
         }
         case GAME_OVER: {
 
+            hudShader.use();
+            hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
+
+#ifdef FREETYPE_ENABLED
+            points.renderPoints(camera.GetHudProjMatrix(display_w, display_h), textShader, display_w, 683.0f/1080.0f * display_h);
+#else
             {
                 ImGui::Begin("SCORE");
                 ImGui::Text("points: %i", points.getPoints());
                 ImGui::End();
             }
-
-            hudShader.use();
-            hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
+#endif
 
             state.gameOver(window, hudShader);
 
@@ -965,7 +976,7 @@ void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
 void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player) {
 
     scale = 100.0f;
-//    cameraY -= 0.05f;
+    cameraY -= 0.2f;
 
     ///DEBUG
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
