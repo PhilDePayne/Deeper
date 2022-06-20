@@ -38,5 +38,5 @@ private:
     Animator *throwAnimator = nullptr;
 	bool firstTravel = true;
 
-    void pickaxeThrow(int dir, int orientation, int reverse);
+    void pickaxeThrow(int dir, int orientation, int reverse, float deltaTime);
 };

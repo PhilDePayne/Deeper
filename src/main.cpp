@@ -752,7 +752,7 @@ int main(int, char**)
             for (auto larva : larvas) {
                     if (larva != nullptr) {
                         larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
-                        //larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
                         larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
                         if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
                             pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
@@ -829,7 +829,7 @@ int main(int, char**)
 
                 gen.DrawLevels(PBRShader);
                 for (auto larva : larvas) {
-                    if (larva != nullptr) {
+                    if (larva) {
                         larva->getComponent<Transform>(ComponentType::TRANSFORM)->y_rotation_angle = -camera.getAngle()
                                 + 180.0f * larva->getComponent<LarvaAI>(ComponentType::AI)->rotateTowardsTarget(player.getBody()->transform.position, (int)camera.getCameraDirection());
                         //larva->getComponent<Model>(ComponentType::MODEL)->Draw(PBRShader);

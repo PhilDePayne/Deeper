@@ -19,11 +19,13 @@ public:
     void setKillSound(Sound *newKillSound);
     float rotateTowardsTarget(glm::vec3 pos, int dir);
 
-	static void instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, glm::vec3 pos);
+	static void instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, glm::vec3 pos, int id);
 
 	std::vector<glm::vec3>* lights;
 	std::vector<gameObjectPtr>* larvas;
 	bool active = 1;
+
+	int id = 0;
 
 private:
 
