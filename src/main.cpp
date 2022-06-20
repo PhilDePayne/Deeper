@@ -8,8 +8,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <stb_image.h>
 #include <cstdio>
-//#include <ft2build.h>
-//#include FT_FREETYPE_H
 
 #include "GameObject.h"
 #include "CubeMesh.h"
@@ -40,6 +38,11 @@
 #include "SpawnerAI.h"
 #include "SoundSystem.h"
 #include "Sound.h"
+
+#ifdef FREETYPE_ENABLED
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#endif
 
 #include <stdio.h>
 #include <memory>
