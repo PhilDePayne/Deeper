@@ -45,6 +45,7 @@ void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
 		lights->erase(lights->begin());
 		lights->push_back(collided.getCenter());
+		printf("TURN ON\n");
 
 #ifdef DEEPER_LAMPAI_CLASS_LOGS
         std::cout << "DOESN'T EXIST\n";

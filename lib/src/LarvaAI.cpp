@@ -16,8 +16,14 @@ void LarvaAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
                 killSound->play();
             }
 			printf("LARVA TRIGGER\n");
-			larvas->erase(larvas->begin());
-			parent->~GameObject();
+            for (int i = 0; i < larvas->size(); i++) {
+                if (id == larvas->at(i)->getComponent<LarvaAI>(ComponentType::AI)->id) {
+                    larvas->erase(larvas->begin()+i);
+                    parent->~GameObject();
+                }
+            }
+
+            //TODO: ID
 		}
 	}
 
@@ -37,7 +43,7 @@ void LarvaAI::update(GLFWwindow* window, float deltaTime) {
 
 }
 
-void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, glm::vec3 pos) {
+void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, glm::vec3 pos, int id) {
 
 	gameObjectPtr larva(new GameObject());
 	larva->tag = Tag::LARVA;
@@ -51,6 +57,7 @@ void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<g
 	larvas->back()->addComponent<LarvaAI>(larvas->back());
 	larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->lights = lightPositions;
 	larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->larvas = larvas;
+    larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->id = id;
 	//-------- PHYSICS COLLIDER --------//
 	larvas->back()->addComponent<SphereCollider>(larvas->back());
 	larvas->back()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(10.0f);

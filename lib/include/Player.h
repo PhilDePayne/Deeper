@@ -231,7 +231,7 @@ private:
 
     float speed = 300.0f;
     int front_or_left = 1;
-    float gravity = -120.0f;
+    float gravity = -100.0f;
     float x = 0.0f, z = 0.0f;
     int dirLR = 0;
 
