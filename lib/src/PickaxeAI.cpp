@@ -39,7 +39,7 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 
 	else if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS && isThrown) isThrown = false;
 
-	if (isThrown) pickaxeThrow(throwDir, throwFacingDir, throwReverse);
+	if (isThrown) pickaxeThrow(throwDir, throwFacingDir, throwReverse, deltaTime);
 
 	else {
 		parent->getComponent<Model>(ComponentType::MODEL)->transform.position = playerPos;
@@ -58,7 +58,7 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 
 }
 
-void PickaxeAI::pickaxeThrow(int dir, int orientation, int reverse) {
+void PickaxeAI::pickaxeThrow(int dir, int orientation, int reverse, float deltaTime) {
 
 	float distance = glm::sin(1 * (glfwGetTime() - throwTime));
 
@@ -74,6 +74,7 @@ void PickaxeAI::pickaxeThrow(int dir, int orientation, int reverse) {
 	else {
 		isThrown = false;
 		firstTravel = true;
+		//parent->getComponent<Model>(ComponentType::MODEL)->transform.position = AI::moveTowards(parent->getComponent<Model>(ComponentType::MODEL)->transform.position, playerPos, 1 * deltaTime);
 	}
 
 

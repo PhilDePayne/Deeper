@@ -752,7 +752,7 @@ int main(int, char**)
             for (auto larva : larvas) {
                     if (larva != nullptr) {
                         larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
-                        //larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(cave->getComponent<Model>(ComponentType::MODEL)->getColliders());
+                        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
                         larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
                         if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
                             pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
