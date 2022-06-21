@@ -586,7 +586,7 @@ int main(int, char**)
     Compass compass(SCR_WIDTH, SCR_HEIGHT, hudShader);
     TextRenderer points(camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
 
-    state.setState(GAME_RUNNING);
+    state.setState(GAME_OVER);
 
     printf("%f\n", player.getBody()->transform.position.y);
     bool firstFrame = true;
@@ -920,9 +920,14 @@ int main(int, char**)
 
             hudShader.use();
             hudShader.setMat4("proj", camera.GetHudProjMatrix(display_w, display_h));
+            state.gameOver(window, hudShader);
 
 #ifdef FREETYPE_ENABLED
-            points.renderPoints(camera.GetHudProjMatrix(display_w, display_h), textShader, display_w, 683.0f/1080.0f * display_h);
+
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glDepthMask(GL_FALSE);
+            points.renderPoints(camera.GetHudProjMatrix(display_w, display_h), textShader, display_w, 633.0f/1080.0f * display_h);
+//            glDepthMask(GL_TRUE);
 #else
             {
                 ImGui::Begin("SCORE");
@@ -930,8 +935,6 @@ int main(int, char**)
                 ImGui::End();
             }
 #endif
-
-            state.gameOver(window, hudShader);
 
             restart = true;
 
