@@ -64,9 +64,9 @@ void PickaxeAI::pickaxeThrow(int dir, int orientation, int reverse, float deltaT
 
 	if (distance > 0 || firstTravel) {
 		if (orientation == 1)
-			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += reverse * dir * glm::sin(1 * (glfwGetTime() - throwTime));
+			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.x += reverse * dir * glm::sin(2 * (glfwGetTime() - throwTime));
 		else
-			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += reverse * -dir * glm::sin(1 * (glfwGetTime() - throwTime));
+			parent->getComponent<Model>(ComponentType::MODEL)->transform.position.z += reverse * -dir * glm::sin(2 * (glfwGetTime() - throwTime));
 
 		firstTravel = false;
 	}
