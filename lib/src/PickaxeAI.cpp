@@ -18,7 +18,6 @@ void PickaxeAI::update(GLFWwindow* window, float deltaTime) {
 
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && !isThrown) {
 
-		printf("%d %d\n", playerDir, playerFacingDir);
 		throwTime = glfwGetTime();
 		isThrown = true;
 		throwDir = playerDir;
@@ -76,9 +75,6 @@ void PickaxeAI::pickaxeThrow(int dir, int orientation, int reverse, float deltaT
 		firstTravel = true;
 		//parent->getComponent<Model>(ComponentType::MODEL)->transform.position = AI::moveTowards(parent->getComponent<Model>(ComponentType::MODEL)->transform.position, playerPos, 1 * deltaTime);
 	}
-
-
-	//parent->getComponent<Model>(ComponentType::MODEL)->transform.position.y += glm::cos(1*(glfwGetTime() - throwTime));
 
 	parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Model>(ComponentType::MODEL)->transform.position);
 

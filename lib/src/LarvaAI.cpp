@@ -15,18 +15,22 @@ void LarvaAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
             {
                 killSound->play();
             }
-			printf("LARVA TRIGGER\n");
+
             for (int i = 0; i < larvas->size(); i++) {
                 if (id == larvas->at(i)->getComponent<LarvaAI>(ComponentType::AI)->id) {
                     larvas->erase(larvas->begin()+i);
                     parent->~GameObject();
                 }
             }
-
-            //TODO: ID
 		}
 	}
 
+    else if (colliderTag == Tag::PLAYER) {
+
+        printf("PLAYER\n");
+        playerLight = false;
+
+    }
 }
 
 void LarvaAI::update(GLFWwindow* window, float deltaTime) {
@@ -40,10 +44,9 @@ void LarvaAI::update(GLFWwindow* window, float deltaTime) {
 		parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Transform>(ComponentType::TRANSFORM)->position);
 		parent->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(parent->getComponent<Transform>(ComponentType::TRANSFORM)->position);
 	}
-
 }
 
-void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, glm::vec3 pos, int id) {
+void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, glm::vec3 pos, int id, bool *playerLight) {
 
 	gameObjectPtr larva(new GameObject());
 	larva->tag = Tag::LARVA;
@@ -58,6 +61,7 @@ void LarvaAI::instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<g
 	larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->lights = lightPositions;
 	larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->larvas = larvas;
     larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->id = id;
+    larvas->back()->getComponent<LarvaAI>(ComponentType::AI)->playerLight = playerLight;
 	//-------- PHYSICS COLLIDER --------//
 	larvas->back()->addComponent<SphereCollider>(larvas->back());
 	larvas->back()->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setRadius(10.0f);

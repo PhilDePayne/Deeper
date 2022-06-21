@@ -2,6 +2,7 @@
 
 #include "AI.h"
 #include "SphereCollider.h"
+#include "Player.h"
 #include "typedefs.h"
 
 class Sound;
@@ -19,7 +20,7 @@ public:
     void setKillSound(Sound *newKillSound);
     float rotateTowardsTarget(glm::vec3 pos, int dir);
 
-	static void instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, glm::vec3 pos, int id);
+	static void instantiateLarva(std::vector<gameObjectPtr>* larvas, std::vector<glm::vec3>* lightPositions, glm::vec3 pos, int id, bool *playerLight);
 
 	std::vector<glm::vec3>* lights;
 	std::vector<gameObjectPtr>* larvas;
@@ -33,5 +34,6 @@ private:
 	float speed = 30.0f;
 	Sound *killSound = nullptr;
 	int dir = 1;
+	bool *playerLight;
 
 };

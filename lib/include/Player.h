@@ -226,14 +226,17 @@ public:
         return body->transform.y_rotation_angle;
     }
 
+    bool lightTurnedOn = true;
+
 private:
     Model* body;
 
     float speed = 300.0f;
     int front_or_left = 1;
-    float gravity = -100.0f;
+    float gravity = -150.0f;
     float x = 0.0f, z = 0.0f;
     int dirLR = 0;
+    
 
     int randNum() {
         std::random_device generator;

@@ -20,10 +20,12 @@ public:
 
 	std::vector<glm::vec3>* lights;
 	std::vector<gameObjectPtr>* larvas;
+	bool* playerLight;
 
 private:
 
 	bool used = false;
 	std::vector<glm::vec3> usedSpawners;
 	int spawnedLarvas = 0;
+	
 };

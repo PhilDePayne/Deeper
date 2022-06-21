@@ -45,6 +45,8 @@
 #include FT_FREETYPE_H
 #endif
 
+#define GAME_OVER_ENABLED
+
 #include <stdio.h>
 #include <memory>
 #include <algorithm>
@@ -458,6 +460,7 @@ int main(int, char**)
         spawners->addComponent<SpawnerAI>(spawners);
         spawners->getComponent<SpawnerAI>(ComponentType::AI)->larvas = &larvas;
         spawners->getComponent<SpawnerAI>(ComponentType::AI)->lights = &lightPositions;
+        spawners->getComponent<SpawnerAI>(ComponentType::AI)->playerLight = &player.lightTurnedOn;
     }
 
     basicShader.use();
@@ -500,10 +503,10 @@ int main(int, char**)
     //-------- LEVEL RESOURCES --------//
 
     //cave models
-//    Model cave1("./res/models/cave1/cave1_mdl.fbx");
-//    cave1.transform.scale = glm::vec3(50.0f * 0.39f);
-    Model cave1("./res/models/cave1/cave1_nr_mdl.fbx");
-    cave1.transform.scale = glm::vec3(50.0f);
+    Model cave1("./res/models/cave1/cave1_mdl.fbx");
+    cave1.transform.scale = glm::vec3(50.0f * 0.39f);
+    //Model cave1("./res/models/cave1/cave1_nr_mdl.fbx");
+    //cave1.transform.scale = glm::vec3(50.0f);
 //    Model cave2("./res/models/cave2/cave2_nr_mdl.fbx");
 //    cave2.transform.scale = glm::vec3(50.0f);
 //    Model cave3("./res/models/cave3/cave3_nr_mdl.fbx");
@@ -708,7 +711,14 @@ int main(int, char**)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->update(window, deltaTime);
 
-            lightPositions[0] = player.getBody()->transform.position;
+            if (player.lightTurnedOn) {
+                lightPositions[0] = player.getBody()->transform.position;
+                lightColors[0] = glm::vec3(180.0f);
+            }
+
+            else {
+                lightColors[0] = glm::vec3(0.0f);
+            }
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -767,6 +777,7 @@ int main(int, char**)
             for (auto larva : larvas) {
                     if (larva != nullptr) {
                         larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
+                        player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
                         larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
                         larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
                         if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
@@ -794,8 +805,7 @@ int main(int, char**)
 
                 for (unsigned int i = 0; i < lightPositions.size(); ++i)
                 {
-                    glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-                    newPos = lightPositions[i];
+                    glm::vec3 newPos = lightPositions[i];
                     PBRShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
                     PBRShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
                 }
@@ -819,8 +829,7 @@ int main(int, char**)
 
                 for (unsigned int i = 0; i < lightPositions.size(); ++i)
                 {
-                    glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-                    newPos = lightPositions[i];
+                    glm::vec3 newPos = lightPositions[i];
                     skeletonShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
                     skeletonShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
                 }

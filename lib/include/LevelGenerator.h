@@ -30,10 +30,10 @@ public:
         for(int i = 0; i < 3; i++) {
             caveModels[num[i]].transform.position = glm::vec3(0.0f, pos[i] - 10.0f, 0.0f);
 
-            walls[num[i]][0].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
-            walls[num[i]][1].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
+            walls[num[i]][0].transform.position = glm::vec3(0.0f, pos[i]-20.0f, 0.0f);
+            walls[num[i]][1].transform.position = glm::vec3(0.0f, pos[i]-20.0f, 0.0f);
 
-            floors[num[i]].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
+            floors[num[i]].transform.position = glm::vec3(0.0f, pos[i]-20.0f, 0.0f);
 
             lampModels[num[i]].transform.position = glm::vec3(0.0f, pos[i] - 10.0f, 0.0f);
             lampColliders[num[i]].transform.position = glm::vec3(0.0f, pos[i], 0.0f);
