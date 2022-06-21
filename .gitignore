@@ -29,6 +29,7 @@
 # Exclude FMOD library
 !fmod.dll
 !fmod_vc.lib
+!freetyped.dll
 
 # Executables
 *.exe
