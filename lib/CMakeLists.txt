@@ -58,7 +58,7 @@ set(SOURCE_FILES
 	include/hudRect.h 
     "src/LampAI.cpp" 
     "include/PickaxeAI.h" 
-    "src/PickaxeAI.cpp" "include/LarvaAI.h" "src/LarvaAI.cpp" "include/SpawnerAI.h" "src/SpawnerAI.cpp")
+    "src/PickaxeAI.cpp" "include/LarvaAI.h" "src/LarvaAI.cpp" "include/SpawnerAI.h" "src/SpawnerAI.cpp" include/Tutorial.h)
 
 #TODO: Biblioteka variable
 add_library(Biblioteka ${SOURCE_FILES})

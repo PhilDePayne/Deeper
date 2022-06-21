@@ -38,6 +38,7 @@
 #include "SpawnerAI.h"
 #include "SoundSystem.h"
 #include "Sound.h"
+#include "Tutorial.h"
 
 #ifdef FREETYPE_ENABLED
 #include <ft2build.h>
@@ -129,7 +130,7 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &scale);
-void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player);
+void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player, int n);
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -585,8 +586,10 @@ int main(int, char**)
 
     Compass compass(SCR_WIDTH, SCR_HEIGHT, hudShader);
     TextRenderer points(camera.GetHudProjMatrix(SCR_WIDTH, SCR_HEIGHT));
+    Tutorial tutorial(SCR_WIDTH, SCR_HEIGHT, hudShader);
 
-    state.setState(GAME_OVER);
+
+    state.setState(MAIN_MENU);
 
     printf("%f\n", player.getBody()->transform.position.y);
     bool firstFrame = true;
@@ -614,6 +617,7 @@ int main(int, char**)
         if (display_w != old_w || display_h != old_h) {
             state.setSetUp(true);
             compass.init(display_w, display_h, PBRShader);
+            tutorial.setSetUp(true);
         }
 
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -633,6 +637,7 @@ int main(int, char**)
                 camera.newGame();
                 restart = false;
                 points.newGame();
+                tutorial.newGame();
             }
 
 
@@ -686,7 +691,7 @@ int main(int, char**)
 
 
             //useDebugCamera(proj, view, window, scale);
-            useOrthoCamera(proj, view, window, cameraY, scale, player);
+            useOrthoCamera(proj, view, window, cameraY, scale, player, tutorial.getN());
 
             //liczenie punktow
             points.checkPoints(lamp->getComponent<LampAI>(ComponentType::AI)->lit, (int)player.getBody()->transform.position.y);
@@ -857,6 +862,8 @@ int main(int, char**)
                 glDepthFunc(GL_LESS); // set depth function back to default
             }
 
+            //-------- DRAW HUD --------//
+
             glClear(GL_DEPTH_BUFFER_BIT);
             glDepthMask(GL_FALSE);
 
@@ -864,7 +871,7 @@ int main(int, char**)
             hudShader.use();
             hudShader.setMat4("proj", glm::ortho(-(display_w/2.0f), display_w/2.0f, -(display_h/2.0f), display_h/2.0f, -10.0f, 10.0f));
             compass.Draw(hudShader, camera.getAngle());
-
+            tutorial.display(window, hudShader);
 #ifdef FREETYPE_ENABLED
             points.renderPoints(camera.GetHudProjMatrix(display_w, display_h), textShader, display_w, display_h);
 #endif
@@ -927,7 +934,7 @@ int main(int, char**)
             glClear(GL_DEPTH_BUFFER_BIT);
             glDepthMask(GL_FALSE);
             points.renderPoints(camera.GetHudProjMatrix(display_w, display_h), textShader, display_w, 633.0f/1080.0f * display_h);
-//            glDepthMask(GL_TRUE);
+
 #else
             {
                 ImGui::Begin("SCORE");
@@ -976,10 +983,13 @@ void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
     view = camera.GetViewMatrix();
 }
 
-void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player) {
+void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player, int n) {
 
     scale = 100.0f;
-    cameraY -= 0.2f;
+    if(n > 3)
+        cameraY -= 0.2f;
+//    else
+//        cameraY = 0;
 
     ///DEBUG
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
