@@ -79,8 +79,8 @@ public:
 
         //clamp velocities
         if(x != 0.0f) {
-            x += velocity * 5.0f * dirLR;
-            if(fabs(x) < 0.3f)
+            x += velocity * 10.0f * dirLR;
+            if(fabs(x) < 0.5f)
                 x = 0.0f;
             if(x > 5.0f)
                 x = 5.0f;
@@ -89,8 +89,8 @@ public:
         }
 
         if(z != 0.0f) {
-            z += velocity * 5.0f * dirLR;
-            if(fabs(z) < 0.3f)
+            z += velocity * 10.0f * dirLR;
+            if(fabs(z) < 0.5f)
                 z = 0.0f;
             if(z > 5.0f)
                 z = 5.0f;
