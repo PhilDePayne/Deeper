@@ -635,6 +635,7 @@ int main(int, char**)
             if (restart)
             {
                 larvas.clear();
+                player.lightTurnedOn = true;
                 gen.newGame(SCR_HEIGHT);
                 player.newGame();
                 cameraY = 0.0f;

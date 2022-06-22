@@ -107,14 +107,15 @@ public:
                 0.0f, 10.0f, 0.0f);
 
         }
+        */
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 
             body->transform.position += glm::vec3(
-                0.0f, 10.0f, 0.0f);
+                0.0f, 5.0f, 0.0f);
 
         }
-        */
+        
 
 //        rotateLeftRight((int) dir);
 //        correctAngle((int)dir);
