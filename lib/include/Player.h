@@ -100,6 +100,7 @@ public:
 
         body->transform.position += glm::vec3(x, 0.0f, z);
 
+        /*
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 
             body->transform.position -= glm::vec3(
@@ -113,6 +114,7 @@ public:
                 0.0f, 10.0f, 0.0f);
 
         }
+        */
 
 //        rotateLeftRight((int) dir);
 //        correctAngle((int)dir);
@@ -136,8 +138,8 @@ public:
         }
         else
         {
-            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = 0.0f;
             pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.x_rotation_angle = -20.0f;
+            pickaxe->getComponent<Model>(ComponentType::MODEL)->transform.y_rotation_angle = 0.0f;
             body->transform.y_rotation_angle = 0.0f;
         }
         pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->playerPos = body->transform.position;
@@ -233,7 +235,7 @@ private:
 
     float speed = 300.0f;
     int front_or_left = 1;
-    float gravity = -150.0f;
+    float gravity = -190.0f;
     float x = 0.0f, z = 0.0f;
     int dirLR = 0;
     

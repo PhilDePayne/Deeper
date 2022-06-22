@@ -17,7 +17,6 @@ void SpawnerAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 		LarvaAI::instantiateLarva(larvas, lights, collided.getCenter(), spawnedLarvas, playerLight);
 		spawnedLarvas++;
 		usedSpawners.push_back(collided.getCenter());
-		playerLight = false;
 
 	}
 

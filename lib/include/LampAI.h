@@ -24,6 +24,8 @@ public:
 	bool eaten = false;
 	std::vector<glm::vec3> eatenLamps;
 
+	bool *playerLight;
+
 private:
     Sound *turnOnSound = nullptr;
 };

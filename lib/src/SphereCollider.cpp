@@ -137,10 +137,17 @@ glm::vec4 SphereCollider::isCollision(BoxCollider* other, bool resolve) {
 
 void SphereCollider::separate(std::vector<BoxCollider> colliders) {
 
-    for (auto i : colliders) {
+    for (auto &i : colliders) {
+
+        bool collision = isCollision(&i, false).w;
 
         parent->getComponent<Transform>(ComponentType::TRANSFORM)->position = glm::translate(glm::mat4(1.0f), glm::vec3(isCollision(&i, true))) *
             glm::vec4(parent->getComponent<Transform>(ComponentType::TRANSFORM)->position, 1.0f);
+
+        if (collision) {
+            parent->getComponent<Transform>(ComponentType::TRANSFORM)->x_rotation_angle = i.x_rotation_angle;
+            parent->getComponent<Transform>(ComponentType::TRANSFORM)->z_rotation_angle = i.z_rotation_angle;
+        }
 
         setCenter(parent->getComponent<Transform>(ComponentType::TRANSFORM)->position);
 

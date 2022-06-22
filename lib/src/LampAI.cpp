@@ -68,6 +68,10 @@ void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 #endif
 	}
 
+	else if (exists && colliderTag == Tag::PLAYER) {
+		*playerLight = true;
+	}
+
 }
 
 void LampAI::update(GLFWwindow* window, float deltaTime) {

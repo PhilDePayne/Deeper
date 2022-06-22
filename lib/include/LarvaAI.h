@@ -31,9 +31,10 @@ public:
 private:
 
 	
-	float speed = 30.0f;
+	float speed = 50.0f;
 	Sound *killSound = nullptr;
 	int dir = 1;
-	bool *playerLight;
+	float gravity = -150.0f;
+	bool *playerLight = nullptr;
 
 };

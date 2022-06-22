@@ -443,6 +443,7 @@ int main(int, char**)
         lamp->getComponent<LampAI>(ComponentType::AI)->lights = &lightPositions;
         lamp->getComponent<LampAI>(ComponentType::AI)->lit = new std::vector<bool>(lightPositions.size(), 0);
         lamp->getComponent<LampAI>(ComponentType::AI)->setTurnOnSound(&lampSound);
+        lamp->getComponent<LampAI>(ComponentType::AI)->playerLight = &player.lightTurnedOn;
 
 //        cave->addComponent(caveModel, cave);
 //        cave->getComponent<Model>(ComponentType::MODEL)->transform.scale = glm::vec3(50.0f);
@@ -504,7 +505,7 @@ int main(int, char**)
 
     //cave models
     Model cave1("./res/models/cave1/cave1_mdl.fbx");
-    cave1.transform.scale = glm::vec3(50.0f * 0.39f);
+    cave1.transform.scale = glm::vec3(50.0f * 0.393700787f);
     //Model cave1("./res/models/cave1/cave1_nr_mdl.fbx");
     //cave1.transform.scale = glm::vec3(50.0f);
 //    Model cave2("./res/models/cave2/cave2_nr_mdl.fbx");
@@ -633,6 +634,7 @@ int main(int, char**)
 
             if (restart)
             {
+                larvas.clear();
                 gen.newGame(SCR_HEIGHT);
                 player.newGame();
                 cameraY = 0.0f;
@@ -774,11 +776,13 @@ int main(int, char**)
 //            player.detectCollision(spawners->getComponent<Model>(ComponentType::MODEL)->getColliders());
             gen.triggers(&player);
 
-            for (auto larva : larvas) {
+            for (auto &larva : larvas) {
                     if (larva != nullptr) {
                         larva->getComponent<LarvaAI>(ComponentType::AI)->update(window, deltaTime);
                         player.detectCollision(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));
                         larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getCurrentFloor()->getColliders());
+                        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getWallsX()->getColliders());
+                        larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->separate(gen.getWallsY()->getColliders());
                         larva->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(lamp->getComponent<Model>(ComponentType::MODEL)->getColliders());
                         if (pickaxe->getComponent<PickaxeAI>(ComponentType::AI)->isThrown) {
                             pickaxe->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->checkTrigger(larva->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER));

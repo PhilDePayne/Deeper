@@ -28,7 +28,7 @@ void LarvaAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
     else if (colliderTag == Tag::PLAYER) {
 
         printf("PLAYER\n");
-        playerLight = false;
+        *playerLight = false;
 
     }
 }
@@ -41,6 +41,7 @@ void LarvaAI::update(GLFWwindow* window, float deltaTime) {
 		glm::vec3 deltaPos = moveTowards(currentPos, lights->at(0), speed * deltaTime);
 
 		parent->getComponent<Transform>(ComponentType::TRANSFORM)->position = deltaPos;
+        //parent->getComponent<Transform>(ComponentType::TRANSFORM)->position.y = gravity * deltaTime;
 		parent->getComponent<SphereCollider>(ComponentType::SPHERECOLLIDER)->setCenter(parent->getComponent<Transform>(ComponentType::TRANSFORM)->position);
 		parent->getComponent<BoxCollider>(ComponentType::BOXCOLLIDER)->setCenter(parent->getComponent<Transform>(ComponentType::TRANSFORM)->position);
 	}
