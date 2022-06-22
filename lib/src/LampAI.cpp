@@ -41,7 +41,7 @@ void LampAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
 	}
 
-	else if (!exists && colliderTag != Tag::LARVA) {
+	else if (!exists && colliderTag != Tag::LARVA && *playerLight) {
 
 		lights->erase(lights->begin());
 		lights->push_back(collided.getCenter());
