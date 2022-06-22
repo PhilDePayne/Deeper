@@ -504,10 +504,10 @@ int main(int, char**)
     //-------- LEVEL RESOURCES --------//
 
     //cave models
-    Model cave1("./res/models/cave1/cave1_mdl.fbx");
-    cave1.transform.scale = glm::vec3(50.0f * 0.393700787f);
-    //Model cave1("./res/models/cave1/cave1_nr_mdl.fbx");
-    //cave1.transform.scale = glm::vec3(50.0f);
+//    Model cave1("./res/models/cave1/cave1_mdl.fbx");
+//    cave1.transform.scale = glm::vec3(50.0f * 0.393700787f);
+    Model cave1("./res/models/cave1/cave1_nr_mdl.fbx");
+    cave1.transform.scale = glm::vec3(50.0f);
 //    Model cave2("./res/models/cave2/cave2_nr_mdl.fbx");
 //    cave2.transform.scale = glm::vec3(50.0f);
 //    Model cave3("./res/models/cave3/cave3_nr_mdl.fbx");
@@ -1000,7 +1000,7 @@ void useDebugCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float
 void useOrthoCamera(glm::mat4 &proj, glm::mat4 &view, GLFWwindow * window, float &cameraY, float &scale, Player player, int n) {
 
     scale = 100.0f;
-    if(n > 3)
+    if(n > 4)
         cameraY -= 0.2f;
 //    else
 //        cameraY = 0;
