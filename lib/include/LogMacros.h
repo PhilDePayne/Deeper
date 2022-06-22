@@ -7,7 +7,8 @@
 
 
 #define LOGS_ENABLED // comment this macro if you want to disable all logs
-
+//#define FREETYPE_ENABLED
+#define GAME_OVER_ENABLED
 
 #ifdef LOGS_ENABLED // check if logs are enabled
 
@@ -30,8 +31,7 @@
 //#define DEEPER_SOUND_CLASS_LOGS
 //#define DEEPER_LEVELGENERATOR_LOGS
 
-//#define FREETYPE_ENABLED
-#define GAME_OVER_ENABLED
+
 
 #endif
 
