@@ -27,7 +27,7 @@ void LarvaAI::onTriggerEnter(BoxCollider collided, Tag colliderTag) {
 
     else if (colliderTag == Tag::PLAYER) {
 
-        printf("PLAYER\n");
+        //printf("PLAYER\n");
         *playerLight = false;
 
     }

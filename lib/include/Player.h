@@ -109,10 +109,11 @@ public:
         }
         */
 
-        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !isJumping) {
 
             body->transform.position += glm::vec3(
                 0.0f, 5.0f, 0.0f);
+            isJumping = true;
 
         }
         
@@ -158,6 +159,8 @@ public:
     void checkCollision(std::vector<BoxCollider> other) {
 
         for (auto i : other) {
+
+            if (collider.isCollision(&i, false).w == 1) isJumping = false;
 
             body->transform.position = glm::translate(glm::mat4(1.0f), glm::vec3(collider.isCollision(&i, true))) *
                 glm::vec4(body->transform.position,1.0f);
@@ -239,6 +242,7 @@ private:
     float gravity = -190.0f;
     float x = 0.0f, z = 0.0f;
     int dirLR = 0;
+    bool isJumping = false;
     
 
     int randNum() {

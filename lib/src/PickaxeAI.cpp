@@ -4,7 +4,7 @@
 
 void PickaxeAI::onCollisionEnter(BoxCollider collided) {
 
-	printf("ENTERED COLLISION\n");
+	//printf("ENTERED COLLISION\n");
 
 };
 

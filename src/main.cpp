@@ -119,12 +119,12 @@ std::vector<std::string> faces
         //"./res/textures/bottom.jpg",
         //"./res/textures/front.jpg",
         //"./res/textures/back.jpg"
-        "./res/textures/groundbox.jpg",
-        "./res/textures/groundbox.jpg",
-        "./res/textures/groundbox.jpg",
-        "./res/textures/groundbox.jpg",
-        "./res/textures/groundbox.jpg",
-        "./res/textures/groundbox.jpg"
+        "./res/textures/groundbox1.jpg",
+        "./res/textures/groundbox1.jpg",
+        "./res/textures/groundbox1.jpg",
+        "./res/textures/groundbox1.jpg",
+        "./res/textures/groundbox1.jpg",
+        "./res/textures/groundbox1.jpg"
 };
 
 static void glfw_error_callback(int error, const char* description)
@@ -595,7 +595,7 @@ int main(int, char**)
 
     state.setState(MAIN_MENU);
 
-    printf("%f\n", player.getBody()->transform.position.y);
+    //printf("%f\n", player.getBody()->transform.position.y);
     bool firstFrame = true;
 
     float shaderChoice = -1.0f;
@@ -605,9 +605,9 @@ int main(int, char**)
         glfwPollEvents();
 
         // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        //ImGui_ImplOpenGL3_NewFrame();
+        //ImGui_ImplGlfw_NewFrame();
+        //ImGui::NewFrame();
 
         old_w = display_w;
         old_h = display_h;
@@ -650,7 +650,7 @@ int main(int, char**)
             state.gameRunning(window);
 
 
-
+            /*
             //-------- ImGui --------//
             {
                 ImGui::Begin("Debug");
@@ -693,7 +693,7 @@ int main(int, char**)
 
                 ImGui::End();
             }
-
+            */
 
 
             //useDebugCamera(proj, view, window, scale);
@@ -966,9 +966,9 @@ int main(int, char**)
         }
         }
 
-        ImGui::Render();
+        //ImGui::Render();
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwMakeContextCurrent(window);
         glfwSwapBuffers(window);
@@ -976,9 +976,9 @@ int main(int, char**)
     }
 
         // Cleanup
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
+        //ImGui_ImplOpenGL3_Shutdown();
+        //ImGui_ImplGlfw_Shutdown();
+        //ImGui::DestroyContext();
 
         glfwDestroyWindow(window);
         glfwTerminate();
@@ -1061,7 +1061,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
         yPos = 10.0f;
         xPos = 0.0f;
-        printf("%f\n", yPos);
+        //printf("%f\n", yPos);
     move = true;
     }
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
