@@ -1,4 +1,4 @@
-# DeepEngine
+# Deeper
 An endless-runner type game created in a self-developed engine using C++ and OpenGL
 
 ## Description
